@@ -1,7 +1,6 @@
-''' Defines a set of plotting callback functions '''
+''' (Debug utility) Defines a set of plotting callback functions '''
 
 import matplotlib.pyplot as plt
-import numpy as np
 
 def show():
     plt.show()
@@ -39,6 +38,17 @@ def boundPlt(grid):
     
     plt.hlines([ymin,ymax], xmin, xmax, colors='g')
     plt.vlines([xmin, xmax], ymin, ymax, colors='g')
+
+def warpPlot(grid, warp, _warp):
+    
+    plt.subplot(1,2,1)
+    coordPlt(warp)
+    boundPlt(grid)
+    
+    plt.subplot(1,2,2)
+    coordPlt(_warp)
+    boundPlt(grid)
+    
     
 def gridPlot(image, template, warpedImage, grid, warp, itteration):    
 
@@ -67,7 +77,6 @@ def gridPlot(image, template, warpedImage, grid, warp, itteration):
     plt.axis('off')
     coordPlt(warp)
     boundPlt(grid)
-    
     
     plt.subplot(2,3,6)
     plt.imshow(template - warpedImage)

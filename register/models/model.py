@@ -209,7 +209,6 @@ class spline(model):
         @param division: number of spline knots. 
         """
         
-        
         shape = self.coordinates.grid[0].shape
         grid = self.coordinates.grid
         
@@ -247,9 +246,9 @@ class spline(model):
         return np.hstack( 
             (
              np.dot(np.linalg.pinv(self.basis),
-                    (warp[1] - self.coordinates.grid[1]).flatten()),
+                    (self.coordinates.grid[0] - warp[0]).flatten()),
              np.dot(np.linalg.pinv(self.basis),
-                    (warp[0] - self.coordinates.grid[0]).flatten()),
+                    (self.coordinates.grid[1] - warp[1]).flatten()),
             )
            ).T
         

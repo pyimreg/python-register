@@ -89,9 +89,7 @@ class Register(object):
             # Estimate p, using the warp field.
             p = model.estimate(warp)
             
-            
         p = model.identity if p is None else p
-        
         
         error = []
         lastP = p
@@ -110,14 +108,6 @@ class Register(object):
             e = metric.error(warpedImage, template)
             
             error.append(e.sum())
-        
-            if plotCB is not None:
-                plotCB(image, 
-                       template, 
-                       warpedImage, 
-                       coords.grid,
-                       warp, 
-                       step)
             
             if (step > 1):
                 if ( error[-1] < error[-2]):

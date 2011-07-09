@@ -84,5 +84,5 @@ class residual(metric):
     
     def error(self, warpedImage, template):
         
-        return warpedImage.flatten() - template.flatten()
+        return 2 * (warpedImage.flatten() - template.flatten())
     

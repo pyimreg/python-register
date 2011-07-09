@@ -2,17 +2,17 @@ import numpy as np
 import scipy.ndimage as nd
 import scipy.misc as misc
 
-from scikits.morph import register
-from scikits.morph.visualize import matplot
+from register import register
+from register.visualize import plot
 
 def warp(image):
     """
     Randomly warps an input image using a cubic spline deformation.
     """
     
-    import scikits.morph.grid.coordinates as coordinates
-    import scikits.morph.models.model as model
-    import scikits.morph.samplers.sampler as sampler
+    import register.grid.coordinates as coordinates
+    import register.models.model as model
+    import register.samplers.sampler as sampler
     
     coords = coordinates.coordinates()
     coords.form(image.shape)
@@ -21,23 +21,17 @@ def warp(image):
     spline_sampler = sampler.spline(coords) 
     
     p = spline_model.identity
-    p += np.random.rand(p.shape[0]) * 25
+    p += np.random.rand(p.shape[0]) * 35
     
     return spline_sampler.f(image, spline_model.warp(p)).reshape(image.shape)
 
 
 image = misc.lena()
-image = nd.zoom(image, 0.40)
+image = nd.zoom(image, 0.30)
 template = warp(image)
 
-image = register.smooth(image, 1.5)
-template = register.smooth(template, 1.5)
-
-spline = register.Register(
-    model='spline',
-    sampler='spline'
-    )
-
+image = register.smooth(image, 0.5)
+template = register.smooth(template, 0.5)
 
 # Estimate the affine warp field - use that to initialize the spline.
 
@@ -46,22 +40,24 @@ affine = register.Register(
     sampler='spline'
     )
 
+spline = register.Register(
+    model='spline',
+    sampler='spline'
+    )
 
 p, warp, img, error = affine.register(
     image, 
     template,
-    verbose=True,
     alpha=15,
-    plotCB=matplot.gridPlot
+    plotCB=plot.gridPlot
     )
 
 p, warp, img, error = spline.register(
     image, 
     template,
-    verbose=True,
     alpha=15,
     warp=warp,
-    plotCB=matplot.gridPlot
+    plotCB=plot.gridPlot
     )
 
-matplot.show()
+plot.show()
