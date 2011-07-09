@@ -68,22 +68,26 @@ def warpPlot(grid, warp, _warp):
 def gridPlot(image, template, warpedImage, grid, warp, title):
     
     plt.subplot(2,3,1)
+    plt.title('I')
     plt.imshow(image)
     plt.axis('off')
     plt.gray()
     
-    plt.title(title)
+    
     plt.subplot(2,3,2)
+    plt.title('T')
     plt.imshow(template)
     plt.axis('off')
     plt.gray()
     
     plt.subplot(2,3,3)
+    plt.title('W(I;p)')
     plt.imshow(warpedImage)
     plt.axis('off')
     plt.gray()
     
     plt.subplot(2,3,4)
+    plt.title('I-T')
     plt.imshow(template - image)
     plt.axis('off')
     plt.gray()
@@ -92,8 +96,10 @@ def gridPlot(image, template, warpedImage, grid, warp, title):
     plt.axis('off')
     coordPlt(warp)
     boundPlt(grid)
+    plt.title('W(x;p)')
     
     plt.subplot(2,3,6)
+    plt.title('I-W(I;p) {}'.format(title))
     plt.imshow(template - warpedImage)
     plt.axis('off')
     plt.gray()

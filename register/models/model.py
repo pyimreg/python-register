@@ -98,7 +98,7 @@ class shift(model):
         """
         Follows the derivations shown in:
         
-        Simon Baker and Iain Matthews. 2004. Lucas-Kanade 20 Years On: A 
+        S. Baker and I. Matthews. 2004. Lucas-Kanade 20 Years On: A 
         Unifying Framework. Int. J. Comput. Vision 56, 3 (February 2004).
          
         Evaluates the derivative of deformation model with respect to the 
@@ -150,7 +150,7 @@ class affine(model):
         """
         Follows the derivations shown in:
         
-        Simon Baker and Iain Matthews. 2004. Lucas-Kanade 20 Years On: A 
+        S. Baker and I. Matthews. 2004. Lucas-Kanade 20 Years On: A 
         Unifying Framework. Int. J. Comput. Vision 56, 3 (February 2004).
          
         Evaluates the derivative of deformation model with respect to the 

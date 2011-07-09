@@ -23,13 +23,13 @@ def warp(image):
     p = spline_model.identity
     
     #TODO: Understand the effect of parameter magnitude:
-    p += np.random.rand(p.shape[0]) * 20
+    p += np.random.rand(p.shape[0]) * 50
     
     return p, spline_sampler.f(image, spline_model.warp(p)).reshape(image.shape)
 
 
 image = misc.lena()
-image = nd.zoom(image, 0.30)
+image = nd.zoom(image, 0.40)
 _p, template = warp(image)
 
 image = register.smooth(image, 1.5)
@@ -57,7 +57,7 @@ p, warp, img, error = affine.register(
 p, warp, img, error = spline.register(
     image, 
     template,
-    alpha=0.5,
+    alpha=15,
     warp=warp,
     verbose=True,
     plotCB=plot.gridPlot
