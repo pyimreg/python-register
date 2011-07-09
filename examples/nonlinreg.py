@@ -21,17 +21,19 @@ def warp(image):
     spline_sampler = sampler.spline(coords) 
     
     p = spline_model.identity
-    p += np.random.rand(p.shape[0]) * 35
     
-    return spline_sampler.f(image, spline_model.warp(p)).reshape(image.shape)
+    #TODO: Understand the effect of parameter magnitude:
+    p += np.random.rand(p.shape[0]) * 20
+    
+    return p, spline_sampler.f(image, spline_model.warp(p)).reshape(image.shape)
 
 
 image = misc.lena()
 image = nd.zoom(image, 0.30)
-template = warp(image)
+_p, template = warp(image)
 
-image = register.smooth(image, 0.5)
-template = register.smooth(template, 0.5)
+image = register.smooth(image, 1.5)
+template = register.smooth(template, 1.5)
 
 # Estimate the affine warp field - use that to initialize the spline.
 
@@ -48,15 +50,16 @@ spline = register.Register(
 p, warp, img, error = affine.register(
     image, 
     template,
-    alpha=15,
+    alpha=10,
     plotCB=plot.gridPlot
     )
 
 p, warp, img, error = spline.register(
     image, 
     template,
-    alpha=15,
+    alpha=0.5,
     warp=warp,
+    verbose=True,
     plotCB=plot.gridPlot
     )
 

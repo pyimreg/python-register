@@ -2,9 +2,24 @@
 
 import matplotlib.pyplot as plt
 
+params = {'axes.labelsize': 10,
+          'axes.titlesize': 10,
+          'figure.titlesize': 12,
+          'font.size': 10,
+          'font.weight':'normal',
+          'text.fontsize': 10,
+          'axes.fontsize': 10,
+          'legend.fontsize': 11,
+          'xtick.labelsize': 8,
+          'ytick.labelsize': 8,
+          'figure.figsize': (12,6),
+          'figure.facecolor': 'w',
+          }
+
+plt.rcParams.update(params);
+
 def show():
     plt.show()
-
 
 def coordPlt(grid, buffer=10, step=20):
     """
@@ -50,19 +65,19 @@ def warpPlot(grid, warp, _warp):
     boundPlt(grid)
     
     
-def gridPlot(image, template, warpedImage, grid, warp, itteration):    
-
+def gridPlot(image, template, warpedImage, grid, warp, title):
+    
     plt.subplot(2,3,1)
     plt.imshow(image)
     plt.axis('off')
     plt.gray()
     
+    plt.title(title)
     plt.subplot(2,3,2)
     plt.imshow(template)
     plt.axis('off')
     plt.gray()
     
-    plt.title('itt {0}'.format(itteration))
     plt.subplot(2,3,3)
     plt.imshow(warpedImage)
     plt.axis('off')

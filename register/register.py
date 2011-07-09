@@ -107,10 +107,12 @@ class Register(object):
             # Evaluate the error metric.
             e = metric.error(warpedImage, template)
             
-            error.append(e.sum())
+            error.append( np.abs(e).sum() )
             
             if (step > 1):
+                
                 if ( error[-1] < error[-2]):
+                
                     scale /= alpha
                     lastP = p
                     
@@ -120,8 +122,8 @@ class Register(object):
                                warpedImage, 
                                coords.grid,
                                warp, 
-                               step)
-                    
+                               '{}:{}'.format(model.MODEL, step)
+                               )
                 else:
                     error = error[0:-1]
                     p = lastP
@@ -130,7 +132,7 @@ class Register(object):
                     
                     if badSteps > MAX_BAD:
                         if verbose:
-                            print ('Optimization break, maximum number' 
+                            print ('Optimization break, maximum number ' 
                                    'of bad iterations exceeded.')
                         break
                     
