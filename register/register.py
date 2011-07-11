@@ -30,7 +30,7 @@ MAX_ITER = 200
 MAX_BAD = 20
 
 
-optStep = collections.namedtuple('optStep', 'e error p deltaP')
+optStep = collections.namedtuple('optStep', 'error p deltaP')
 
 
 def smooth(image, variance):
@@ -138,13 +138,14 @@ class register(object):
             p = model.estimate(warp)
             
         p = model.identity if p is None else p
-        
         deltaP = np.zeros_like(p)
         
         search = []
         alpha = 1e-4
+        decreasing = True
+        badSteps = 0
         
-        for step in range(0,MAX_ITER):
+        for itteration in range(0,MAX_ITER):
             
             # Compute the warp field (warp field is the inverse warp)
             warp = model.warp(p)
@@ -155,15 +156,14 @@ class register(object):
             # Evaluate the error metric.
             e = metric.error(warpedImage, template)
             
-            searchStep = optStep(e=e,
-                                 error=np.abs(e).sum(),
+            searchStep = optStep(error=np.abs(e).sum(),
                                  p=p,
                                  deltaP=deltaP,
                                 )
             
-            if (step > 1):
+            if (len(search) > 1):
                 
-                decreasing = (searchStep.error < search[step-1].error)
+                decreasing = (searchStep.error < search[-1].error)
                 
                 alpha = self.__dampening(
                     alpha, 
@@ -172,22 +172,16 @@ class register(object):
                 
                 if decreasing: 
                     
-                    badSteps = 0
-                    
                     if plotCB is not None:
                         plotCB(image, 
                                template, 
                                warpedImage, 
                                coords.grid,
                                warp, 
-                               '{}:{}'.format(model.MODEL, step)
+                               '{}:{}'.format(model.MODEL, itteration)
                                )
                 else:
                     badSteps += 1
-                    
-                    # Restore the parameters from the previous iteration.
-                    p = search[-1].p
-                    e = search[-1].e
                     
                     if badSteps > MAX_BAD:
                         if verbose:
@@ -195,6 +189,10 @@ class register(object):
                                    'of bad iterations exceeded.')
                         break
                     
+                    # Restore the parameters from the previous iteration.
+                    p = search[-1].p
+                    continue
+                
             # Computes the derivative of the error with respect to model
             # parameters. 
             
@@ -202,7 +200,7 @@ class register(object):
             
             deltaP = self.__deltaP(
                 J, 
-                searchStep.e, 
+                e, 
                 alpha
                 )
            
@@ -212,7 +210,7 @@ class register(object):
             
             p += deltaP
             
-            if verbose:
+            if verbose and decreasing:
                 print ('{0}\n'
                        'iteration  : {1} \n'
                        'parameters : {2} \n'
@@ -220,7 +218,7 @@ class register(object):
                        '{0}\n'
                       ).format( 
                             '='*80,
-                            step,
+                            itteration,
                             ' '.join( '{:3.2f}'.format(param) for param in searchStep.p),
                             searchStep.error
                             )
