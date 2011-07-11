@@ -2,12 +2,11 @@ import scipy.ndimage as nd
 import scipy.misc as misc
 
 from register import register
-from register.visualize import matplot
+from register.visualize import plot
 
 image = misc.lena()
 image = nd.zoom(image, 0.20)
 
-#template = nd.shift(image, [20,20])
 template = nd.rotate(image, 20, reshape=False)
 
 image = register.smooth(image, 1.5)
@@ -21,7 +20,7 @@ affine = register.Register(
 p, warp, img, error = affine.register(
     image, 
     template,
-    plotCB=matplot.gridPlot
+    plotCB=plot.gridPlot
     )
 
-matplot.show()
+plot.show()
