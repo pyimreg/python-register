@@ -1,5 +1,7 @@
 """ A top level registration module """
 
+import collections
+
 import grid.coordinates as coordinates
 
 from samplers import sampler
@@ -27,6 +29,10 @@ MODELS = {
 MAX_ITER = 200
 MAX_BAD = 20
 
+
+optStep = collections.namedtuple('optStep', 'e error p deltaP')
+
+
 def smooth(image, variance):
     """
     A simple image smoothing method - using a Gaussian kernel.
@@ -43,28 +49,70 @@ def smooth(image, variance):
                     )
                   )
 
-
-class Register(object):
+class register(object):
     """
-    A generic registration class : implemented by following the algorithms 
-    described in xxx.
+    A registration class for estimating the deformation model parameters that 
+    best solve:
+    
+    || W(I;p) - T ||^2 
+    
+    where:
+        
+        W(x;p): is a deformation model (defined by the parameter set p). 
+        I     : is an input image (to be deformed).
+        T     : is a template (which is a deformed version of the input).
     """
     
     def __init__(self, 
                  model='shift',
                  metric='residual',
-                 sampler='nearest'
+                 sampler='nearest',
                 ):
         
         self.model = MODELS[model]
         self.metric = METRICS[metric]
         self.sampler = SAMPLERS[sampler]
     
+    def __deltaP(self, J, e, alpha):
+        """
+        Compute the parameter update.
+        
+        Refer to the Levernberg-Marquardt algorithm:
+            http://en.wikipedia.org/wiki/Levenberg-Marquardt_algorithm
+        
+        @param J: dE/dP the relationship between image differences and model 
+                  parameters.
+        @param e: the difference between the image and template.
+        @param alpha: the dampening factor. 
+        @return: deltaP, the set of model parameter updates. (p x 1).
+        """
+        
+        H = np.dot(J.T, J)
+        
+        H += np.diag(alpha*np.diagonal(H))
+        
+        return np.dot( np.linalg.inv(H), np.dot(J.T, e)) 
+    
+    def __dampening(self, alpha, decreasing):
+        """
+        Returns the dampening value.
+        
+        Refer to the Levernberg-Marquardt algorithm:
+            http://en.wikipedia.org/wiki/Levenberg-Marquardt_algorithm
+        
+        @param alpha: a dampening factor. 
+        @param decreasing: a boolean indicating that the error function is 
+        decreasing. 
+        @return: an adjusted dampening factor.
+        """
+        return alpha / 10. if decreasing else alpha * 10.
+    
     def register(self, 
                  image, 
                  template, 
                  p=None, 
                  warp=None,
+                 regularize=False,
                  alpha=10,
                  plotCB=None,
                  verbose=False):
@@ -91,10 +139,10 @@ class Register(object):
             
         p = model.identity if p is None else p
         
-        error = []
-        lastP = p
-        scale = 1e-4
-        badSteps = 0
+        deltaP = np.zeros_like(p)
+        
+        search = []
+        alpha = 1e-4
         
         for step in range(0,MAX_ITER):
             
@@ -107,14 +155,24 @@ class Register(object):
             # Evaluate the error metric.
             e = metric.error(warpedImage, template)
             
-            error.append( np.abs(e).sum() )
+            searchStep = optStep(e=e,
+                                 error=np.abs(e).sum(),
+                                 p=p,
+                                 deltaP=deltaP,
+                                )
             
             if (step > 1):
                 
-                if ( error[-1] < error[-2]):
+                decreasing = (searchStep.error < search[step-1].error)
                 
-                    scale /= alpha
-                    lastP = p
+                alpha = self.__dampening(
+                    alpha, 
+                    decreasing
+                    )
+                
+                if decreasing: 
+                    
+                    badSteps = 0
                     
                     if plotCB is not None:
                         plotCB(image, 
@@ -125,10 +183,11 @@ class Register(object):
                                '{}:{}'.format(model.MODEL, step)
                                )
                 else:
-                    error = error[0:-1]
-                    p = lastP
-                    scale *= alpha
                     badSteps += 1
+                    
+                    # Restore the parameters from the previous iteration.
+                    p = search[-1].p
+                    e = search[-1].e
                     
                     if badSteps > MAX_BAD:
                         if verbose:
@@ -141,12 +200,13 @@ class Register(object):
             
             J = metric.jacobian(model, warpedImage)
             
-            H = np.dot(J.T, J) 
-            
-            H += np.diag(scale*np.diagonal(H))
-            
-            deltaP = np.dot( np.linalg.inv(H), np.dot(J.T, e)) 
-                        
+            deltaP = self.__deltaP(
+                J, 
+                searchStep.e, 
+                alpha
+                )
+           
+            # Evaluate stopping condition:
             if np.dot(deltaP.T, deltaP) < 1e-4:
                 break
             
@@ -161,9 +221,12 @@ class Register(object):
                       ).format( 
                             '='*80,
                             step,
-                            ' '.join( '{:3.2f}'.format(param) for param in p),
-                            error[-1]
+                            ' '.join( '{:3.2f}'.format(param) for param in searchStep.p),
+                            searchStep.error
                             )
-                
-        return p, warp, warpedImage, error
+                      
+            # Append the search step to the search.
+            search.append(searchStep)
+              
+        return p, warp, warpedImage, search[-1].error
 
