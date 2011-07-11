@@ -1,6 +1,12 @@
 ''' (Debug utility) Defines a set of plotting callback functions '''
 
 import matplotlib.pyplot as plt
+import numpy as np
+
+IMAGE_ORIGIN=None
+IMAGE_COLORMAP='gray'
+IMAGE_VMIN=None
+IMAGE_VMAX=None
 
 params = {'axes.labelsize': 10,
           'axes.titlesize': 10,
@@ -16,9 +22,12 @@ params = {'axes.labelsize': 10,
           'figure.facecolor': 'w',
           }
 
+plt.ion()
 plt.rcParams.update(params);
 
 def show():
+    
+    plt.ioff()
     plt.show()
 
 def coordPlt(grid, buffer=10, step=20):
@@ -69,28 +78,41 @@ def gridPlot(image, template, warpedImage, grid, warp, title):
     
     plt.subplot(2,3,1)
     plt.title('I')
-    plt.imshow(image)
+    plt.imshow(image, 
+               origin=IMAGE_ORIGIN, 
+               cmap=IMAGE_COLORMAP,
+               vmin=IMAGE_VMIN,
+               vmax=IMAGE_VMAX
+              )
     plt.axis('off')
-    plt.gray()
-    
     
     plt.subplot(2,3,2)
     plt.title('T')
-    plt.imshow(template)
+    plt.imshow(template, 
+               origin=IMAGE_ORIGIN, 
+               cmap=IMAGE_COLORMAP,
+               vmin=IMAGE_VMIN,
+               vmax=IMAGE_VMAX
+               )
     plt.axis('off')
-    plt.gray()
     
     plt.subplot(2,3,3)
     plt.title('W(I;p)')
-    plt.imshow(warpedImage)
+    plt.imshow(warpedImage, 
+               origin=IMAGE_ORIGIN, 
+               cmap=IMAGE_COLORMAP,
+               vmin=IMAGE_VMIN,
+               vmax=IMAGE_VMAX
+               )
     plt.axis('off')
-    plt.gray()
     
     plt.subplot(2,3,4)
     plt.title('I-T')
-    plt.imshow(template - image)
+    plt.imshow(np.log(template - image),
+               origin=IMAGE_ORIGIN, 
+               cmap=IMAGE_COLORMAP
+              )
     plt.axis('off')
-    plt.gray()
     
     plt.subplot(2,3,5)
     plt.axis('off')
@@ -99,9 +121,11 @@ def gridPlot(image, template, warpedImage, grid, warp, title):
     plt.title('W(x;p)')
     
     plt.subplot(2,3,6)
-    plt.title('I-W(I;p) {}'.format(title))
-    plt.imshow(template - warpedImage)
+    plt.title('W(I;p) - T {}'.format(title))
+    plt.imshow(np.log(template - warpedImage), 
+               origin=IMAGE_ORIGIN, 
+               cmap=IMAGE_COLORMAP
+               )
     plt.axis('off')
-    plt.gray()
     
     plt.draw()
