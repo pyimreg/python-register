@@ -10,7 +10,7 @@ template = imread('data/smile.png')[:, :, 0]
 image = register.smooth(image, 2.5)
 template = register.smooth(template, 2.5)
 
-spline = register.Register(
+spline = register.register(
     model='spline',
     sampler='spline'
     )

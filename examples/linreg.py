@@ -12,7 +12,7 @@ template = nd.rotate(image, 20, reshape=False)
 image = register.smooth(image, 1.5)
 template = register.smooth(template, 1.5)
 
-affine = register.Register(
+affine = register.register(
     model='affine',
     sampler='nearest'
     )

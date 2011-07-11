@@ -36,12 +36,12 @@ template = register.smooth(template, 1.5)
 
 # Estimate the affine warp field - use that to initialize the spline.
 
-affine = register.Register(
+affine = register.register(
     model='affine',
     sampler='spline'
     )
 
-spline = register.Register(
+spline = register.register(
     model='spline',
     sampler='spline'
     )
