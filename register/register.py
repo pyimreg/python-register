@@ -54,13 +54,14 @@ class register(object):
     A registration class for estimating the deformation model parameters that 
     best solve:
     
-    || W(I;p) - T ||^2 
+    f( W(I;p), T ) 
     
     where:
-        
+        f     : is a similarity metric.
         W(x;p): is a deformation model (defined by the parameter set p). 
         I     : is an input image (to be deformed).
         T     : is a template (which is a deformed version of the input).
+        
     """
     
     def __init__(self, 
