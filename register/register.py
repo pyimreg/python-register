@@ -74,7 +74,7 @@ class register(object):
         self.metric = METRICS[metric]
         self.sampler = SAMPLERS[sampler]
     
-    def __deltaP(self, J, e, alpha):
+    def __deltaP(self, J, e, alpha, p=None):
         """
         Compute the parameter update.
         
@@ -85,6 +85,7 @@ class register(object):
                   parameters.
         @param e: the difference between the image and template.
         @param alpha: the dampening factor. 
+        @keyword p: the current parameter set.
         @return: deltaP, the set of model parameter updates. (p x 1).
         """
         
@@ -202,7 +203,8 @@ class register(object):
             deltaP = self.__deltaP(
                 J, 
                 e, 
-                alpha
+                alpha,
+                p=p
                 )
            
             # Evaluate stopping condition:
@@ -229,3 +231,39 @@ class register(object):
         
         return p, warp, warpedImage, searchStep.error
 
+
+
+class KybicRegister(register):
+
+    def __init__(self, 
+                 model='shift',
+                 metric='residual',
+                 sampler='nearest',
+                ):
+        
+        register.__init__(self.model, self.metric, self.sampler)
+    
+    def __deltaP(self, J, e, alpha):
+        """
+        Compute the parameter update.
+        """
+        
+        H = np.dot(J.T, J)
+        
+        H += np.diag(alpha*np.diagonal(H))
+        
+        return np.dot( np.linalg.inv(H), np.dot(J.T, e)) 
+    
+    def __dampening(self, alpha, decreasing):
+        """
+        Returns the dampening value.
+        
+        Refer to the Levernberg-Marquardt algorithm:
+            http://en.wikipedia.org/wiki/Levenberg-Marquardt_algorithm
+        
+        @param alpha: a dampening factor. 
+        @param decreasing: a boolean indicating that the error function is 
+        decreasing. 
+        @return: an adjusted dampening factor.
+        """
+        return alpha
