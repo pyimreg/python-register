@@ -11,7 +11,7 @@ from register import register
 
 def warp(image, p, model, sampler):
     """
-    Warps an image given a model a set of parameters.
+    Warps an image given a deformation model a set of parameters.
     
     @param image: an numpy ndarray.
     @param p: warp parameters.
@@ -35,12 +35,13 @@ def pytest_generate_tests(metafunc):
     """
     
     image = misc.lena()
-    image = nd.zoom(image, 0.25)
+    image = nd.zoom(image, 0.50)
     
     if metafunc.function is test_shift:
         
-        for p in np.array( [np.arange(-20.,21.), 
-                            np.arange(-20.,21.)] ).reshape(41,2):
+        for displacement in np.arange(-10.,10.):
+        
+            p = np.array([displacement, displacement])
             
             template = warp(
                 image, 
@@ -50,7 +51,7 @@ def pytest_generate_tests(metafunc):
                 )
             
             metafunc.addcall(
-                id='[dx={}, dy={}]'.format(
+                id='dx={}, dy={}'.format(
                     p[0], 
                     p[1]
                     ),
@@ -61,37 +62,72 @@ def pytest_generate_tests(metafunc):
                     )
                 )
     
+    if metafunc.function is test_affine:
+        
+        # test the displacement component
+        for displacement in np.arange(-10.,10.):
+            
+            p = np.array([0., 0., 0., 0., displacement, displacement])
+            
+            template = warp(
+                image, 
+                p, 
+                model.affine,
+                sampler.spline
+                )
+            
+            metafunc.addcall(
+                    id='dx={}, dy={}'.format(
+                        p[4], 
+                        p[5]
+                        ),
+                    funcargs=dict(
+                        image=image,
+                        template=template,
+                        p=p
+                        )
+                    )
+        
+    
 def test_shift(image, template, p):
     """
     Tests image registration using a shift deformation model.
     """
     
-    shift = register.Register(
+    shift = register.register(
         model='shift',
         sampler='spline'
         )
     
     _p, _warp, _img, _error = shift.register(
-        image, 
-        template
+        register.smooth(image, 0.5),
+        register.smooth(template, 0.5)
         )
     
-    assert np.allclose(p, _p, atol=1.0), \
+    assert np.allclose(p, _p, atol=0.5), \
         "Estimated p: {} not equal to p: {}".format(
             _p,
             p
             )
+
+
+def test_affine(image, template, p):
+    """
+    Tests image registration using a shift deformation model.
+    """
     
-#def test_affineRegister():
-#        
-#    affine = register.lsqRegister(
-#        model='affine',
-#        sampler='nearest'
-#        )
-#    
-#    p, img, error = affine.register(
-#        image, 
-#        template,
-#        verbose=True,
-#        plotCB=matplot.simplePlot
-#        )
+    affine = register.register(
+        model='affine',
+        sampler='spline'
+        )
+    
+    _p, _warp, _img, _error = affine.register(
+        register.smooth(image, 0.5),
+        register.smooth(template, 0.5)
+        )
+    
+    assert np.allclose(p, _p, atol=0.5), \
+        "Estimated p: {} not equal to p: {}".format(
+            _p,
+            p
+            )

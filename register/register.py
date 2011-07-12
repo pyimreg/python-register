@@ -151,7 +151,7 @@ class register(object):
             warp = model.warp(p)
             
             # Sample the image using the inverse warp.
-            warpedImage = sampler.f(image, warp).reshape(image.shape)
+            warpedImage = smooth(sampler.f(image, warp).reshape(image.shape), 0.5)
             
             # Evaluate the error metric.
             e = metric.error(warpedImage, template)
@@ -225,6 +225,6 @@ class register(object):
                       
             # Append the search step to the search.
             search.append(searchStep)
-              
-        return p, warp, warpedImage, search[-1].error
+        
+        return p, warp, warpedImage, searchStep.error
 

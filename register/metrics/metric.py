@@ -2,7 +2,6 @@
 
 import numpy as np
 
-
 class metric(object):
     """
     Abstract similarity metric.
@@ -50,7 +49,10 @@ class residual(metric):
     
     DESCRIPTION="""
         The residual which is computed as the difference between the
-        deformed image an the template (I(W(x;p)) - T)
+        deformed image an the template:
+        
+            (I(W(x;p)) - T)
+        
         """
     
     def __init__(self):
@@ -71,7 +73,9 @@ class residual(metric):
         """
         
         grad = np.gradient(warpedImage)
+        
         dIx = grad[1].flatten()
+        
         dIy = grad[0].flatten()
         
         dPx, dPy = model.jacobian()
