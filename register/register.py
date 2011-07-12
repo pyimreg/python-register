@@ -30,8 +30,6 @@ MAX_ITER = 200
 MAX_BAD = 20
 
 
-optStep = collections.namedtuple('optStep', 'error p deltaP')
-
 
 def smooth(image, variance):
     """
@@ -63,6 +61,8 @@ class register(object):
         T     : is a template (which is a deformed version of the input).
         
     """
+    
+    optStep = collections.namedtuple('optStep', 'error p deltaP')
     
     def __init__(self, 
                  model='shift',
@@ -158,10 +158,10 @@ class register(object):
             # Evaluate the error metric.
             e = metric.error(warpedImage, template)
             
-            searchStep = optStep(error=np.abs(e).sum(),
-                                 p=p,
-                                 deltaP=deltaP,
-                                )
+            searchStep = self.optStep(error=np.abs(e).sum(),
+                                      p=p,
+                                      deltaP=deltaP,
+                                      )
             
             if (len(search) > 1):
                 
