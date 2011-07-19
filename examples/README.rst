@@ -9,7 +9,7 @@ Demonstrates uses of the sci-kit:
   
   + linreg
   
-  Uses an affine deformation model to deform the template image and then (attempts to) minimize:
+  Uses an affine deformation model to deform the image and then (attempts to) minimize:
 
   || T - W(F;p) ||
   
@@ -21,7 +21,7 @@ Demonstrates uses of the sci-kit:
   
   + nonlinreg
   
-  Uses an cubic spline deformation model to defrom the template image and then (attempts to) minimize:
+  Uses an cubic spline deformation model to defrom the image and then (attempts to) minimize:
   
   || T - W(F;p) || + a*||p||
   
