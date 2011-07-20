@@ -108,7 +108,7 @@ def gridPlot(image, template, warpedImage, grid, warp, title):
     
     plt.subplot(2,3,4)
     plt.title('I-T')
-    plt.imshow(np.log(template - image),
+    plt.imshow(template - image,
                origin=IMAGE_ORIGIN, 
                cmap=IMAGE_COLORMAP
               )
@@ -122,7 +122,7 @@ def gridPlot(image, template, warpedImage, grid, warp, title):
     
     plt.subplot(2,3,6)
     plt.title('W(I;p) - T {}'.format(title))
-    plt.imshow(np.log(template - warpedImage), 
+    plt.imshow(template - warpedImage, 
                origin=IMAGE_ORIGIN, 
                cmap=IMAGE_COLORMAP
                )
