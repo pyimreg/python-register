@@ -9,9 +9,8 @@ Demonstrates uses of the sci-kit:
   
   + linreg
   
-  Uses an affine deformation model to deform the lenna image and then uses
-  powells method to minimize the following cost:
-  
+  Uses an affine deformation model to deform the image and then (attempts to) minimize:
+
   || T - W(F;p) ||
   
   where:
@@ -22,8 +21,7 @@ Demonstrates uses of the sci-kit:
   
   + nonlinreg
   
-  Uses an cubic spline deformation model to defrom the lenna image and then 
-  uses powells method to minimize the following cose:
+  Uses an cubic spline deformation model to defrom the image and then (attempts to) minimize:
   
   || T - W(F;p) || + a*||p||
   

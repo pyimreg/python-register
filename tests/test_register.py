@@ -113,7 +113,7 @@ def test_shift(image, template, p):
 
 def test_affine(image, template, p):
     """
-    Tests image registration using a shift deformation model.
+    Tests image registration using a affine deformation model.
     """
     
     affine = register.register(
