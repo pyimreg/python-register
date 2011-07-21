@@ -5,7 +5,7 @@ About
 
 python-register is a python module for image registration built ontop of scipy and numpy.
 
-It is currently maintained by Nathan Faggian.
+It is currently maintained by Nathan Faggian & Stefan Van Der Walt.
 
 Important links
 ===============
