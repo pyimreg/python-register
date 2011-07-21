@@ -10,14 +10,14 @@ template = imread('data/smile.png')[:, :, 0]
 image = register.smooth(image, 2.5)
 template = register.smooth(template, 2.5)
 
-spline = register.register(
+spline = register.Register(
     model='spline',
     sampler='spline'
     )
 
 # Turn that frown upside down.
 p, warp, img, error = spline.register(
-    image, 
+    image,
     template,
     alpha=15,
     verbose=True,
