@@ -121,9 +121,9 @@ def gridPlot(image, template, warpedImage, grid, warp, title):
     plt.title('W(x;p)')
 
     plt.subplot(2,3,6)
-    plt.title('W(I;p) - T {}'.format(title))
-    plt.imshow(template - warpedImage,
-               origin=IMAGE_ORIGIN,
+    plt.title('W(I;p) - T {0}'.format(title))
+    plt.imshow(template - warpedImage, 
+               origin=IMAGE_ORIGIN, 
                cmap=IMAGE_COLORMAP
                )
     plt.axis('off')
