@@ -1,0 +1,6 @@
+- Nathan Faggian
+  Project coordination, methods development.
+
+- Stefan Van Der Walt
+  Project coordination, methods development.
+

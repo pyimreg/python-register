@@ -1,0 +1,10 @@
+Build Requirements
+------------------
+* `Python >= 2.7 <http://python.org>`_
+* `Numpy >= 1.5 <http://numpy.scipy.org/>`_
+* `Scipy >- 0.9 <http://www.scipy.org/>'_
+
+Usage Requirements
+------------------
+* `Scipy <http://www.scipy.org/>`_
+  
