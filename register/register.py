@@ -180,7 +180,7 @@ class register(object):
                                warpedImage, 
                                coords.grid,
                                warp, 
-                               '{}:{}'.format(model.MODEL, itteration)
+                               '{0}:{1}'.format(model.MODEL, itteration)
                                )
                 else:
                     badSteps += 1
@@ -222,7 +222,7 @@ class register(object):
                       ).format( 
                             '='*80,
                             itteration,
-                            ' '.join( '{:3.2f}'.format(param) for param in searchStep.p),
+                            ' '.join( '{0:3.2f}'.format(param) for param in searchStep.p),
                             searchStep.error
                             )
                       
