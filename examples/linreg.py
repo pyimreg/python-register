@@ -1,8 +1,12 @@
 import scipy.ndimage as nd
 import scipy.misc as misc
 
-from register import register
+from register.models import model
+from register.metrics import metric
+from register.samplers import sampler
+
 from register.visualize import plot
+from register import register
 
 image = misc.lena()
 image = nd.zoom(image, 0.20)
@@ -13,9 +17,10 @@ image = register.smooth(image, 1.5)
 template = register.smooth(template, 1.5)
 
 affine = register.Register(
-    model='affine',
-    sampler='nearest'
-    )
+    model.Affine,
+    metric.Residual,
+    sampler.Nearest
+     )
 
 p, warp, img, error = affine.register(
     image,

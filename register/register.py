@@ -1,35 +1,10 @@
 """ A top level registration module """
 
 import collections
-
-import grid.coordinates as coordinates
-
-from samplers import sampler
-from models import model
-from metrics import metric
-
 import numpy as np
 import scipy.ndimage as nd
 
-SAMPLERS = {
-    'spline': sampler.Spline,
-    'nearest': sampler.Nearest
-           }
-
-METRICS = {
-    'residual': metric.Residual,
-          }
-
-MODELS = {
-    'shift': model.Shift,
-    'affine': model.Affine,
-    'spline': model.Spline
-         }
-
-MAX_ITER = 200
-MAX_BAD = 20
-
-
+import grid.coordinates as coordinates
 
 def smooth(image, variance):
     """
@@ -61,18 +36,21 @@ class Register(object):
         T     : is a template (which is a deformed version of the input).
 
     """
-
+    
+    # The optimization step cache.
     optStep = collections.namedtuple('optStep', 'error p deltaP')
+    
+    # The maximum number of optimization iterations. 
+    MAX_ITER = 200
+    
+    # The maximum numver of bad (incorrect) optimization steps.
+    MAX_BAD = 20
+    
+    def __init__(self, model, metric, sampler):
 
-    def __init__(self,
-                 model='shift',
-                 metric='residual',
-                 sampler='nearest',
-                ):
-
-        self.model = MODELS[model]
-        self.metric = METRICS[metric]
-        self.sampler = SAMPLERS[sampler]
+        self.model = model
+        self.metric = metric
+        self.sampler = sampler
 
     def __deltaP(self, J, e, alpha, p=None):
         """
@@ -126,7 +104,7 @@ class Register(object):
         @param target: a target image, numpy ndarray.
         @keyword mask: an optional parameter mask.
         """
-
+        
         coords = coordinates.Coordinates()
         coords.form(image.shape)
 
@@ -147,7 +125,7 @@ class Register(object):
         decreasing = True
         badSteps = 0
 
-        for itteration in range(0,MAX_ITER):
+        for itteration in range(0,self.MAX_ITER):
 
             # Compute the warp field (warp field is the inverse warp)
             warp = model.warp(p)
@@ -185,7 +163,7 @@ class Register(object):
                 else:
                     badSteps += 1
 
-                    if badSteps > MAX_BAD:
+                    if badSteps > self.MAX_BAD:
                         if verbose:
                             print ('Optimization break, maximum number '
                                    'of bad iterations exceeded.')
@@ -232,18 +210,18 @@ class Register(object):
         return p, warp, warpedImage, searchStep.error
 
 
-
 class KybicRegister(Register):
+    """
+    Variant of LM algorithm as described by:
+      
+    Kybic, J. and Unser, M. (2003). Fast parametric elastic image
+        registration. IEEE Transactions on Image Processing, 12(11), 1427-1442.
+    """
+    
+    def __init__(self, model, metric, sampler):
+        Register.__init__(model, metric, sampler)
 
-    def __init__(self,
-                 model='shift',
-                 metric='residual',
-                 sampler='nearest',
-                ):
-
-        Register.__init__(self.model, self.metric, self.sampler)
-
-    def __deltaP(self, J, e, alpha):
+    def __deltaP(self, J, e, alpha, p):
         """
         Compute the parameter update.
         """
@@ -252,15 +230,12 @@ class KybicRegister(Register):
 
         H += np.diag(alpha*np.diagonal(H))
 
-        return np.dot( np.linalg.inv(H), np.dot(J.T, e))
+        return np.dot( np.linalg.inv(H), np.dot(J.T, e)) - alpha*p
 
     def __dampening(self, alpha, decreasing):
         """
-        Returns the dampening value.
-
-        Refer to the Levernberg-Marquardt algorithm:
-            http://en.wikipedia.org/wiki/Levenberg-Marquardt_algorithm
-
+        Returns the dampening value, without adjustment.
+    
         @param alpha: a dampening factor.
         @param decreasing: a boolean indicating that the error function is
         decreasing.

@@ -4,8 +4,10 @@ import scipy.ndimage as nd
 import scipy.misc as misc
 
 import register.grid.coordinates as coordinates
-import register.samplers.sampler as sampler
+
 import register.models.model as model
+import register.metrics.metric as metric
+import register.samplers.sampler as sampler
 
 from register import register
 
@@ -95,10 +97,10 @@ def test_shift(image, template, p):
     """
 
     shift = register.Register(
-        model='shift',
-        sampler='spline'
+        model.Shift,
+        metric.Residual,
+        sampler.Spline
         )
-
     _p, _warp, _img, _error = shift.register(
         register.smooth(image, 0.5),
         register.smooth(template, 0.5)
@@ -117,8 +119,9 @@ def test_affine(image, template, p):
     """
 
     affine = register.Register(
-        model='affine',
-        sampler='spline'
+        model.Affine,
+        metric.Residual,
+        sampler.Spline
         )
 
     _p, _warp, _img, _error = affine.register(
