@@ -4,3 +4,5 @@
 - Stefan Van Der Walt
   Project coordination, methods development.
 
+- Riaan Van Den Dool
+  Methods development
