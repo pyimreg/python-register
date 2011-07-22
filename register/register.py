@@ -157,13 +157,8 @@ class Register(object):
                                template,
                                warpedImage,
                                coords.grid,
-<<<<<<< HEAD
                                warp, 
                                '{0}:{1}'.format(model.MODEL, itteration)
-=======
-                               warp,
-                               '{}:{}'.format(model.MODEL, itteration)
->>>>>>> fc7455def83b7a9a417c6741775a9fd70bb4378a
                                )
                 else:
                     badSteps += 1
