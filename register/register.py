@@ -128,9 +128,8 @@ class Register(object):
                  image,
                  template,
                  p=None,
+                 alpha=None,
                  warp=None,
-                 regularize=False,
-                 alpha=10,
                  plotCB=None,
                  verbose=False):
         """
@@ -159,7 +158,7 @@ class Register(object):
         deltaP = np.zeros_like(p)
 
         search = []
-        alpha = 1e-4
+        alpha = alpha if alpha is not None else 1e-4
         decreasing = True
         badSteps = 0
 

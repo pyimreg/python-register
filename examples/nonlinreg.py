@@ -33,7 +33,7 @@ def warp(image):
 
 
 image = misc.lena()
-image = nd.zoom(image, 0.20)
+image = nd.zoom(image, 0.30)
 template = warp(image)
 
 # Coerce the image data into RegisterData.
@@ -41,8 +41,8 @@ image = register.RegisterData(image)
 template = register.RegisterData(template)
 
 # Smooth the template and image.
-image.smooth(1.5)
-template.smooth(1.5)
+image.smooth(0.5)
+template.smooth(0.5)
 
 # Form the affine registration instance.
 affine = register.Register(
@@ -61,7 +61,6 @@ spline = register.Register(
 p, warp, img, error = affine.register(
     image,
     template,
-    alpha=10,
     plotCB=plot.gridPlot
     )
 
@@ -70,7 +69,6 @@ p, warp, img, error = affine.register(
 p, warp, img, error = spline.register(
     image,
     template,
-    alpha=10,
     warp=warp,
     verbose=True,
     plotCB=plot.gridPlot
