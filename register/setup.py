@@ -6,7 +6,7 @@ def configuration(parent_package='', top_path=None):
 
     config = Configuration('register', parent_package, top_path)
 
-    config.add_subpackage('grid')
+    config.add_subpackage('models')
     config.add_subpackage('metrics')
     config.add_subpackage('samplers')
     config.add_subpackage('visualize')
