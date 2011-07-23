@@ -171,7 +171,7 @@ class Register(object):
             # Sample the image using the inverse warp.
             warpedImage = _smooth(
                 sampler.f(image.data, warp).reshape(image.data.shape),
-                1.0
+                0.5
                 )
             
             # Evaluate the error metric.

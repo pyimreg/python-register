@@ -104,7 +104,11 @@ def test_shift(image, template, p):
     # Coerce the image data into RegisterData.
     image = register.RegisterData(image)
     template = register.RegisterData(template)
-
+    
+    # Smooth
+    image.smooth(0.5)
+    template.smooth(0.5)
+    
     _p, _warp, _img, _error = shift.register(
         image,
         template
@@ -131,7 +135,11 @@ def test_affine(image, template, p):
     # Coerce the image data into RegisterData.
     image = register.RegisterData(image)
     template = register.RegisterData(template)
-
+    
+    # Smooth
+    image.smooth(0.5)
+    template.smooth(0.5)
+    
     _p, _warp, _img, _error = affine.register(
         image,
         template
