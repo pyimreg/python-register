@@ -4,9 +4,8 @@ import collections
 import numpy as np
 import scipy.ndimage as nd
 
-import grid.coordinates as coordinates
 
-def smooth(image, variance):
+def _smooth(image, variance):
     """
     A simple image smoothing method - using a Gaussian kernel.
     @param image: the input image, a numpy ndarray object.
@@ -21,6 +20,44 @@ def smooth(image, variance):
                                )
                     )
                   )
+
+
+class Coordinates(object):
+    """
+    A container for grid coordinates.
+    """
+    def __init__(self, domain, spacing=None):
+    
+        self.domain = domain
+        self.tensor = np.mgrid[0.:domain[1], 0.:domain[3]]
+        
+        self.homogenous = np.zeros((3,self.tensor[0].size))
+        self.homogenous[0] = self.tensor[1].flatten()
+        self.homogenous[1] = self.tensor[0].flatten()
+        self.homogenous[2] = 1.0
+    
+    
+class RegisterData(object):
+    """
+    A container for registration data.
+    """
+    def __init__(self, data, coords=None):
+
+        self.data = data
+        
+        if not coords:
+            self.coords = Coordinates(
+                [0, data.shape[0], 0, data.shape[1]]
+                )
+        else:
+            self.coords = coords
+    
+    def smooth(self, variance):
+        """
+        A simple image smoothing method - using a Gaussian kernel.
+        @param variance: the width of the smoothing kernel.
+        """
+        self.data = _smooth(self.data, variance)
 
 class Register(object):
     """
@@ -105,13 +142,14 @@ class Register(object):
         @keyword mask: an optional parameter mask.
         """
         
-        coords = coordinates.Coordinates()
-        coords.form(image.shape)
-
-        model = self.model(coords)
+        #TODO: Determine the common coordinate system.
+        # if image.coords != template.coords:
+        #     raise ValueError('Coordinate systems differ.')
+            
+        # Initialize the models, metric and sampler.
+        model = self.model(image.coords)
+        sampler = self.sampler(image.coords)
         metric = self.metric()
-        sampler = self.sampler(coords)
-
 
         if warp is not None:
             # Estimate p, using the warp field.
@@ -129,12 +167,15 @@ class Register(object):
 
             # Compute the warp field (warp field is the inverse warp)
             warp = model.warp(p)
-
+            
             # Sample the image using the inverse warp.
-            warpedImage = smooth(sampler.f(image, warp).reshape(image.shape), 0.5)
-
+            warpedImage = _smooth(
+                sampler.f(image.data, warp).reshape(image.data.shape),
+                1.0
+                )
+            
             # Evaluate the error metric.
-            e = metric.error(warpedImage, template)
+            e = metric.error(warpedImage, template.data)
 
             searchStep = self.optStep(error=np.abs(e).sum(),
                                       p=p,
@@ -153,10 +194,10 @@ class Register(object):
                 if decreasing:
 
                     if plotCB is not None:
-                        plotCB(image,
-                               template,
+                        plotCB(image.data,
+                               template.data,
                                warpedImage,
-                               coords.grid,
+                               image.coords.tensor,
                                warp, 
                                '{0}:{1}'.format(model.MODEL, itteration)
                                )
@@ -219,7 +260,7 @@ class KybicRegister(Register):
     """
     
     def __init__(self, model, metric, sampler):
-        Register.__init__(model, metric, sampler)
+        Register.__init__(self, model, metric, sampler)
 
     def __deltaP(self, J, e, alpha, p):
         """

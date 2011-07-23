@@ -36,8 +36,8 @@ class Sampler(object):
         if self.coordinates is None:
             raise ValueError('Appropriately defined coordinates not provided.')
 
-        i = self.coordinates.grid[0] + warp[0]
-        j = self.coordinates.grid[1] + warp[1]
+        i = self.coordinates.tensor[0] + warp[0]
+        j = self.coordinates.tensor[1] + warp[1]
 
         packedCoords = (i.reshape(1,i.size),
                         j.reshape(1,j.size))

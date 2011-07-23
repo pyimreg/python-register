@@ -3,8 +3,6 @@ import numpy as np
 import scipy.ndimage as nd
 import scipy.misc as misc
 
-import register.grid.coordinates as coordinates
-
 import register.models.model as model
 import register.metrics.metric as metric
 import register.samplers.sampler as sampler
@@ -20,9 +18,10 @@ def warp(image, p, model, sampler):
     @param model: a deformation model.
 
     """
-    coords = coordinates.Coordinates()
-    coords.form(image.shape)
-
+    coords = register.Coordinates(
+        [0, image.shape[0], 0, image.shape[1]]
+        )
+    
     model = model(coords)
     sampler = sampler(coords)
 
@@ -101,9 +100,14 @@ def test_shift(image, template, p):
         metric.Residual,
         sampler.Spline
         )
+
+    # Coerce the image data into RegisterData.
+    image = register.RegisterData(image)
+    template = register.RegisterData(template)
+
     _p, _warp, _img, _error = shift.register(
-        register.smooth(image, 0.5),
-        register.smooth(template, 0.5)
+        image,
+        template
         )
 
     assert np.allclose(p, _p, atol=0.5), \
@@ -124,9 +128,13 @@ def test_affine(image, template, p):
         sampler.Spline
         )
 
+    # Coerce the image data into RegisterData.
+    image = register.RegisterData(image)
+    template = register.RegisterData(template)
+
     _p, _warp, _img, _error = affine.register(
-        register.smooth(image, 0.5),
-        register.smooth(template, 0.5)
+        image,
+        template
         )
 
     assert np.allclose(p, _p, atol=0.5), \

@@ -38,7 +38,7 @@ class Model(object):
 
         coords = self.transform(parameters)
 
-        warp = np.zeros_like(self.coordinates.grid)
+        warp = np.zeros_like(self.coordinates.tensor)
 
         warp[0] = coords[1].reshape(warp[0].shape)
         warp[1] = coords[0].reshape(warp[1].shape)
@@ -103,8 +103,8 @@ class Shift(Model):
         coordinates.
         """
 
-        dx = np.zeros((self.coordinates.grid[0].size, 2))
-        dy = np.zeros((self.coordinates.grid[0].size, 2))
+        dx = np.zeros((self.coordinates.tensor[0].size, 2))
+        dy = np.zeros((self.coordinates.tensor[0].size, 2))
 
         dx[:,0] = 1
         dy[:,1] = 1
@@ -155,15 +155,15 @@ class Affine(Model):
         coordinates.
         """
 
-        dx = np.zeros((self.coordinates.grid[0].size, 6))
-        dy = np.zeros((self.coordinates.grid[0].size, 6))
+        dx = np.zeros((self.coordinates.tensor[0].size, 6))
+        dy = np.zeros((self.coordinates.tensor[0].size, 6))
 
-        dx[:,0] = self.coordinates.grid[1].flatten()
-        dx[:,2] = self.coordinates.grid[0].flatten()
+        dx[:,0] = self.coordinates.tensor[1].flatten()
+        dx[:,2] = self.coordinates.tensor[0].flatten()
         dx[:,4] = 1.0
 
-        dy[:,1] = self.coordinates.grid[1].flatten()
-        dy[:,3] = self.coordinates.grid[0].flatten()
+        dy[:,1] = self.coordinates.tensor[1].flatten()
+        dy[:,3] = self.coordinates.tensor[0].flatten()
         dy[:,5] = 1.0
 
         return (dx, dy)
@@ -207,8 +207,8 @@ class Spline(Model):
         @param division: number of spline knots.
         """
 
-        shape = self.coordinates.grid[0].shape
-        grid = self.coordinates.grid
+        shape = self.coordinates.tensor[0].shape
+        grid = self.coordinates.tensor
 
         spacing = shape[1] / divisions
         xKnots = shape[1] / spacing
@@ -244,9 +244,9 @@ class Spline(Model):
         return np.hstack(
             (
              np.dot(np.linalg.pinv(self.basis),
-                    (self.coordinates.grid[0] - warp[0]).flatten()),
+                    (self.coordinates.tensor[0] - warp[0]).flatten()),
              np.dot(np.linalg.pinv(self.basis),
-                    (self.coordinates.grid[1] - warp[1]).flatten()),
+                    (self.coordinates.tensor[1] - warp[1]).flatten()),
             )
            ).T
 
@@ -260,7 +260,7 @@ class Spline(Model):
         """
 
         dwarp = self.transform(parameters)
-        return self.coordinates.grid - dwarp
+        return self.coordinates.tensor - dwarp
 
     def transform(self, p):
         """
@@ -274,7 +274,7 @@ class Spline(Model):
         px = np.array(p[0:self.numberOfParameters])
         py = np.array(p[self.numberOfParameters::])
 
-        shape = self.coordinates.grid[0].shape
+        shape = self.coordinates.tensor[0].shape
 
         return np.array( [ np.dot(self.basis, py).reshape(shape),
                            np.dot(self.basis, px).reshape(shape)
@@ -292,10 +292,10 @@ class Spline(Model):
         coordinates.
         """
 
-        dx = np.zeros((self.coordinates.grid[0].size,
+        dx = np.zeros((self.coordinates.tensor[0].size,
                        2*self.numberOfParameters))
 
-        dy = np.zeros((self.coordinates.grid[0].size,
+        dy = np.zeros((self.coordinates.tensor[0].size,
                        2*self.numberOfParameters))
 
         dx[:, 0:self.numberOfParameters] = self.basis
