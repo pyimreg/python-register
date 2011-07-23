@@ -1,20 +1,15 @@
-from matplotlib.pyplot import imread
-
 """ 
 Estimates a linear warp field, between two images - 
 
-    The target is a "smile" the image is a frown and the goal is to estimate
-    the warp field between them.
+The target is a "smile" the image is a frown and the goal is to estimate
+the warp field between them.
     
-    "Turn that frown upside down"
-    
-    The deformation is not manufactured by the spline model, and is a good
-    (realistic) test of the spline deformation model.
+The deformation is not manufactured by the spline model, and is a good
+(realistic) test of the spline deformation model.
     
 """
 
-import scipy.ndimage as nd
-import scipy.misc as misc
+from matplotlib.pyplot import imread
 
 from register.models import model
 from register.metrics import metric
