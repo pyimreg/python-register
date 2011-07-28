@@ -27,7 +27,7 @@ def warp(image):
 
     p = spline_model.identity
     #TODO: Understand the effect of parameter magnitude:
-    p += np.random.rand(p.shape[0]) * 50
+    p += np.random.rand(p.shape[0]) * 100 - 50
     
     return spline_sampler.f(image, spline_model.warp(p)).reshape(image.shape)
 
