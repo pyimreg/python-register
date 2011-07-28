@@ -160,5 +160,5 @@ class Spline(Sampler):
             array,
             warp,
             order=2,
-            cval=0.0
+            mode='nearest'
             ).flatten()
