@@ -48,13 +48,13 @@ template.smooth(0.5)
 affine = register.Register(
     model.Affine,
     metric.Residual,
-    sampler.Nearest
+    sampler.CubicConvolution
     )
 # Form the spline registration instance.
 spline = register.Register(
     model.Spline,
     metric.Residual,
-    sampler.Spline
+    sampler.CubicConvolution
     )
 
 # Compute an affine registration between the template and image.

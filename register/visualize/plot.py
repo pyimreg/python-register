@@ -52,16 +52,12 @@ def coordPlt(grid, buffer=10, step=5):
     plt.axis('off')
     plt.grid()
 
-def featurePlt(image, template):
+def featurePlt(features):
     
-    for id, point in image.features['points'].items():
-        if id in template.features['points']:
-            
-            cpoint = template.features['points'][id]
-            
-            plt.plot(point[0], point[1], 'or')
-            plt.plot(cpoint[0], cpoint[1], 'og')
-            
+    for id, point in features['points'].items():
+        plt.plot(point[0], point[1], 'or')
+
+
 def boundPlt(grid):
 
     xmin = grid[1].min()
@@ -83,6 +79,43 @@ def warpPlot(grid, warp, _warp):
     coordPlt(_warp)
     boundPlt(grid)
 
+
+def featurePlot(image, template, warpedImage):
+    
+    plt.subplot(1,3,1)
+    plt.title('I')
+    plt.imshow(image.data,
+               origin=IMAGE_ORIGIN,
+               cmap=IMAGE_COLORMAP,
+               vmin=IMAGE_VMIN,
+               vmax=IMAGE_VMAX
+              )
+    plt.axis('off')
+    featurePlt(image.features)
+    
+    
+    plt.subplot(1,3,2)
+    plt.title('T')
+    plt.imshow(template.data,
+               origin=IMAGE_ORIGIN,
+               cmap=IMAGE_COLORMAP,
+               vmin=IMAGE_VMIN,
+               vmax=IMAGE_VMAX
+               )
+    plt.axis('off')
+    featurePlt(template.features)
+    
+    
+    plt.subplot(1,3,3)
+    plt.title('W(I;p)')
+    plt.imshow(warpedImage,
+               origin=IMAGE_ORIGIN,
+               cmap=IMAGE_COLORMAP,
+               vmin=IMAGE_VMIN,
+               vmax=IMAGE_VMAX
+               )
+    plt.axis('off')
+    featurePlt(template.features)
 
 def gridPlot(image, template, warpedImage, grid, warp, title):
 

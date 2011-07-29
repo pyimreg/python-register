@@ -26,7 +26,7 @@ template = imread('data/smile.png')[:, :, 0]
 affine = register.Register(
     model.Spline,
     metric.Residual,
-    sampler.Nearest
+    sampler.CubicConvolution
     )
 
 # Coerce the image data into RegisterData.
