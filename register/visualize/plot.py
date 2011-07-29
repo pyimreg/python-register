@@ -80,7 +80,7 @@ def warpPlot(grid, warp, _warp):
     boundPlt(grid)
 
 
-def featurePlot(image, template, warpedImage):
+def featurePlot(image, template=None, warpedImage=None):
     
     plt.subplot(1,3,1)
     plt.title('I')
@@ -93,29 +93,29 @@ def featurePlot(image, template, warpedImage):
     plt.axis('off')
     featurePlt(image.features)
     
+    if template:
+        plt.subplot(1,3,2)
+        plt.title('T')
+        plt.imshow(template.data,
+                   origin=IMAGE_ORIGIN,
+                   cmap=IMAGE_COLORMAP,
+                   vmin=IMAGE_VMIN,
+                   vmax=IMAGE_VMAX
+                   )
+        plt.axis('off')
+        featurePlt(template.features)
     
-    plt.subplot(1,3,2)
-    plt.title('T')
-    plt.imshow(template.data,
-               origin=IMAGE_ORIGIN,
-               cmap=IMAGE_COLORMAP,
-               vmin=IMAGE_VMIN,
-               vmax=IMAGE_VMAX
-               )
-    plt.axis('off')
-    featurePlt(template.features)
-    
-    
-    plt.subplot(1,3,3)
-    plt.title('W(I;p)')
-    plt.imshow(warpedImage,
-               origin=IMAGE_ORIGIN,
-               cmap=IMAGE_COLORMAP,
-               vmin=IMAGE_VMIN,
-               vmax=IMAGE_VMAX
-               )
-    plt.axis('off')
-    featurePlt(template.features)
+    if warpedImage:
+        plt.subplot(1,3,3)
+        plt.title('W(I;p)')
+        plt.imshow(warpedImage,
+                   origin=IMAGE_ORIGIN,
+                   cmap=IMAGE_COLORMAP,
+                   vmin=IMAGE_VMIN,
+                   vmax=IMAGE_VMAX
+                   )
+        plt.axis('off')
+        featurePlt(template.features)
 
 def gridPlot(image, template, warpedImage, grid, warp, title):
 
