@@ -52,7 +52,10 @@ class RegisterData(object):
         else:
             self.coords = coords
         
-        self.features = None
+        # Features are (as a starting point a dictionary) which define
+        # labelled salient image coordinates (point features). 
+        
+        self.features = {}
         
         
     def smooth(self, variance):
@@ -61,7 +64,7 @@ class RegisterData(object):
         @param variance: the width of the smoothing kernel.
         """
         self.data = _smooth(self.data, variance)
-
+    
 
 class Register(object):
     """
