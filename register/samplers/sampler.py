@@ -93,6 +93,41 @@ class Nearest(Sampler):
 
         return result.flatten()
 
+class CubicConvolution(Sampler):
+
+    METHOD='Cubic Convolution (CC)'
+
+    DESCRIPTION="""
+        Given a coordinate in the array cubic convolution interpolates between
+        16 (4x4) nearest values.
+                """
+
+    def __init__(self, coordinates):
+        Sampler.__init__(self, coordinates)
+
+
+    def f(self, array, warp):
+        """
+        A sampling function, responsible for returning a sampled set of values
+        from the given array.
+
+        @param array: an n-dimensional array (representing an image or volume).
+        @param coords: array coordinates in cartesian form (n by p).
+        """
+
+        if self.coordinates is None:
+            raise ValueError('Appropriately defined coordinates not provided.')
+
+        result = np.zeros_like(array)
+
+        arg0 = c_ndarray(warp, dtype=np.double, ndim=3)
+        arg1 = c_ndarray(array, dtype=np.double, ndim=2)
+        arg2 = c_ndarray(result, dtype=np.double, ndim=2)
+
+        libsampler.cubicConvolution(arg0, arg1, arg2)
+
+        return result.flatten()
+
 
 class Spline(Sampler):
 

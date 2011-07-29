@@ -29,6 +29,18 @@ def test_sampler():
         
         print 'Nearest : {0}x{0} image - {1:0.3f} ms'.format(n, np.average(times))
         
+        # cc sampler 
+        cubic = sampler.CubicConvolution(coords)
+        
+        times = np.zeros(10)
+        for i in range(0,10):
+            t1 = time.time()
+            cubic.f(img, warp)
+            t2 = time.time()
+            times[i] = (t2-t1)*1000.0
+        
+        print 'Cubic : {0}x{0} image - {1:0.3f} ms'.format(n, np.average(times))
+
         # spline sampler - scipy buffered? ctypes?
         spline = sampler.Spline(coords)
         
@@ -40,5 +52,6 @@ def test_sampler():
             times[i] = (t2-t1)*1000.0
         
         print 'Spline : {0}x{0} image - {1:0.3f} ms'.format(n, np.average(times))
+        print '===================================='
         
     assert False
