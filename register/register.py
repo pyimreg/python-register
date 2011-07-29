@@ -41,7 +41,7 @@ class RegisterData(object):
     """
     A container for registration data.
     """
-    def __init__(self, data, coords=None):
+    def __init__(self, data, coords=None, features=None):
 
         self.data = data
         
@@ -55,7 +55,7 @@ class RegisterData(object):
         # Features are (as a starting point a dictionary) which define
         # labelled salient image coordinates (point features). 
         
-        self.features = {}
+        self.features = features
         
         
     def smooth(self, variance):
@@ -294,12 +294,9 @@ class KybicRegister(Register):
 
 
 class SplineRegister():
-    """
-    TBD - DOESN'T WORK!!!!!!!!!!!!!!!!!!!!!!!!!!1
-    """
     
-    def __init__(self):
-        pass
+    def __init__(self, sampler):
+        self.sampler = sampler
     
     def U(self, r):
         return np.multiply( -np.power(r,2), np.log(np.power(r,2) + 1e-20))
@@ -328,7 +325,7 @@ class SplineRegister():
         
         Linv = np.matrix(np.linalg.inv(L))
         
-        return ( Linv*Y)    
+        return Linv*Y
     
     def register(self,
                  image,
@@ -338,27 +335,54 @@ class SplineRegister():
         @param template: a target image, registerData object.
         """
         
-        model = self.__approximate(image.features, template.features)
+        sampler = self.sampler(image.coords)
+        
+        # Form corresponding point sets. 
+        p0 = []
+        p1 = []
+        
+        for id, point in image.features['points'].items():
+            if id in template.features['points']:
+                p0.append(point)
+                p1.append(template.features['points'][id])
+        
+        assert p0 and p1, "Empty corresponding point sets."
+        
+        p0 = np.array(p0)
+        p1 = np.array(p1)
+        
+        model = self.__approximate(p0, p1)
         
         affine  = model[-3:, :]
         weights = model[:-3, :]
         
-        X = np.zeros(self.domain)
-        Y = np.zeros(self.domain)
+        X = np.zeros((image.coords.domain[1], image.coords.domain[3]))
+        Y = np.zeros((image.coords.domain[1], image.coords.domain[3]))
         
         # Form the basis vectors
-        for x in xrange(*image.coords.domain[:1]):
-            for y in xrange(*image.coords.domain[2:]):
+        for x in xrange(0, image.coords.domain[1]):
+            for y in xrange(0, image.coords.domain[3]):
+                
                 zx = 0.0
                 zy = 0.0
+                
                 for n in range(0, len(p0[:,0])):
+                    
                     r = np.sqrt( (p0[n,0] - x)**2 + (p0[n,1] - y)**2 ) 
+                    
                     zx += float(weights[n,0])*float(self.U(r)) 
                     zy += float(weights[n,1])*float(self.U(r)) 
+                
                 X[y,x] = affine[0,0] + affine[1,0]*x + affine[2,0]*y + zx
                 Y[y,x] = affine[0,1] + affine[1,1]*x + affine[2,1]*y + zy
         
-        return (X,Y)
+        
+        warp = np.array([Y,X])
+        
+        img = sampler.f(image.data, warp).reshape(image.data.shape)
+        
+        return warp, img
+        
     
     
     def fastfit(self, p0, p1):

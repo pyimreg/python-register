@@ -30,7 +30,7 @@ def show():
     plt.ioff()
     plt.show()
 
-def coordPlt(grid, buffer=10, step=20):
+def coordPlt(grid, buffer=10, step=5):
     """
     Plot the grid coordinates.
     """
@@ -52,6 +52,16 @@ def coordPlt(grid, buffer=10, step=20):
     plt.axis('off')
     plt.grid()
 
+def featurePlt(image, template):
+    
+    for id, point in image.features['points'].items():
+        if id in template.features['points']:
+            
+            cpoint = template.features['points'][id]
+            
+            plt.plot(point[0], point[1], 'or')
+            plt.plot(cpoint[0], cpoint[1], 'og')
+            
 def boundPlt(grid):
 
     xmin = grid[1].min()
