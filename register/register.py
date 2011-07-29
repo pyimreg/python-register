@@ -299,11 +299,12 @@ class SplineRegister():
         self.sampler = sampler
     
     def U(self, r):
-        return np.multiply( -np.power(r,2), np.log(np.power(r,2) + 1e-20))
+        
+        #return np.multiply( -np.power(r,2), np.log(np.power(r,2) + 1e-20))
         
         # Gaussian kernel
-        #var = 15
-        #return np.exp( -pow(r,2)/(2*var**2)  )
+        var = 15
+        return np.exp( -pow(r,2)/(2*var**2)  )
     
     def __approximate(self, p0, p1):
         
@@ -351,7 +352,7 @@ class SplineRegister():
         p0 = np.array(p0)
         p1 = np.array(p1)
         
-        model = self.__approximate(p0, p1)
+        model = self.__approximate(p1, p0)
         
         affine  = model[-3:, :]
         weights = model[:-3, :]
