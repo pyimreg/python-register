@@ -93,7 +93,7 @@ def featurePlot(image, template=None, warpedImage=None):
     plt.axis('off')
     featurePlt(image.features)
     
-    if template:
+    if not template is None:
         plt.subplot(1,3,2)
         plt.title('T')
         plt.imshow(template.data,
@@ -105,7 +105,7 @@ def featurePlot(image, template=None, warpedImage=None):
         plt.axis('off')
         featurePlt(template.features)
     
-    if warpedImage:
+    if not warpedImage is None:
         plt.subplot(1,3,3)
         plt.title('W(I;p)')
         plt.imshow(warpedImage,

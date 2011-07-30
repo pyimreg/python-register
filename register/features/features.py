@@ -6,7 +6,7 @@ import scipy.ndimage as nd
 from numpy.ctypeslib import load_library
 from numpyctypes import c_ndarray
 
-libfeatures = load_library('libfeatures', __file__)
+libfeatures = load_library('libfeatures.so', __file__)
 
 class FeatureDetector(object):
     """

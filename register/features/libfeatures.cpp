@@ -28,26 +28,33 @@ int haar(   numpyArray<float> array0,
     int maxpoints = result.getShape(0);
 
     // Do Haar tranform on image
-    Matrix imageData((float*) &(image[0][0]), rows, cols);
-    HaarLifter lifter();
-    WaveletTransform transform((BaseLifter&)lifter, levels);
-    Matrix haarData = transform.DoForward(imageData);
+    printf("Matrix\n");
+    //Matrix imageData((float*) &(image[0][0]), rows, cols);
+    Matrix* imageData = new Matrix(new float[rows*cols], rows, cols);
+    printf("Transform\n");
+    WaveletTransform transform(levels);
+    printf("Forward\n");
+    Matrix* haarData = transform.DoForward(imageData);
     
     // Find salient features
-    SaliencyForest forest(haarData, levels);
-    forest.CalcRoots();
+    printf("Forest\n");
+    SaliencyForest forest(*haarData, levels);
+    printf("Roots\n");
+    //forest.CalcRoots();
     int numPoints = 0;
-    SalientPoint** points = forest.GetSaliencyPoints(VBLOCKS, HBLOCKS, THRESHOLD, CHESSBOARD, numPoints);
+    printf("Points\n");
+    //SalientPoint** points = forest.GetSaliencyPoints(VBLOCKS, HBLOCKS, THRESHOLD, CHESSBOARD, numPoints);
+    printf("for\n");
     for (int i = 0; i < numPoints; i++)
     {
         if (i < maxpoints)
         {
-            result[i][0] = i;
-            result[i][1] = points[i]->X;
-            result[i][2] = points[i]->Y;
+    //        result[i][0] = i;
+    //        result[i][1] = points[i]->X;
+    //        result[i][2] = points[i]->Y;
         }
     }
-    delete[] points;
+    //delete[] points;
     return 0;
 
 }
