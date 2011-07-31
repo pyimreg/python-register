@@ -52,19 +52,19 @@ Collaborators
 
 Basic rules for commits to the repository:
 
-	+ avoid commits to master (our stable branch)
+ + master is our stable "release" branch.
 	
-	+ feature branches for each ticket on github merged (into master) after review by team members only. 
-
-    + tests for new features must exist.
+ + feature branches for each ticket on github are merged (into master) after review only. 
+ 
+ + tests for new features using py.test *must* exist.
 
 Tracking an already formed branch:
 
-    git checkout -b localBranch origin/remoteBranch
+   git checkout -b localBranch origin/remoteBranch
 
 Forming a new branch and pushing to github:
 
-	git checkout -b localFeature
+   git checkout -b localFeature
 	
-	git push localFeature origin
+   git push localFeature origin
 
