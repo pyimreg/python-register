@@ -300,11 +300,11 @@ class SplineRegister():
     
     def U(self, r):
         
-        #return np.multiply( -np.power(r,2), np.log(np.power(r,2) + 1e-20))
+        return np.multiply( -np.power(r,2), np.log(np.power(r,2) + 1e-20))
         
         # Gaussian kernel
-        var = 15
-        return np.exp( -pow(r,2)/(2*var**2)  )
+        #var = 2.0
+        #return np.exp( -pow(r,2)/(2*var**2)  )
     
     def __approximate(self, p0, p1):
         
