@@ -30,24 +30,24 @@ def show():
     plt.ioff()
     plt.show()
 
-def coordPlt(grid, buffer=10, step=5):
+def coordPlt(grid, buffer=10, step=2):
     """
     Plot the grid coordinates.
     """
     plt.cla()
 
-    plt.plot(grid[0][0::step, 0::step],
-             grid[1][0::step, 0::step],
+    plt.plot(grid[1][0::step, 0::step],
+             grid[0][0::step, 0::step],
              '.-b' )
 
-    plt.plot(grid[0][0::step, 0::step].T,
-             grid[1][0::step, 0::step].T,
+    plt.plot(grid[1][0::step, 0::step].T,
+             grid[0][0::step, 0::step].T,
              '.-b' )
 
-    plt.axis( [ grid[0].max() + buffer,
-                grid[0].min() - buffer,
-                grid[1].max() + buffer,
-                grid[1].min() - buffer],
+    plt.axis( [ grid[1].max() + buffer,
+                grid[1].min() - buffer,
+                grid[0].max() + buffer,
+                grid[0].min() - buffer],
             )
     plt.axis('off')
     plt.grid()
@@ -80,9 +80,9 @@ def warpPlot(grid, warp, _warp):
     boundPlt(grid)
 
 
-def featurePlot(image, template, warpedImage):
+def featurePlot(image, template, warp, warpedImage):
     
-    plt.subplot(1,3,1)
+    plt.subplot(1,4,1)
     plt.title('I')
     plt.imshow(image.data,
                origin=IMAGE_ORIGIN,
@@ -94,7 +94,7 @@ def featurePlot(image, template, warpedImage):
     featurePlt(image.features)
     
     
-    plt.subplot(1,3,2)
+    plt.subplot(1,4,2)
     plt.title('T')
     plt.imshow(template.data,
                origin=IMAGE_ORIGIN,
@@ -104,9 +104,13 @@ def featurePlot(image, template, warpedImage):
                )
     plt.axis('off')
     featurePlt(template.features)
+
+    plt.subplot(1,4,3)
+    coordPlt(warp)
+    boundPlt(image.coords.tensor)
+    plt.title('W(x;p)')
     
-    
-    plt.subplot(1,3,3)
+    plt.subplot(1,4,4)
     plt.title('W(I;p)')
     plt.imshow(warpedImage,
                origin=IMAGE_ORIGIN,

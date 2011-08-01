@@ -31,17 +31,24 @@ template = register.RegisterData(
     features=yaml.load(open('data/smile.yaml'))
     )
 
+
+# Define a gaussian kernel.
+def gaussKernel(r):
+    var = 1.0
+    return np.exp( -np.power(r,2)/(2*var**2)  )
+
 # Form the affine registration instance.
 spline = register.SplineRegister(
-    sampler=sampler.Spline
+    sampler=sampler.Spline,
+    kernel=gaussKernel
     )
-
+    
 # Register using features.
 warp, img = spline.register(
     image,
     template,
-    vectorized=True
+    vectorized=True,
     )
 
-plot.featurePlot(image, template, img)
+plot.featurePlot(image, template, warp, img)
 plot.show()

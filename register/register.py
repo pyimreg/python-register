@@ -390,7 +390,6 @@ class SplineRegister():
         affine  = model[-3:, :]
         weights = model[:-3, :]
         
-        
         if vectorized:
             
             # Vectorized extrapolation, looping through arrays in python is 
@@ -443,7 +442,6 @@ class SplineRegister():
             
                     warp[0][y,x] = affine[0,1] + affine[1,1]*x + affine[2,1]*y + zy
                     warp[1][y,x] = affine[0,0] + affine[1,0]*x + affine[2,0]*y + zx
-        
         
         img = sampler.f(image.data, warp).reshape(image.data.shape)
         
