@@ -30,24 +30,24 @@ def show():
     plt.ioff()
     plt.show()
 
-def coordPlt(grid, buffer=10, step=5):
+def coordPlt(grid, buffer=10, step=2):
     """
     Plot the grid coordinates.
     """
     plt.cla()
 
-    plt.plot(grid[0][0::step, 0::step],
-             grid[1][0::step, 0::step],
+    plt.plot(grid[1][0::step, 0::step],
+             grid[0][0::step, 0::step],
              '.-b' )
 
-    plt.plot(grid[0][0::step, 0::step].T,
-             grid[1][0::step, 0::step].T,
+    plt.plot(grid[1][0::step, 0::step].T,
+             grid[0][0::step, 0::step].T,
              '.-b' )
 
-    plt.axis( [ grid[0].max() + buffer,
-                grid[0].min() - buffer,
-                grid[1].max() + buffer,
-                grid[1].min() - buffer],
+    plt.axis( [ grid[1].max() + buffer,
+                grid[1].min() - buffer,
+                grid[0].max() + buffer,
+                grid[0].min() - buffer],
             )
     plt.axis('off')
     plt.grid()
@@ -82,7 +82,7 @@ def warpPlot(grid, warp, _warp):
 
 def featurePlot(image, template=None, warpedImage=None):
     
-    plt.subplot(1,3,1)
+    plt.subplot(1,4,1)
     plt.title('I')
     plt.imshow(image.data,
                origin=IMAGE_ORIGIN,
