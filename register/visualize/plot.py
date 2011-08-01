@@ -30,7 +30,7 @@ def show():
     plt.ioff()
     plt.show()
 
-def coordPlt(grid, buffer=10, step=2):
+def coordPlt(grid, buffer=10, step=10):
     """
     Plot the grid coordinates.
     """
