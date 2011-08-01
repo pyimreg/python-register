@@ -2,7 +2,7 @@
 #include "WaveletTransform.h"
 
 #ifndef MAX_POINTS_PER_BLOCK
-#define MAX_POINTS_PER_BLOCK 1
+//#define MAX_POINTS_PER_BLOCK 1
 #endif 
 
 class SaliencyForest {

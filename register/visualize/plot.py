@@ -117,6 +117,18 @@ def featurePlot(image, template=None, warpedImage=None):
         plt.axis('off')
         featurePlt(template.features)
 
+def featurePlotSingle(image):
+    plt.title('I')
+    plt.imshow(image.data,
+               cmap=IMAGE_COLORMAP,
+               origin='lower',
+               vmin=IMAGE_VMIN,
+               vmax=IMAGE_VMAX
+              )
+    plt.axis('off')
+    featurePlt(image.features)
+    
+
 def gridPlot(image, template, warpedImage, grid, warp, title):
 
     plt.subplot(2,3,1)

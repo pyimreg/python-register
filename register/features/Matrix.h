@@ -29,13 +29,13 @@ Matrix::Matrix() {
 Matrix::Matrix(int noRows, int noCols) {
 	rows = noRows;
 	cols = noCols;
-	this->data = new float[rows * cols];
+	data = new float[rows * cols];
 }
 
-Matrix::Matrix(float* data, int noRows, int noCols) {
+Matrix::Matrix(float* fdata, int noRows, int noCols) {
 	rows = noRows;
 	cols = noCols;
-	this->data = data;
+	data = fdata;
 }
 
 void Matrix::SelectRow(int row) {

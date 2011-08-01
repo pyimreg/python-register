@@ -65,7 +65,7 @@ class HaarDetector(object):
 
         results = np.ones([self.maxpoints, 3]).astype(np.int)
         
-        arg0 = c_ndarray(image, dtype=np.float, ndim=2)
+        arg0 = c_ndarray(image, dtype=np.double, ndim=2)
         arg1 = c_ndarray(results, dtype=np.int, ndim=2)
 
         libfeatures.haar(arg0, arg1, int(self.levels))
