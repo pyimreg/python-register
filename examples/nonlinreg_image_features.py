@@ -39,7 +39,8 @@ spline = register.SplineRegister(
 # Register using features.
 warp, img = spline.register(
     image,
-    template
+    template,
+    vectorized=True
     )
 
 #plt.imshow(template.data)

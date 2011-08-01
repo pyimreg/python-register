@@ -6,10 +6,14 @@ from register import register
 
 def test_sampler():
     """
-    Simple test to demonstrate the slowness of samplers.
+    Asserts that NN < Cubic < Spline, over a range of image resolutions.
+    
+    If (one day) something really amazing happens and the scipy map_coordiantes
+    method is significantly faster we could favour that as a default.
+    
     """
     
-    for n in range(128, 2024, 64):
+    for n in range(128, 2024, 128):
         coords = register.Coordinates(
             [0, n, 0, n]
             )
@@ -20,38 +24,41 @@ def test_sampler():
         # nearest neighbour sampler - ctypes
         nearest = sampler.Nearest(coords)
         
-        times = np.zeros(10)
+        ntimes = np.zeros(10)
         for i in range(0,10):
             t1 = time.time()
             nearest.f(img, warp)
             t2 = time.time()
-            times[i] = (t2-t1)*1000.0
+            ntimes[i] = (t2-t1)*1000.0
         
-        print 'Nearest : {0}x{0} image - {1:0.3f} ms'.format(n, np.average(times))
+        print 'Nearest : {0}x{0} image - {1:0.3f} ms'.format(n, np.average(ntimes))
         
-        # cc sampler 
+        # cubic convolution sampler- ctypes
         cubic = sampler.CubicConvolution(coords)
         
-        times = np.zeros(10)
+        ctimes = np.zeros(10)
         for i in range(0,10):
             t1 = time.time()
             cubic.f(img, warp)
             t2 = time.time()
-            times[i] = (t2-t1)*1000.0
+            ctimes[i] = (t2-t1)*1000.0
         
-        print 'Cubic : {0}x{0} image - {1:0.3f} ms'.format(n, np.average(times))
+        print 'Cubic : {0}x{0} image - {1:0.3f} ms'.format(n, np.average(ctimes))
 
         # spline sampler - scipy buffered? ctypes?
         spline = sampler.Spline(coords)
         
-        times = np.zeros(10)
+        stimes = np.zeros(10)
         for i in range(0,10):
             t1 = time.time()
             spline.f(img, warp)
             t2 = time.time()
-            times[i] = (t2-t1)*1000.0
+            stimes[i] = (t2-t1)*1000.0
         
-        print 'Spline : {0}x{0} image - {1:0.3f} ms'.format(n, np.average(times))
+        print 'Spline : {0}x{0} image - {1:0.3f} ms'.format(n, np.average(stimes))
         print '===================================='
         
-    assert False
+        assert np.average(ntimes) < np.average(ctimes)
+        assert np.average(ntimes) < np.average(stimes)
+        assert np.average(ctimes) < np.average(stimes)
+        

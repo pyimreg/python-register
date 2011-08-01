@@ -294,19 +294,40 @@ class KybicRegister(Register):
 
 
 class SplineRegister():
+    """
+    A registration class for estimating the deformation field which minimizes 
+    feature differences using a thin-plate-spline interpolant.
+    """
     
-    def __init__(self, sampler):
+    def __init__(self, sampler, kernel=None):
+        
         self.sampler = sampler
-    
+        self.kernel = kernel if kernel is not None else None
+        
     def U(self, r):
+        """
+        This is a kernel function applied to solve the biharmonic equation.
+        @param r: 
+        """
         
-        return np.multiply( -np.power(r,2), np.log(np.power(r,2) + 1e-20))
+        if not self.kernel:
+            return np.multiply( -np.power(r,2), np.log(np.power(r,2) + 1e-20))
+        else:
+            return self.kernel(r)
         
-        # Gaussian kernel
-        #var = 2.0
-        #return np.exp( -pow(r,2)/(2*var**2)  )
+        ## Gaussian kernel
+        ##var = 5.0
+        ##return np.exp( -pow(r,2)/(2*var**2)  )
     
-    def __approximate(self, p0, p1):
+    def approximate(self, p0, p1):
+        """
+        Approximates the thinplate spline coefficients, following derivations
+        shown in:
+        
+        Bookstein, F. L. (1989). Principal warps: thin-plate splines and the 
+        decomposition of deformations. IEEE Transactions on Pattern Analysis 
+        and Machine Intelligence, 11(6), 567-585. 
+        """
         
         K = np.zeros((p0.shape[0], p0.shape[0]))
         
@@ -326,12 +347,15 @@ class SplineRegister():
         
         Linv = np.matrix(np.linalg.inv(L))
         
-        return Linv*Y
+        return L, Linv*Y
     
     def register(self,
                  image,
-                 template):
+                 template,
+                 vectorized=True):
         """
+        Performs an image (feature based) registration.
+        
         @param image: a floating image, registerData object.
         @param template: a target image, registerData object.
         """
@@ -339,90 +363,88 @@ class SplineRegister():
         sampler = self.sampler(image.coords)
         
         # Form corresponding point sets. 
-        p0 = []
-        p1 = []
+        imagePoints = []
+        templatePoints = []
         
         for id, point in image.features['points'].items():
             if id in template.features['points']:
-                p0.append(point)
-                p1.append(template.features['points'][id])
+                imagePoints.append(point)
+                templatePoints.append(template.features['points'][id])
+                #print '{} -> {}'.format(imagePoints[-1], templatePoints[-1])
         
-        assert p0 and p1, "Empty corresponding point sets."
+        if not imagePoints or not templatePoints:
+            raise ValueError('Requires image and template features to register.')
         
-        p0 = np.array(p0)
-        p1 = np.array(p1)
+        # Note the inverse warp is estimated here.
         
-        model = self.__approximate(p1, p0)
+        p0 = np.array(templatePoints)
+        p1 = np.array(imagePoints)
+        
+        _L, model = self.approximate(p0, p1)
+        
+        # For all coordinates in the register data, evaluate the
+        # thin-plate-spline.
+        
+        warp = np.zeros_like(image.coords.tensor)
         
         affine  = model[-3:, :]
         weights = model[:-3, :]
         
-        X = np.zeros((image.coords.domain[1], image.coords.domain[3]))
-        Y = np.zeros((image.coords.domain[1], image.coords.domain[3]))
         
-        # Form the basis vectors
-        for x in xrange(0, image.coords.domain[1]):
-            for y in xrange(0, image.coords.domain[3]):
-                
-                zx = 0.0
-                zy = 0.0
-                
-                for n in range(0, len(p0[:,0])):
+        if vectorized:
+            
+            # Vectorized extrapolation, looping through arrays in python is 
+            # slow therefore wherever possible attempt to unroll loops. Below
+            # is an example:
+            
+            Xvec = np.matrix(image.coords.tensor[1].flatten(0)).T
+            Yvec = np.matrix(image.coords.tensor[0].flatten(0)).T
+       
+            # Fast matrix multiplication approach:
+            Px = np.matrix(np.tile(p0[:,0], (Xvec.shape[0], 1)))
+            Wx = np.matrix(np.tile(weights[:,0].T, (Xvec.shape[0], 1)))
+            Bx = np.matrix(np.tile(Xvec, (1, p0.shape[0])))
+            Ax = np.matrix(np.tile(affine[:,0].T, (Xvec.shape[0], 1)))
+        
+            Py = np.matrix(np.tile(p0[:,1], (Xvec.shape[0], 1)))
+            Wy = np.matrix(np.tile(weights[:,1].T, (Xvec.shape[0], 1)))
+            By = np.matrix(np.tile(Yvec, (1, p0.shape[0])))
+            Ay = np.matrix(np.tile(affine[:,1].T, (Xvec.shape[0], 1)))
+        
+            # Form the R matrix:
+            R = self.U( np.sqrt( np.power(Px - Bx,2) + np.power(Py - By,2)) )
+        
+            # Compute the sum of the weighted R matrix, row wise.
+            Rx = np.sum( np.multiply(Wx, R), 1 )
+            Ry = np.sum( np.multiply(Wy, R), 1 )
+        
+            one = np.ones_like(Xvec)
+            a = np.hstack(( one, Xvec, Yvec, one))
+   
+            warp[1] = np.sum( np.multiply(a, np.hstack((Ax, Rx)) ), 1 ).reshape(warp[1].shape)
+            warp[0] = np.sum( np.multiply(a, np.hstack((Ay, Ry)) ), 1 ).reshape(warp[0].shape)
+            
+        else:
+            
+            # Slow nested loop approach:
+            for x in xrange(0, image.coords.domain[1]):
+                for y in xrange(0, image.coords.domain[3]):
                     
-                    r = np.sqrt( (p0[n,0] - x)**2 + (p0[n,1] - y)**2 ) 
+                    # Refer to page 570 (of BookStein paper) first column, last 
+                    # equation (relating map coordinates to coefficients).
                     
-                    zx += float(weights[n,0])*float(self.U(r)) 
-                    zy += float(weights[n,1])*float(self.U(r)) 
-                
-                X[y,x] = affine[0,0] + affine[1,0]*x + affine[2,0]*y + zx
-                Y[y,x] = affine[0,1] + affine[1,1]*x + affine[2,1]*y + zy
+                    zx = 0.0
+                    zy = 0.0
+                    
+                    for n in range(0, len(p0[:,0])):
+                        r = np.sqrt( (p0[n,0] - x)**2 + (p0[n,1] - y)**2 ) 
+                        zx += float(weights[n,0])*float(self.U(r)) 
+                        zy += float(weights[n,1])*float(self.U(r)) 
+            
+                    warp[0][y,x] = affine[0,1] + affine[1,1]*x + affine[2,1]*y + zy
+                    warp[1][y,x] = affine[0,0] + affine[1,0]*x + affine[2,0]*y + zx
         
-        
-        warp = np.array([Y,X])
         
         img = sampler.f(image.data, warp).reshape(image.data.shape)
         
         return warp, img
-        
-    
-    
-    def fastfit(self, p0, p1):
-        
-        model = self.__approximate(p0, p1)
-        
-        affine  = model[-3:, :]
-        weights = model[:-3, :]
-        
-        # Form the basis vectors
-        
-        X, Y = np.meshgrid(self.xRange, self.yRange)
-        
-        Xvec = np.matrix(X.flatten(0)).T
-        Yvec = np.matrix(Y.flatten(0)).T
-        
-        Px = np.matrix(np.tile(p0[:,0], (Xvec.shape[0], 1)))
-        Wx = np.matrix(np.tile(weights[:,0].T, (Xvec.shape[0], 1)))
-        Bx = np.matrix(np.tile(Xvec, (1, p0.shape[0])))
-        Ax = np.matrix(np.tile(affine[:,0].T, (Xvec.shape[0], 1)))
-        
-        Py = np.matrix(np.tile(p0[:,1], (Xvec.shape[0], 1)))
-        Wy = np.matrix(np.tile(weights[:,1].T, (Xvec.shape[0], 1)))
-        By = np.matrix(np.tile(Yvec, (1, p0.shape[0])))
-        Ay = np.matrix(np.tile(affine[:,1].T, (Xvec.shape[0], 1)))
-        
-        # Form the R matrix
-        R = self.U( np.sqrt( np.power(Px - Bx,2) + np.power(Py - By,2)) )
-        
-        # Compute the sum of the weighted R matrix, row wise.
-        Rx = np.sum( np.multiply(Wx, R), 1 )
-        Ry = np.sum( np.multiply(Wy, R), 1 )
-        
-        one = np.ones_like(Xvec)
-        
-        a = np.hstack(( one, Xvec, Yvec, one))
-   
-        Nx = np.sum( np.multiply(a, np.hstack((Ax, Rx)) ), 1 )
-        Ny = np.sum( np.multiply(a, np.hstack((Ay, Ry)) ), 1 )
-        
-        return( np.reshape(Nx, self.domain), np.reshape(Ny, self.domain))
-    
