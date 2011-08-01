@@ -29,19 +29,13 @@ Matrix::Matrix() {
 Matrix::Matrix(int noRows, int noCols) {
 	rows = noRows;
 	cols = noCols;
-	data = new float[rows * cols];
+	this->data = new float[rows * cols];
 }
 
 Matrix::Matrix(float* data, int noRows, int noCols) {
 	rows = noRows;
 	cols = noCols;
-	data = data;
-   /*for (int j = 0; j < rows; j++)
-        for (int i = 0; i < cols; i++)
-        {
-            printf("=%d,%d\n", i, j);
-            printf("=%f\n", data[j*cols + i]);
-        }*/
+	this->data = data;
 }
 
 void Matrix::SelectRow(int row) {

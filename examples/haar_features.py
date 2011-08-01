@@ -13,12 +13,11 @@ from register.visualize import plot
 
 # Load the image.
 image = misc.lena()
-image = nd.zoom(image, 0.30)
+image = nd.zoom(image, 0.90)
 
 detector = features.HaarDetector(levels=3, maxpoints=100)
-print image.shape
 features = detector.detect(image)
-image = register.RegisterData(image, features)
+image = register.RegisterData(image, features=features)
 
 plot.featurePlot(image)
 plot.show()

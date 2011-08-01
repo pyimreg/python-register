@@ -63,16 +63,22 @@ class HaarDetector(object):
         if self.maxpoints is None:
             raise ValueError('MaxPoints was not specified.')
 
-        results = np.zeros([self.maxpoints, 3])
+        results = np.ones([self.maxpoints, 3]).astype(np.int)
         
         arg0 = c_ndarray(image, dtype=np.float, ndim=2)
         arg1 = c_ndarray(results, dtype=np.int, ndim=2)
 
         libfeatures.haar(arg0, arg1, int(self.levels))
 
-        features = {'points' : {}}
+        features = {}
+        points = {}
 
-        for point in results:
-            features['points'].__setitem__(point[0], point[1:2])
-
+        for i in range(0,results.shape[0]):
+            point = np.array(results[i,:]).astype(np.int)
+            points[point[0]] = [point[1], point[2]]
+        
+        features['points'] = points
+        
+        print features
+        
         return features

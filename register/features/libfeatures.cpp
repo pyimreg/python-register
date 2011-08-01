@@ -2,6 +2,8 @@
 #include "ndarray.h"
 #include "math.h"
 #include "stdio.h"
+
+#define MAX_POINTS_PER_BLOCK 4
 #include "SaliencyForest.h"
 
 #define VBLOCKS 10
@@ -28,33 +30,26 @@ int haar(   numpyArray<float> array0,
     int maxpoints = result.getShape(0);
 
     // Do Haar tranform on image
-    printf("Matrix\n");
-    //Matrix imageData((float*) &(image[0][0]), rows, cols);
-    Matrix* imageData = new Matrix(new float[rows*cols], rows, cols);
-    printf("Transform\n");
-    WaveletTransform transform(levels);
-    printf("Forward\n");
-    Matrix* haarData = transform.DoForward(imageData);
+    Matrix imageData((float*) &(image[0][0]), rows, cols);
+    WaveletTransform<HaarLifter> transform(levels);
+    Matrix haarData = transform.DoForward(imageData);
     
     // Find salient features
-    printf("Forest\n");
-    SaliencyForest forest(*haarData, levels);
-    printf("Roots\n");
-    //forest.CalcRoots();
+    SaliencyForest forest(haarData, levels);
+    forest.CalcRoots();
     int numPoints = 0;
-    printf("Points\n");
-    //SalientPoint** points = forest.GetSaliencyPoints(VBLOCKS, HBLOCKS, THRESHOLD, CHESSBOARD, numPoints);
-    printf("for\n");
+    SalientPoint** points = forest.GetSaliencyPoints(VBLOCKS, HBLOCKS, THRESHOLD, CHESSBOARD, numPoints);
     for (int i = 0; i < numPoints; i++)
     {
         if (i < maxpoints)
         {
-    //        result[i][0] = i;
-    //        result[i][1] = points[i]->X;
-    //        result[i][2] = points[i]->Y;
+            result[i][0] = i;
+            result[i][1] = points[i]->X;
+            result[i][2] = points[i]->Y;
+            printf("%d : (%d, %d)\n", i, points[i]->X, points[i]->Y);
         }
     }
-    //delete[] points;
+    delete[] points;
     return 0;
 
 }

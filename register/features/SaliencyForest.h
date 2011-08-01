@@ -1,7 +1,9 @@
 #include "SalientPoint.h"
 #include "WaveletTransform.h"
 
+#ifndef MAX_POINTS_PER_BLOCK
 #define MAX_POINTS_PER_BLOCK 1
+#endif 
 
 class SaliencyForest {
 private:
@@ -10,7 +12,8 @@ private:
 	bool ready;
 
 public:
-	SaliencyForest(Matrix &aData, int aLevels) :	data(aData.data, aData.rows, aData.cols) 
+	SaliencyForest(Matrix &aData, int aLevels) :
+		data(aData.data, aData.rows, aData.cols) 
     {
 		levels = aLevels;
 		ready = false;
@@ -353,7 +356,7 @@ public:
 					<= vSpace))
 				cnt++;
 		}
-		return true;//cnt == 0;
+		return cnt == 0;
 	}
 
 	void ResolveSaliencyPoint(SalientPoint *point) {
