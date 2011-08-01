@@ -46,6 +46,9 @@ def test_register():
     
     warp, img = spline.register(image, template)
     
+    assert not np.allclose(warp, np.zeros_like(warp)), \
+        "Estimated warp field is zero."
+    
     
 def test_vectorized():
     """ 
@@ -115,7 +118,6 @@ def test_vectorized():
     assert np.average(times) < np.average(vtimes), \
         "Vectorized code is slower than non-vectorized code. Not good."
     
-    assert False
     
 def test_approximate():
     """ 

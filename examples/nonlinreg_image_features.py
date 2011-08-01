@@ -16,28 +16,24 @@ import matplotlib.pyplot as plt
 from register.samplers import sampler
 from register.visualize import plot
 
-
 from register import register
 
 # Load the image and feature data. 
-
 image = register.RegisterData(
     np.average(plt.imread('data/frown.png'), axis=2),
     features=yaml.load(open('data/frown.yaml'))
     )
-
 template = register.RegisterData(
     np.average(plt.imread('data/smile.png'), axis=2),
     features=yaml.load(open('data/smile.yaml'))
     )
-
 
 # Define a gaussian kernel.
 def gaussKernel(r):
     var = 50
     return np.exp( -np.power(r,2)/(2*var**2)  )
 
-# Form the affine registration instance.
+# Form the tps registration instance.
 spline = register.SplineRegister(
     sampler=sampler.Spline,
     kernel=gaussKernel
