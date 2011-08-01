@@ -43,7 +43,5 @@ warp, img = spline.register(
     vectorized=True
     )
 
-#plt.imshow(template.data)
-
 plot.featurePlot(image, template, img)
 plot.show()
