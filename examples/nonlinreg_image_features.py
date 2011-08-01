@@ -34,7 +34,7 @@ template = register.RegisterData(
 
 # Define a gaussian kernel.
 def gaussKernel(r):
-    var = 1.0
+    var = 50
     return np.exp( -np.power(r,2)/(2*var**2)  )
 
 # Form the affine registration instance.
