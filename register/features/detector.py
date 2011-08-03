@@ -30,11 +30,9 @@ def detect(image, detectorType=HaarDetector, options=None, debug=False):
 
 def _haarDefaultOptions(image):
     options = {}
-    levels = max(0,math.log(min(image.shape),2) - 4)
-    options['levels'] = int(levels)
-    options['maxpoints'] = (min(image.shape) / 2 ** levels) ** 2
-    options['threshold'] = 0.7
-    options['locality'] = 5
+    options['levels'] = 5         # number of wavelet levels
+    options['threshold'] = 0.2    # threshold between 0.0 and 1.0 to filter out weak features (0.0 includes all features)
+    options['locality'] = 5       # minimum (approx) distance between two features  
     return options
 
 def _detectHaarFeatures(image, options={}):

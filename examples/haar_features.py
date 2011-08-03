@@ -17,9 +17,9 @@ image = imread('data/cameraman.png')
 #image = nd.zoom(image, 0.50)
 
 options = {}
-options['levels'] = 5
-options['threshold'] = 0.2
-options['locality'] = 5
+options['levels'] = 5         # number of wavelet levels
+options['threshold'] = 0.2    # threshold between 0.0 and 1.0 to filter out weak features (0.0 includes all features)
+options['locality'] = 5       # minimum (approx) distance between two features  
 
 features = detect(image, HaarDetector, options)
 
