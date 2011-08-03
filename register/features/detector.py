@@ -7,7 +7,7 @@ import math
 from register.features.haar2d import haar2d
 
 __debug=False
-__plt=None
+
 
 def _debug(something):
     global __debug
@@ -18,11 +18,10 @@ def _debug(something):
 # Constants
 HaarDetector = 0
 
-def detect(image, detectorType=HaarDetector, options=None, debug=False, plt=None):
+def detect(image, detectorType=HaarDetector, options=None, debug=False):
     global __debug
     global __plt
     __debug = debug
-    __plt = plt
     if detectorType == HaarDetector:
         return _detectHaarFeatures(image, options)
     else:  # default detector
