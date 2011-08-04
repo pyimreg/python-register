@@ -3,13 +3,9 @@ Detects haar salient features in an image -
     
 """
 
-import numpy as np
 import scipy.ndimage as nd
-import scipy.misc as misc
 from matplotlib.pyplot import imread, plot, imshow, show
  
-from register import register
-from register.features import features
 from register.features.detector import detect, HaarDetector
 
 # Load the image.
