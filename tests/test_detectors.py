@@ -21,13 +21,7 @@ def test_haardetector():
     options['threshold'] = 0.2
     options['locality'] = 5
 
-    features = detect(image, HaarDetector, options, debug=True, plt=plt)
-    plt.imshow(image, cmap='gray')
-    for point, saliency in features.items():
-        plt.plot(point[1], point[0], 'or')
-    #plt.show()
+    features = detect(image, HaarDetector, options, debug=True)
 
+    assert len(features['points'].items()) > 0
     
-    
-if __name__ == '__main__':
-    test_haardetector()
