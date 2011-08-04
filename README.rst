@@ -63,8 +63,8 @@ Tracking an already formed branch:
    git checkout -b localBranch origin/remoteBranch
 
 Forming a new branch and pushing to github:
-
+   
    git checkout -b localFeature
 	
-   git push localFeature origin
+   git push origin localFeature
 
