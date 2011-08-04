@@ -25,7 +25,7 @@ features = detect(image, HaarDetector, options)
 
 imshow(image, cmap='gray')
 
-for point, saliency in features.items():
+for id, point in features['points'].items():
     plot(point[1], point[0], 'or')
 
 show()

@@ -50,9 +50,9 @@ def _detectHaarFeatures(image, options={}):
     
     SalientPoints = {}
     
-    siloH = np.zeros([haarData.shape[0]/2, haarData.shape[0]/2, levels])
-    siloD = np.zeros([haarData.shape[0]/2, haarData.shape[0]/2, levels])
-    siloV = np.zeros([haarData.shape[0]/2, haarData.shape[0]/2, levels])
+    siloH = np.zeros([haarData.shape[0]/2, haarData.shape[1]/2, levels])
+    siloD = np.zeros([haarData.shape[0]/2, haarData.shape[1]/2, levels])
+    siloV = np.zeros([haarData.shape[0]/2, haarData.shape[1]/2, levels])
     
     # Build the saliency silos
     for i in range(levels):
@@ -78,14 +78,18 @@ def _detectHaarFeatures(image, options={}):
     rows = haarData.shape[0] / 2
     cols = haarData.shape[1] / 2
     features = {}
+    id = 0
     for row in range(locality,rows-locality):
         for col in range(locality,cols-locality):
             saliency = saliencyMap[row,col]
             if saliency > sthreshold:
                 if  saliency >= np.max(saliencyMap[row-locality:row+locality, col-locality:col+locality]):
-                    features[(row*2,col*2)] = saliency
+                    features[id] = (row*2,col*2)
+                    id += 1
 
-    return features
+    result = {}
+    result['points'] = features
+    return result
     
 
 
