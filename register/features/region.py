@@ -2,6 +2,7 @@
 
 import numpy as np
 import scipy.ndimage as nd
+import hashlib
 
 def _integral(image):
     """ Calculates the integral image of the image provided. 
@@ -75,21 +76,31 @@ def flush_work():
     """
     _saved_work = {}
     
-def covariance(image, upperleft, lowerright):
+def imagehash(image):
+    """ Determine the image hash. 
+    """
+    return hashlib.md5(image.dumps()).hexdigest()
+
+def covariance(image, upperleft, lowerright, imagekey=None):
     """ Calculates the 7x7 covariance matrix for the region specified. 
     
         @param image: The input image (MxN)
+        @param upperleft: The upper left point (row,col)
+        @param lowerright: The lower right point (row,col)
+        @param imagekey: The input image's hash. Faster if this is calculated only once and passed in repeatedly
         @return: The featureDescriptors (MxNx7) of type float 
     """
     global _saved_work
-    if not _saved_work.has_key(image.__hash__()):
+    if imagekey is None:
+        imagekey=imagehash(image)
+    if not _saved_work.has_key(imagekey):
         featureDescriptors = _featureDescriptors(image)
         p, Q = _p_Q(featureDescriptors)
-        _saved_work[image.__hash__()] = (p, Q, featureDescriptors)
+        _saved_work[imagekey] = (p, Q, featureDescriptors)
     else:
-        p, Q, featureDescriptors = _saved_work[image.__hash__()]
+        p, Q, featureDescriptors = _saved_work[imagekey]
     QQQQ = Q[:,:,lowerright[1], lowerright[0]] + Q[:,:,upperleft[1], upperleft[0]] - Q[:,:,upperleft[1], lowerright[0]] - Q[:,:,lowerright[1], upperleft[0]]
     pppp = p[:,lowerright[1], lowerright[0]] + p[:,upperleft[1], upperleft[0]] - p[:,upperleft[1], lowerright[0]] - p[:,lowerright[1], upperleft[0]]
     n = (lowerright[1] - upperleft[1])*(lowerright[0] - upperleft[0])
-    C = 1.0 / (n - 1.0)  * (QQQQ - 1.0 / n * pppp*pppp.T)
+    C = 1.0 / (n - 1.0) * (QQQQ - 1.0 / n * pppp*pppp.T)
     return C
