@@ -43,7 +43,7 @@ options['locality'] = 5       # minimum (approx) distance between two features
 
 features = detect(reference, HaarDetector, options)
 refData = register.RegisterData(reference, features=features)
-matchedfeatures = matcher.phaseCorrelationMatch(refData, other, chipsize=16, searchsize=64, threshold=0.1)
+#matchedfeatures = matcher.phaseCorrelationMatch(refData, other, chipsize=16, searchsize=64, threshold=0.1)
 
 #plt.show()
 

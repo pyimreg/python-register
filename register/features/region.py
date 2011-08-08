@@ -61,15 +61,29 @@ def _p_Q(featureDescriptors):
     p_xy = np.empty([d,x,y])
     Q_xy = np.empty([d,d,x,y])
     for i in range(d):
-        Pi = _integral(featureDescriptors[:,:,i])
-        p_xy[i,:,:] = Pi
+        p_xy[i,:,:] = _integral(featureDescriptors[:,:,i])
         for j in range(d):
-            Pj = _integral(featureDescriptors[:,:,j])
-            Qij = Pi*Pj
-            Q_xy[i,j,:,:] = Qij
+            Q_xy[i,j,:,:] = _integral(featureDescriptors[:,:,i]*featureDescriptors[:,:,j])
     return (p_xy, Q_xy)
 
 _saved_work = {}
+
+
+def covariance(image, upperleft, lowerright):
+    """ Calculates the 7x7 covariance matrix for the region specified. (lowerright is excluded rom the region). 
+    
+        @param image: The input image (MxN)
+        @param upperleft: The upper left point (row,col)
+        @param lowerright: The lower right point (row,col)
+        @return: The covariance matrix (7x7) of the region specified. 
+    """
+    region = image[upperleft[0]:lowerright[0], upperleft[1]:lowerright[1]]
+    regionfeatures = _featureDescriptors(region)
+    d = regionfeatures.shape[2]
+    n = np.prod(region.shape)
+    C = np.cov(regionfeatures.reshape([n,d]))            
+    return C
+    
 
 def flush_work():
     """ Flush all saved work for previously processed images from memory. 
@@ -81,14 +95,17 @@ def imagehash(image):
     """
     return hashlib.md5(image.dumps()).hexdigest()
 
-def covariance(image, upperleft, lowerright, imagekey=None):
+def covariance_(image, upperleft, lowerright, imagekey=None):
     """ Calculates the 7x7 covariance matrix for the region specified. 
+    
+        Derivation in: Region Covariance - A Fast Descriptor for Detection
+        and Classification, Oncel Tuzel, Fatih Porikli, Peter Meer
     
         @param image: The input image (MxN)
         @param upperleft: The upper left point (row,col)
         @param lowerright: The lower right point (row,col)
         @param imagekey: The input image's hash. Faster if this is calculated only once and passed in repeatedly
-        @return: The featureDescriptors (MxNx7) of type float 
+        @return: The covariance matrix (7x7) of the region specified. 
     """
     global _saved_work
     if imagekey is None:
