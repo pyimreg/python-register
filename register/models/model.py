@@ -16,13 +16,11 @@ class Model(object):
     DESCRIPTION=None
 
     def __init__(self, coordinates):
-
         self.coordinates = coordinates
 
     def estimate(self, warp):
         """"
         Estimates the best fit parameters that define a warp field.
-
         @param warp: a warp field, representing the warped coordinates.
         @return: a set of parameters (n-dimensional array).
         """
@@ -31,7 +29,6 @@ class Model(object):
     def warp(self, parameters):
         """
         Computes the warp field given transformed coordinates.
-
         @param param: array coordinates of model parameters.
         @return: a deformation field.
         """
@@ -49,8 +46,14 @@ class Model(object):
     def transform(self, parameters):
         """
         A geometric transformation of coordinates.
-
         @param param: array coordinates of model parameters.
+        """
+        raise NotImplementedError('')
+    
+    def jacobian(self):
+        """
+        Evaluates the derivative of deformation model with respect to the
+        coordinates.
         """
         raise NotImplementedError('')
         
@@ -168,13 +171,105 @@ class Affine(Model):
 
         return (dx, dy)
 
+class ThinPlateSpline(Model):
 
-class Spline(Model):
-
-    MODEL='Spline (S)'
+    MODEL='Thin Plate Spline (TPS)'
 
     DESCRIPTION="""
-        Applies a spline deformation model, as described in:
+        Computes a thin-plate-spline deformation model, as described in:
+        
+        Bookstein, F. L. (1989). Principal warps: thin-plate splines and the 
+        decomposition of deformations. IEEE Transactions on Pattern Analysis 
+        and Machine Intelligence, 11(6), 567-585. 
+        
+        """
+
+    def __init__(self, coordinates, points, kernel=None):
+    
+        Model.__init__(self, coordinates)
+        self.kernel = kernel
+        self.__basis()
+    
+    def U(self, r):
+        """
+        This is a kernel function applied to solve the biharmonic equation.
+        @param r: 
+        """
+        
+        if not self.kernel:
+            return np.multiply( -np.power(r,2), np.log(np.power(r,2) + 1e-20))
+        else:
+            return self.kernel(r)   
+     
+    def approximate(self, p0, p1):
+        """
+        Approximates the thinplate spline coefficients, following derivations
+        shown in:
+        
+        Bookstein, F. L. (1989). Principal warps: thin-plate splines and the 
+        decomposition of deformations. IEEE Transactions on Pattern Analysis 
+        and Machine Intelligence, 11(6), 567-585. 
+        """
+        
+        K = np.zeros((p0.shape[0], p0.shape[0]))
+        
+        for i in range(0, p0.shape[0]):
+            for j in range(0, p0.shape[0]):
+                r = np.sqrt( (p0[i,0] - p0[j,0])**2 + (p0[i,1] - p0[j,1])**2 ) 
+                K[i,j] = self.U(r)
+                
+        P = np.hstack((np.ones((p0.shape[0], 1)), p0))
+        
+        L = np.vstack((np.hstack((K,P)), 
+                       np.hstack((P.transpose(), np.zeros((3,3))))))
+        
+        Y = np.vstack( (p1, np.zeros((3, 2))) )
+        Y = np.matrix(Y)
+        Linv = np.matrix(np.linalg.inv(L))
+        return Linv*Y
+    
+    
+    def __basis(self, points):
+        """
+        Forms the thin plate spline deformation basis, which is composed of 
+        a linear and non-linear component.
+        """
+        
+        self.basis = np.zeros((self.coords.tenssor[0].size, len(points)+3))
+        
+        # linear, affine component
+        self.basis[0] = 1
+        self.basis[1] = self.coords.tensor[1].flatten()
+        self.basis[2] = self.coords.tensor[0].flatten()
+        
+        # nonlinear, spline component.
+        for index, p in enumerate( points ):
+            self.basis[index+6] = self.U( 
+                np.sqrt(
+                    (p[1]-self.coords.tensor[1])**2 + 
+                    (p[0]-self.coords.tensor[0])**2 
+                    )     
+            ).flatten()
+    
+    def warp(self, parameters):
+        # FIXME: implement this.
+        pass
+    
+    def jacobian(self):
+        raise NotImplementedError("""
+            It does not make sense to use a non-linear optimization to 
+            fit a thin-plate-spline model. Try the "CubicSpline" deformation
+            model instead.
+            """
+            )
+
+
+class CubicSpline(Model):
+
+    MODEL='CubicSpline (CS)'
+
+    DESCRIPTION="""
+        Applies a cubic-spline deformation model, as described in:
 
         Kybic, J. and Unser, M. (2003). Fast parametric elastic image
         registration. IEEE Transactions on Image Processing, 12(11), 1427-1442.
