@@ -197,9 +197,9 @@ class ThinPlateSpline(Model):
         """
         
         if not self.kernel:
-            return np.multiply( -np.power(r,2), np.log(np.power(r,2) + 1e-20))
+            return np.multiply(-np.power(r,2), np.log(np.power(r,2) + 1e-20))
         else:
-            return self.kernel(r)   
+            return self.kernel(r)
      
     def approximate(self, p0, p1):
         """

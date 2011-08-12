@@ -53,7 +53,7 @@ class RegisterData(object):
             self.coords = coords
         
         # Features are (as a starting point a dictionary) which define
-        # labelled salient image coordinates (point features). 
+        # labeled salient image coordinates (point features). 
         
         self.features = features
         
@@ -78,7 +78,6 @@ class Register(object):
         W(x;p): is a deformation model (defined by the parameter set p).
         I     : is an input image (to be deformed).
         T     : is a template (which is a deformed version of the input).
-
     """
     
     # The optimization step cache.
@@ -293,74 +292,37 @@ class KybicRegister(Register):
         return alpha
 
 
-class SplineRegister():
+class DirectRegister():
     """
-    A registration class for estimating the deformation field which minimizes 
-    feature differences using a thin-plate-spline interpolant.
+    A *direct* registration class for estimating the deformation model 
+    parameters that best allign features.
+
+    W(x;p) - x'
+
+    where:
+        W(x;p): is a deformation model (defined by the parameter set p).
+        x     : is a set of registration (points, lines) features.
+        x'    : is a corresponding of registration features.
     """
     
-    def __init__(self, sampler, kernel=None):
-        
+    def __init__(self, model, sampler):
+
+        self.model = model
         self.sampler = sampler
-        self.kernel = kernel if kernel is not None else None
-        
-    def U(self, r):
-        """
-        This is a kernel function applied to solve the biharmonic equation.
-        @param r: 
-        """
-        
-        if not self.kernel:
-            return np.multiply( -np.power(r,2), np.log(np.power(r,2) + 1e-20))
-        else:
-            return self.kernel(r)
-        
-        ## Gaussian kernel
-        ##var = 5.0
-        ##return np.exp( -pow(r,2)/(2*var**2)  )
-    
-    def approximate(self, p0, p1):
-        """
-        Approximates the thinplate spline coefficients, following derivations
-        shown in:
-        
-        Bookstein, F. L. (1989). Principal warps: thin-plate splines and the 
-        decomposition of deformations. IEEE Transactions on Pattern Analysis 
-        and Machine Intelligence, 11(6), 567-585. 
-        """
-        
-        K = np.zeros((p0.shape[0], p0.shape[0]))
-        
-        for i in range(0, p0.shape[0]):
-            for j in range(0, p0.shape[0]):
-                r = np.sqrt( (p0[i,0] - p0[j,0])**2 + (p0[i,1] - p0[j,1])**2 ) 
-                K[i,j] = self.U(r)
-                
-        P = np.hstack((np.ones((p0.shape[0], 1)), p0))
-        
-        L = np.vstack((np.hstack((K,P)), 
-                       np.hstack((P.transpose(), np.zeros((3,3))))))
-        
-        Y = np.vstack( (p1, np.zeros((3, 2))) )
-        
-        Y = np.matrix(Y)
-        
-        Linv = np.matrix(np.linalg.inv(L))
-        
-        return L, Linv*Y
     
     def register(self,
                  image,
                  template,
-                 vectorized=True):
+                 verbose=False):
         """
-        Performs an image (feature based) registration.
-        
-        @param image: a floating image, registerData object.
-        @param template: a target image, registerData object.
+        Performs an image registration.
+        @param image: the floating image.
+        @param template: the target image.
+        @keyword verbose: a debug flag for text status updates. 
         """
         
         sampler = self.sampler(image.coords)
+        model = self.model(image.coords)
         
         # Form corresponding point sets. 
         imagePoints = []
@@ -373,76 +335,18 @@ class SplineRegister():
                 #print '{} -> {}'.format(imagePoints[-1], templatePoints[-1])
         
         if not imagePoints or not templatePoints:
-            raise ValueError('Requires image and template features to register.')
+            raise ValueError('Requires corresponding features to register.')
         
         # Note the inverse warp is estimated here.
+        p = model.approximate(
+            np.array(templatePoints),
+            np.array(imagePoints)
+            )
         
-        p0 = np.array(templatePoints)
-        p1 = np.array(imagePoints)
+        # Estimate the warp field.
+        warp = model.warp(p)
         
-        _L, model = self.approximate(p0, p1)
-        
-        # For all coordinates in the register data, evaluate the
-        # thin-plate-spline.
-        
-        warp = np.zeros_like(image.coords.tensor)
-        
-        affine  = model[-3:, :]
-        weights = model[:-3, :]
-        
-        if vectorized:
-            
-            # Vectorized extrapolation, looping through arrays in python is 
-            # slow therefore wherever possible attempt to unroll loops. Below
-            # is an example:
-            
-            Xvec = np.matrix(image.coords.tensor[1].flatten(0)).T
-            Yvec = np.matrix(image.coords.tensor[0].flatten(0)).T
-       
-            # Fast matrix multiplication approach:
-            Px = np.matrix(np.tile(p0[:,0], (Xvec.shape[0], 1)))
-            Wx = np.matrix(np.tile(weights[:,0].T, (Xvec.shape[0], 1)))
-            Bx = np.matrix(np.tile(Xvec, (1, p0.shape[0])))
-            Ax = np.matrix(np.tile(affine[:,0].T, (Xvec.shape[0], 1)))
-        
-            Py = np.matrix(np.tile(p0[:,1], (Xvec.shape[0], 1)))
-            Wy = np.matrix(np.tile(weights[:,1].T, (Xvec.shape[0], 1)))
-            By = np.matrix(np.tile(Yvec, (1, p0.shape[0])))
-            Ay = np.matrix(np.tile(affine[:,1].T, (Xvec.shape[0], 1)))
-        
-            # Form the R matrix:
-            R = self.U( np.sqrt( np.power(Px - Bx,2) + np.power(Py - By,2)) )
-        
-            # Compute the sum of the weighted R matrix, row wise.
-            Rx = np.sum( np.multiply(Wx, R), 1 )
-            Ry = np.sum( np.multiply(Wy, R), 1 )
-        
-            one = np.ones_like(Xvec)
-            a = np.hstack(( one, Xvec, Yvec, one))
-   
-            warp[1] = np.sum( np.multiply(a, np.hstack((Ax, Rx)) ), 1 ).reshape(warp[1].shape)
-            warp[0] = np.sum( np.multiply(a, np.hstack((Ay, Ry)) ), 1 ).reshape(warp[0].shape)
-            
-        else:
-            
-            # Slow nested loop approach:
-            for x in xrange(0, image.coords.domain[1]):
-                for y in xrange(0, image.coords.domain[3]):
-                    
-                    # Refer to page 570 (of BookStein paper) first column, last 
-                    # equation (relating map coordinates to coefficients).
-                    
-                    zx = 0.0
-                    zy = 0.0
-                    
-                    for n in range(0, len(p0[:,0])):
-                        r = np.sqrt( (p0[n,0] - x)**2 + (p0[n,1] - y)**2 ) 
-                        zx += float(weights[n,0])*float(self.U(r)) 
-                        zy += float(weights[n,1])*float(self.U(r)) 
-            
-                    warp[0][y,x] = affine[0,1] + affine[1,1]*x + affine[2,1]*y + zy
-                    warp[1][y,x] = affine[0,0] + affine[1,0]*x + affine[2,0]*y + zx
-        
+        # Apply the warp the image.
         img = sampler.f(image.data, warp).reshape(image.data.shape)
         
         return warp, img
