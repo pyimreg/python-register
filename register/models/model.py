@@ -252,6 +252,8 @@ class ThinPlateSpline(Model):
             ).flatten()
     
     def warp(self, parameters):
+        
+        
         # FIXME: implement this.
         pass
     

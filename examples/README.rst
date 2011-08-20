@@ -21,7 +21,7 @@ Demonstrates uses of the sci-kit:
   
   + nonlinreg
   
-  Uses an cubic spline deformation model to defrom the image and then (attempts to) minimize:
+  Uses an cubic spline deformation model to deform the image and then (attempts to) minimize:
   
   || T - W(F;p) || + a*||p||
   

@@ -24,7 +24,7 @@ template = imread('data/smile.png')[:, :, 0]
 
 # Form the affine registration instance.
 affine = register.Register(
-    model.Spline,
+    model.CubicSpline,
     metric.Residual,
     sampler.CubicConvolution
     )

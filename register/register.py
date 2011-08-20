@@ -4,6 +4,10 @@ import collections
 import numpy as np
 import scipy.ndimage as nd
 
+###############################################################################
+#Auxiliary, Supporting functions for registration.
+#@{
+###############################################################################
 
 def _smooth(image, variance):
     """
@@ -21,6 +25,11 @@ def _smooth(image, variance):
                     )
                   )
 
+###############################################################################
+#@}
+#Coordinates, A placeholder for coordinate definition.
+#@{
+###############################################################################
 
 class Coordinates(object):
     """
@@ -36,6 +45,11 @@ class Coordinates(object):
         self.homogenous[1] = self.tensor[0].flatten()
         self.homogenous[2] = 1.0
 
+###############################################################################
+#@}
+#RegisterData, A container for image, coordinate and feature data.
+#@{
+###############################################################################
 
 class RegisterData(object):
     """
@@ -64,7 +78,12 @@ class RegisterData(object):
         @param variance: the width of the smoothing kernel.
         """
         self.data = _smooth(self.data, variance)
-    
+
+###############################################################################
+#@}
+#Register, The core registration algorithm (modified gradient descent)
+#@{
+###############################################################################
 
 class Register(object):
     """
@@ -86,7 +105,7 @@ class Register(object):
     # The maximum number of optimization iterations. 
     MAX_ITER = 200
     
-    # The maximum numver of bad (incorrect) optimization steps.
+    # The maximum number of bad (incorrect) optimization steps.
     MAX_BAD = 20
     
     def __init__(self, model, metric, sampler):
@@ -257,6 +276,11 @@ class Register(object):
 
         return p, warp, warpedImage, searchStep.error
 
+###############################################################################
+#@}
+#Kybic, A derivative registration algorithm for non-linear deformations.
+#@{
+###############################################################################
 
 class KybicRegister(Register):
     """
@@ -291,62 +315,44 @@ class KybicRegister(Register):
         """
         return alpha
 
+###############################################################################
+#@}
+#Feature, Methods for direct warp field estimates using corresponding feature 
+#         points.
+#@{
+###############################################################################
 
-class DirectRegister():
+def featureRegister(image, template, model):
     """
-    A *direct* registration class for estimating the deformation model 
-    parameters that best allign features.
-
-    W(x;p) - x'
-
-    where:
-        W(x;p): is a deformation model (defined by the parameter set p).
-        x     : is a set of registration (points, lines) features.
-        x'    : is a corresponding of registration features.
+    Estimates the warp field using features.
+    
+    @param image: the floating image.
+    @param template: the target image.
+    @param model: the deformation model. 
     """
     
-    def __init__(self, model, sampler):
-
-        self.model = model
-        self.sampler = sampler
+    # Form corresponding point sets. 
+    imagePoints = []
+    templatePoints = []
     
-    def register(self,
-                 image,
-                 template,
-                 verbose=False):
-        """
-        Performs an image registration.
-        @param image: the floating image.
-        @param template: the target image.
-        @keyword verbose: a debug flag for text status updates. 
-        """
-        
-        sampler = self.sampler(image.coords)
-        model = self.model(image.coords)
-        
-        # Form corresponding point sets. 
-        imagePoints = []
-        templatePoints = []
-        
-        for id, point in image.features['points'].items():
-            if id in template.features['points']:
-                imagePoints.append(point)
-                templatePoints.append(template.features['points'][id])
-                #print '{} -> {}'.format(imagePoints[-1], templatePoints[-1])
-        
-        if not imagePoints or not templatePoints:
-            raise ValueError('Requires corresponding features to register.')
-        
-        # Note the inverse warp is estimated here.
-        p = model.approximate(
-            np.array(templatePoints),
-            np.array(imagePoints)
-            )
-        
-        # Estimate the warp field.
-        warp = model.warp(p)
-        
-        # Apply the warp the image.
-        img = sampler.f(image.data, warp).reshape(image.data.shape)
-        
-        return warp, img
+    for id, point in image.features['points'].items():
+        if id in template.features['points']:
+            imagePoints.append(point)
+            templatePoints.append(template.features['points'][id])
+            #print '{} -> {}'.format(imagePoints[-1], templatePoints[-1])
+    
+    if not imagePoints or not templatePoints:
+        raise ValueError('Requires corresponding features to register.')
+    
+    # Note the inverse warp is estimated here.
+    p = model.approximate(
+        np.array(templatePoints),
+        np.array(imagePoints)
+        )
+    
+    # Estimate the warp field.
+    return model.warp(p)
+
+###############################################################################
+#@}
+###############################################################################

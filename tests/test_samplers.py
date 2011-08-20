@@ -33,7 +33,7 @@ def test_sampler():
         
         print 'Nearest : {0}x{0} image - {1:0.3f} ms'.format(n, np.average(ntimes))
         
-        # cubic convolution sampler- ctypes
+        # cubic convolution sampler - ctypes
         cubic = sampler.CubicConvolution(coords)
         
         ctimes = np.zeros(10)
