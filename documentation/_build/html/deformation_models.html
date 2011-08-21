@@ -1,0 +1,197 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Deformation models &mdash; python-register v0.0 documentation</title>
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="python-register v0.0 documentation" href="index.html" />
+    <link rel="next" title="Similarity metrics" href="similarity_metrics.html" />
+    <link rel="prev" title="python-register" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="similarity_metrics.html" title="Similarity metrics"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="python-register"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">python-register v0.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-register">
+<span id="deformation-models"></span><h1>Deformation models<a class="headerlink" href="#module-register" title="Permalink to this headline">¶</a></h1>
+<p>A top level registration module</p>
+<dl class="class">
+<dt id="register.Coordinates">
+<em class="property">class </em><tt class="descclassname">register.</tt><tt class="descname">Coordinates</tt><big>(</big><em>domain</em>, <em>spacing=None</em><big>)</big><a class="headerlink" href="#register.Coordinates" title="Permalink to this definition">¶</a></dt>
+<dd><p>A container for grid coordinates.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="register.KybicRegister">
+<em class="property">class </em><tt class="descclassname">register.</tt><tt class="descname">KybicRegister</tt><big>(</big><em>model</em>, <em>metric</em>, <em>sampler</em><big>)</big><a class="headerlink" href="#register.KybicRegister" title="Permalink to this definition">¶</a></dt>
+<dd><p>Variant of LM algorithm as described by:</p>
+<dl class="docutils">
+<dt>Kybic, J. and Unser, M. (2003). Fast parametric elastic image</dt>
+<dd>registration. IEEE Transactions on Image Processing, 12(11), 1427-1442.</dd>
+</dl>
+</dd></dl>
+
+<dl class="class">
+<dt id="register.Register">
+<em class="property">class </em><tt class="descclassname">register.</tt><tt class="descname">Register</tt><big>(</big><em>model</em>, <em>metric</em>, <em>sampler</em><big>)</big><a class="headerlink" href="#register.Register" title="Permalink to this definition">¶</a></dt>
+<dd><p>A registration class for estimating the deformation model parameters that
+best solve:</p>
+<p>f( W(I;p), T )</p>
+<dl class="docutils">
+<dt>where:</dt>
+<dd>f     : is a similarity metric.
+W(x;p): is a deformation model (defined by the parameter set p).
+I     : is an input image (to be deformed).
+T     : is a template (which is a deformed version of the input).</dd>
+</dl>
+<dl class="class">
+<dt id="register.Register.optStep">
+<em class="property">class </em><tt class="descname">optStep</tt><a class="headerlink" href="#register.Register.optStep" title="Permalink to this definition">¶</a></dt>
+<dd><p>optStep(error, p, deltaP)</p>
+<dl class="attribute">
+<dt id="register.Register.optStep.deltaP">
+<tt class="descname">deltaP</tt><a class="headerlink" href="#register.Register.optStep.deltaP" title="Permalink to this definition">¶</a></dt>
+<dd><p>Alias for field number 2</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="register.Register.optStep.error">
+<tt class="descname">error</tt><a class="headerlink" href="#register.Register.optStep.error" title="Permalink to this definition">¶</a></dt>
+<dd><p>Alias for field number 0</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="register.Register.optStep.p">
+<tt class="descname">p</tt><a class="headerlink" href="#register.Register.optStep.p" title="Permalink to this definition">¶</a></dt>
+<dd><p>Alias for field number 1</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="method">
+<dt id="register.Register.register">
+<tt class="descclassname">Register.</tt><tt class="descname">register</tt><big>(</big><em>image</em>, <em>template</em>, <em>p=None</em>, <em>alpha=None</em>, <em>warp=None</em>, <em>plotCB=None</em>, <em>verbose=False</em><big>)</big><a class="headerlink" href="#register.Register.register" title="Permalink to this definition">¶</a></dt>
+<dd><p>Performs an image registration.
+&#64;param image: the floating image.
+&#64;param template: the target image.
+&#64;keyword p: a list of parameters, (first guess).
+&#64;keyword alpha: the dampening factor.
+&#64;keyword warp: the warp field (first guess).
+&#64;keyword plotCB: a debug plotting function.
+&#64;keyword verbose: a debug flag for text status updates.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="register.RegisterData">
+<em class="property">class </em><tt class="descclassname">register.</tt><tt class="descname">RegisterData</tt><big>(</big><em>data</em>, <em>coords=None</em>, <em>features=None</em><big>)</big><a class="headerlink" href="#register.RegisterData" title="Permalink to this definition">¶</a></dt>
+<dd><p>A container for registration data.</p>
+<dl class="method">
+<dt id="register.RegisterData.smooth">
+<tt class="descname">smooth</tt><big>(</big><em>variance</em><big>)</big><a class="headerlink" href="#register.RegisterData.smooth" title="Permalink to this definition">¶</a></dt>
+<dd><p>A simple image smoothing method - using a Gaussian kernel.
+&#64;param variance: the width of the smoothing kernel.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">python-register</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="similarity_metrics.html"
+                        title="next chapter">Similarity metrics</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/deformation_models.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="similarity_metrics.html" title="Similarity metrics"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="python-register"
+             >previous</a> |</li>
+        <li><a href="index.html">python-register v0.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, Nathan Faggian, Stefan Van Der Walt, Riaan Van Den Dool.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
+    </div>
+  </body>
+</html>
