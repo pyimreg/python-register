@@ -35,9 +35,16 @@ To install for all users on Unix/Linux::
   
   sudo python setup.py install
 
-
 Development
 ===========
+
+Basic rules for commits to the python-register repository:
+
+ + master is our stable "release" branch.
+	
+ + feature branches (or contributor pull requests) for each ticket on github are merged (into master) after review only. 
+ 
+ + tests for new features using py.test *must* exist before merges.
 
 GIT
 ~~~
@@ -46,7 +53,6 @@ You can check the latest sources with the command::
 
     git clone git://github.com/nfaggian/python-regsiter.git
     
-
 Contributors
 ~~~~~~~~~~~~~
 
@@ -57,15 +63,7 @@ Follow: Fork + Pull Model::
 Maintainers
 ~~~~~~~~~~~~~
 
-Follow: Shared Repository Model 
-
-Basic rules for commits to the python-register repository:
-
- + master is our stable "release" branch.
-	
- + feature branches (or contributor pull requests) for each ticket on github are merged (into master) after review only. 
- 
- + tests for new features using py.test *must* exist.
+Follow: Shared Repository Model
 
 Tracking an already formed branch:
 
