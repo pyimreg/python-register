@@ -4,18 +4,28 @@ import collections
 import numpy as np
 import scipy.ndimage as nd
 
-###############################################################################
-#Auxiliary, Supporting functions for registration.
-#@{
-###############################################################################
 
 def _smooth(image, variance):
     """
-    A simple image smoothing method - using a Gaussian kernel.
-    @param image: the input image, a numpy ndarray object.
-    @param variance: the width of the smoothing kernel.
-    @return: the smoothing input image.
+    Gaussian smoothing using the fast-fourier-transform (FFT)
+    
+    Parameters
+    ----------
+    image: nd-array
+        Input image 
+    variance: float
+        Variance of the Gaussian kernel.
+
+    Returns
+    -------
+    image: nd-array
+       An image convolved with the Gaussian kernel.
+
+    See also
+    --------
+    regisger.Register.smooth
     """
+    
     return np.real(
         np.fft.ifft2(
             nd.fourier_gaussian(
@@ -25,16 +35,21 @@ def _smooth(image, variance):
                     )
                   )
 
-###############################################################################
-#@}
-#Coordinates, A placeholder for coordinate definition.
-#@{
-###############################################################################
 
 class Coordinates(object):
     """
-    A container for grid coordinates.
+    Container for grid coordinates.
+    
+    Attributes
+    ----------
+    domain : nd-array
+        The domain of the coordinate system.
+    tensor : nd-array
+        The grid coordinates.
+    homogenous : nd-array
+        A homogenous coordinate system representation of grid coordinates.
     """
+    
     def __init__(self, domain, spacing=None):
     
         self.domain = domain
@@ -45,16 +60,21 @@ class Coordinates(object):
         self.homogenous[1] = self.tensor[0].flatten()
         self.homogenous[2] = 1.0
 
-###############################################################################
-#@}
-#RegisterData, A container for image, coordinate and feature data.
-#@{
-###############################################################################
 
 class RegisterData(object):
     """
-    A container for registration data.
+    Container for registration data.
+    
+    Attributes
+    ----------
+    data : nd-array
+        The image registration image values.
+    coords : nd-array, optional
+        The grid coordinates.
+    features : dictionary, optional
+        A mapping of unique ids to registration features.
     """
+    
     def __init__(self, data, coords=None, features=None):
 
         self.data = data
@@ -74,38 +94,63 @@ class RegisterData(object):
         
     def smooth(self, variance):
         """
-        A simple image smoothing method - using a Gaussian kernel.
-        @param variance: the width of the smoothing kernel.
+        Smooth feature data in place.
+    
+        Parameters
+        ----------
+        variance: float
+            Variance of the Gaussian kernel.
+       
+        See also
+        --------
+        regisger.Register.smooth
         """
+
         self.data = _smooth(self.data, variance)
 
-###############################################################################
-#@}
-#Register, The core registration algorithm (modified gradient descent)
-#@{
-###############################################################################
 
 class Register(object):
     """
     A registration class for estimating the deformation model parameters that
     best solve:
-
-    f( W(I;p), T )
-
-    where:
-        f     : is a similarity metric.
-        W(x;p): is a deformation model (defined by the parameter set p).
-        I     : is an input image (to be deformed).
-        T     : is a template (which is a deformed version of the input).
+    
+    | :math:`f( W(I;p), T )`
+    |
+    | where:
+    |    :math:`f`     : is a similarity metric.
+    |    :math:`W(x;p)`: is a deformation model (defined by the parameter set p).
+    |    :math:`I`     : is an input image (to be deformed).
+    |    :math:`T`     : is a template (which is a deformed version of the input).
+    
+    Notes:
+    ------
+    
+    Solved using a modified gradient descent algorithm.
+    
+    .. [0] Levernberg-Marquardt algorithm, 
+           http://en.wikipedia.org/wiki/Levenberg-Marquardt_algorithm 
+    
+    Attributes
+    ----------
+    
+    MAX_ITER: int
+        Maximum number of optimization steps.
+    MAX_BAD: int
+        Maximum number of bad iterations.
+    optStep: namedtuple
+        An optimization step definition.
+    model: Model
+        A deformation model class.
+    metric: Metric
+        A similarity metric class.
+    sampler: Sampler
+        A sampler class.
+        
     """
     
-    # The optimization step cache.
     optStep = collections.namedtuple('optStep', 'error p deltaP')
     
-    # The maximum number of optimization iterations. 
     MAX_ITER = 200
-    
-    # The maximum number of bad (incorrect) optimization steps.
     MAX_BAD = 20
     
     def __init__(self, model, metric, sampler):
@@ -116,17 +161,23 @@ class Register(object):
 
     def __deltaP(self, J, e, alpha, p=None):
         """
-        Compute the parameter update.
-
-        Refer to the Levernberg-Marquardt algorithm:
-            http://en.wikipedia.org/wiki/Levenberg-Marquardt_algorithm
-
-        @param J: dE/dP the relationship between image differences and model
-                  parameters.
-        @param e: the difference between the image and template.
-        @param alpha: the dampening factor.
-        @keyword p: the current parameter set.
-        @return: deltaP, the set of model parameter updates. (p x 1).
+        Computes the parameter update.
+        
+        Parameters
+        ----------
+        J: nd-array
+            The (dE/dP) the relationship between image differences and model
+            parameters.
+        e: float
+            The evaluated similarity metric.    
+        alpha: float
+            A dampening factor.
+        p: nd-array or list of floats, optional
+        
+        Returns
+        -------
+        deltaP: nd-array
+           The parameter update vector.
         """
 
         H = np.dot(J.T, J)
@@ -137,15 +188,19 @@ class Register(object):
 
     def __dampening(self, alpha, decreasing):
         """
-        Returns the dampening value.
-
-        Refer to the Levernberg-Marquardt algorithm:
-            http://en.wikipedia.org/wiki/Levenberg-Marquardt_algorithm
-
-        @param alpha: a dampening factor.
-        @param decreasing: a boolean indicating that the error function is
-        decreasing.
-        @return: an adjusted dampening factor.
+        Computes the adjusted dampening factor.
+        
+        Parameters
+        ----------
+        alpha: float
+            The current dampening factor.
+        decreasing: boolean
+            Conditional on the decreasing error function.
+            
+        Returns
+        -------
+        alpha: float
+           The adjusted dampening factor.
         """
         return alpha / 10. if decreasing else alpha * 10.
 
@@ -158,14 +213,35 @@ class Register(object):
                  plotCB=None,
                  verbose=False):
         """
-        Performs an image registration.
-        @param image: the floating image.
-        @param template: the target image.
-        @keyword p: a list of parameters, (first guess).
-        @keyword alpha: the dampening factor.
-        @keyword warp: the warp field (first guess).
-        @keyword plotCB: a debug plotting function.
-        @keyword verbose: a debug flag for text status updates. 
+        Computes the registration between the image and template.
+        
+        Parameters
+        ----------
+        image: nd-array
+            The floating image.
+        template: nd-array
+            The target image.
+        p: list (or nd-array), optional.
+            First guess at fitting parameters.
+        warp: nd-array, optional.
+            A warp field estimate.
+        alpha: float
+            The dampening factor.
+        plotCB: function, optional
+            A plotting function.
+        verbose: boolean
+            A debug flag for text status updates. 
+        
+        Returns
+        -------
+        p: nd-array.
+            Model parameters.
+        warp: nd-array.
+            Warp field estimate.
+        warpedImage: nd-array
+            The re-sampled image.
+        error: float
+            Fitting error.
         """
         
         #TODO: Determine the common coordinate system.
@@ -276,11 +352,6 @@ class Register(object):
 
         return p, warp, warpedImage, searchStep.error
 
-###############################################################################
-#@}
-#Kybic, A derivative registration algorithm for non-linear deformations.
-#@{
-###############################################################################
 
 class KybicRegister(Register):
     """
@@ -295,7 +366,23 @@ class KybicRegister(Register):
 
     def __deltaP(self, J, e, alpha, p):
         """
-        Compute the parameter update.
+        Computes the parameter update.
+        
+        Parameters
+        ----------
+        J: nd-array
+            The (dE/dP) the relationship between image differences and model
+            parameters.
+        e: float
+            The evaluated similarity metric.    
+        alpha: float
+            A dampening factor.
+        p: nd-array or list of floats, optional
+        
+        Returns
+        -------
+        deltaP: nd-array
+           The parameter update vector.
         """
 
         H = np.dot(J.T, J)
@@ -306,29 +393,46 @@ class KybicRegister(Register):
 
     def __dampening(self, alpha, decreasing):
         """
-        Returns the dampening value, without adjustment.
-    
-        @param alpha: a dampening factor.
-        @param decreasing: a boolean indicating that the error function is
-        decreasing.
-        @return: an adjusted dampening factor.
+        Computes the adjusted dampening factor.
+        
+        Parameters
+        ----------
+        alpha: float
+            The current dampening factor.
+        decreasing: boolean
+            Conditional on the decreasing error function.
+            
+        Returns
+        -------
+        alpha: float
+           The adjusted dampening factor.
         """
         return alpha
 
-###############################################################################
-#@}
-#Feature, Methods for direct warp field estimates using corresponding feature 
-#         points.
-#@{
-###############################################################################
 
-def _featureRegister(image, template, model):
+def directRegister(image, template, model):
     """
-    Estimates the warp field using features.
-    
-    @param image: the floating image.
-    @param template: the target image.
-    @param model: the deformation model. 
+    Computes the adjusted dampening factor.
+        
+    Parameters
+    ----------
+    image: RegisterData
+        The floating registration data.
+    template: RegisterData
+        The target registration data.
+    model: Model
+        The deformation model.
+        
+    Returns
+    -------
+    p: nd-array.
+            Model parameters.
+    warp: nd-array.
+        Warp field estimate.
+    warpedImage: nd-array
+        The re-sampled image.
+    error: float
+        Fitting error.
     """
     
     # Form corresponding point sets. 
@@ -353,6 +457,3 @@ def _featureRegister(image, template, model):
     # Estimate the warp field.
     return model.warp(p)
 
-###############################################################################
-#@}
-###############################################################################
