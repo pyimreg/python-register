@@ -46,15 +46,24 @@ You can check the latest sources with the command::
 
     git clone git://github.com/nfaggian/python-regsiter.git
     
-    
-Collaborators
+
+Contributors
 ~~~~~~~~~~~~~
 
-Basic rules for commits to the repository:
+Follow: Fork + Pull Model::
+     
+    http://help.github.com/send-pull-requests/
+
+Maintainers
+~~~~~~~~~~~~~
+
+Follow: Shared Repository Model 
+
+Basic rules for commits to the python-register repository:
 
  + master is our stable "release" branch.
 	
- + feature branches for each ticket on github are merged (into master) after review only. 
+ + feature branches (or contributor pull requests) for each ticket on github are merged (into master) after review only. 
  
  + tests for new features using py.test *must* exist.
 
