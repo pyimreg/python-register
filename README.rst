@@ -65,11 +65,11 @@ Maintainers
 
 Follow: Shared Repository Model
 
-Tracking an already formed branch:
+Tracking an already formed branch::
 
    git checkout -b localBranch origin/remoteBranch
 
-Forming a new branch and pushing to github:
+Forming a new branch and pushing to origin::
    
    git checkout -b localFeature
 	
