@@ -322,7 +322,7 @@ class KybicRegister(Register):
 #@{
 ###############################################################################
 
-def featureRegister(image, template, model):
+def _featureRegister(image, template, model):
     """
     Estimates the warp field using features.
     

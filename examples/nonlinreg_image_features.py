@@ -12,7 +12,8 @@ import numpy as np
 import yaml 
 
 import matplotlib.pyplot as plt
- 
+
+from register.models import model
 from register.samplers import sampler
 from register.visualize import plot
 
@@ -28,13 +29,15 @@ template = register.RegisterData(
     features=yaml.load(open('data/smile.yaml'))
     )
 
+thinPlateSpline = model.ThinPlateSpline()
+
 # Define a gaussian kernel.
 def gaussKernel(r):
     var = 50
     return np.exp( -np.power(r,2)/(2*var**2)  )
 
 # Form the tps registration instance.
-spline = register.SplineRegister(
+spline = register.FeatureRegister(
     sampler=sampler.Spline,
     kernel=gaussKernel
     )
@@ -43,7 +46,6 @@ spline = register.SplineRegister(
 warp, img = spline.register(
     image,
     template,
-    vectorized=True,
     )
 
 plot.featurePlot(image, template, warp, img)
