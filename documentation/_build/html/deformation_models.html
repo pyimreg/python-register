@@ -37,6 +37,9 @@
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
+          <a href="np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
           <a href="similarity_metrics.html" title="Similarity metrics"
              accesskey="N">next</a> |</li>
         <li class="right" >
@@ -58,14 +61,28 @@
 <dt id="register.Coordinates">
 <em class="property">class </em><tt class="descclassname">register.</tt><tt class="descname">Coordinates</tt><big>(</big><em>domain</em>, <em>spacing=None</em><big>)</big><a class="headerlink" href="#register.Coordinates" title="Permalink to this definition">¶</a></dt>
 <dd><p>Container for grid coordinates.</p>
-<dl class="docutils">
-<dt>domain <span class="classifier-delimiter">:</span> <span class="classifier">nd-array</span></dt>
-<dd>The domain of the coordinate system.</dd>
-<dt>tensor <span class="classifier-delimiter">:</span> <span class="classifier">nd-array</span></dt>
-<dd>The grid coordinates.</dd>
-<dt>homogenous <span class="classifier-delimiter">:</span> <span class="classifier">nd-array</span></dt>
-<dd>A homogenous coordinate system representation of grid coordinates.</dd>
-</dl>
+<p class="rubric">Attributes</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="12%" />
+<col width="10%" />
+<col width="79%" />
+</colgroup>
+<tbody valign="top">
+<tr><td>domain</td>
+<td>nd-array</td>
+<td>Domain of the coordinate system.</td>
+</tr>
+<tr><td>tensor</td>
+<td>nd-array</td>
+<td>Grid coordinates.</td>
+</tr>
+<tr><td>homogenous</td>
+<td>nd-array</td>
+<td><cite>Homogenous</cite> coordinate system representation of grid coordinates.</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="class">
@@ -76,6 +93,7 @@
 <dt>Kybic, J. and Unser, M. (2003). Fast parametric elastic image</dt>
 <dd>registration. IEEE Transactions on Image Processing, 12(11), 1427-1442.</dd>
 </dl>
+<p class="rubric">Methods</p>
 </dd></dl>
 
 <dl class="class">
@@ -99,32 +117,29 @@ best solve:</p>
 <mrow><mi>T</mi></mrow></math>     : is a template (which is a deformed version of the input).</div>
 </div>
 </div>
-<p>Solved using a modified gradient descent algorithm.</p>
-<table class="docutils footnote" frame="void" id="id1" rules="none">
-<colgroup><col class="label" /><col /></colgroup>
+<p class="rubric">Attributes</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="26%" />
+<col width="74%" />
+</colgroup>
 <tbody valign="top">
-<tr><td class="label">[0]</td><td>Levernberg-Marquardt algorithm, 
-<a class="reference external" href="http://en.wikipedia.org/wiki/Levenberg-Marquardt_algorithm">http://en.wikipedia.org/wiki/Levenberg-Marquardt_algorithm</a></td></tr>
+<tr><td>model: class</td>
+<td>A <cite>deformation</cite> model class definition.</td>
+</tr>
+<tr><td>metric: class</td>
+<td>A <cite>similarity</cite> metric class definition.</td>
+</tr>
+<tr><td>sampler: class</td>
+<td>A <cite>sampler</cite> class definition.</td>
+</tr>
 </tbody>
 </table>
-<dl class="docutils">
-<dt>MAX_ITER: int</dt>
-<dd>Maximum number of optimization steps.</dd>
-<dt>MAX_BAD: int</dt>
-<dd>Maximum number of bad iterations.</dd>
-<dt>optStep: namedtuple</dt>
-<dd>An optimization step definition.</dd>
-<dt>model: Model</dt>
-<dd>A deformation model class.</dd>
-<dt>metric: Metric</dt>
-<dd>A similarity metric class.</dd>
-<dt>sampler: Sampler</dt>
-<dd>A sampler class.</dd>
-</dl>
+<p class="rubric">Methods</p>
 <dl class="class">
 <dt id="register.Register.optStep">
 <em class="property">class </em><tt class="descname">optStep</tt><a class="headerlink" href="#register.Register.optStep" title="Permalink to this definition">¶</a></dt>
-<dd><p>optStep(error, p, deltaP)</p>
+<dd><p class="rubric">Methods</p>
 <dl class="attribute">
 <dt id="register.Register.optStep.deltaP">
 <tt class="descname">deltaP</tt><a class="headerlink" href="#register.Register.optStep.deltaP" title="Permalink to this definition">¶</a></dt>
@@ -149,32 +164,60 @@ best solve:</p>
 <dt id="register.Register.register">
 <tt class="descclassname">Register.</tt><tt class="descname">register</tt><big>(</big><em>image</em>, <em>template</em>, <em>p=None</em>, <em>alpha=None</em>, <em>warp=None</em>, <em>plotCB=None</em>, <em>verbose=False</em><big>)</big><a class="headerlink" href="#register.Register.register" title="Permalink to this definition">¶</a></dt>
 <dd><p>Computes the registration between the image and template.</p>
-<dl class="docutils">
-<dt>image: nd-array</dt>
-<dd>The floating image.</dd>
-<dt>template: nd-array</dt>
-<dd>The target image.</dd>
-<dt>p: list (or nd-array), optional.</dt>
-<dd>First guess at fitting parameters.</dd>
-<dt>warp: nd-array, optional.</dt>
-<dd>A warp field estimate.</dd>
-<dt>alpha: float</dt>
-<dd>The dampening factor.</dd>
-<dt>plotCB: function, optional</dt>
-<dd>A plotting function.</dd>
-<dt>verbose: boolean</dt>
-<dd>A debug flag for text status updates.</dd>
-</dl>
-<dl class="docutils">
-<dt>p: nd-array.</dt>
-<dd>Model parameters.</dd>
-<dt>warp: nd-array.</dt>
-<dd>Warp field estimate.</dd>
-<dt>warpedImage: nd-array</dt>
-<dd>The re-sampled image.</dd>
-<dt>error: float</dt>
-<dd>Fitting error.</dd>
-</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>image: nd-array</strong> :</p>
+<blockquote>
+<div><p>The floating image.</p>
+</div></blockquote>
+<p><strong>template: nd-array</strong> :</p>
+<blockquote>
+<div><p>The target image.</p>
+</div></blockquote>
+<p><strong>p: list (or nd-array), optional.</strong> :</p>
+<blockquote>
+<div><p>First guess at fitting parameters.</p>
+</div></blockquote>
+<p><strong>warp: nd-array, optional.</strong> :</p>
+<blockquote>
+<div><p>A warp field estimate.</p>
+</div></blockquote>
+<p><strong>alpha: float</strong> :</p>
+<blockquote>
+<div><p>The dampening factor.</p>
+</div></blockquote>
+<p><strong>plotCB: function, optional</strong> :</p>
+<blockquote>
+<div><p>A plotting function.</p>
+</div></blockquote>
+<p><strong>verbose: boolean</strong> :</p>
+<blockquote>
+<div><p>A debug flag for text status updates.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>p: nd-array.</strong> :</p>
+<blockquote>
+<div><p>Model parameters.</p>
+</div></blockquote>
+<p><strong>warp: nd-array.</strong> :</p>
+<blockquote>
+<div><p>Warp field estimate.</p>
+</div></blockquote>
+<p><strong>warpedImage: nd-array</strong> :</p>
+<blockquote>
+<div><p>The re-sampled image.</p>
+</div></blockquote>
+<p><strong>error: float</strong> :</p>
+<blockquote class="last">
+<div><p>Fitting error.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 </dd></dl>
@@ -183,23 +226,49 @@ best solve:</p>
 <dt id="register.RegisterData">
 <em class="property">class </em><tt class="descclassname">register.</tt><tt class="descname">RegisterData</tt><big>(</big><em>data</em>, <em>coords=None</em>, <em>features=None</em><big>)</big><a class="headerlink" href="#register.RegisterData" title="Permalink to this definition">¶</a></dt>
 <dd><p>Container for registration data.</p>
-<dl class="docutils">
-<dt>data <span class="classifier-delimiter">:</span> <span class="classifier">nd-array</span></dt>
-<dd>The image registration image values.</dd>
-<dt>coords <span class="classifier-delimiter">:</span> <span class="classifier">nd-array, optional</span></dt>
-<dd>The grid coordinates.</dd>
-<dt>features <span class="classifier-delimiter">:</span> <span class="classifier">dictionary, optional</span></dt>
-<dd>A mapping of unique ids to registration features.</dd>
-</dl>
+<p class="rubric">Attributes</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="10%" />
+<col width="26%" />
+<col width="64%" />
+</colgroup>
+<tbody valign="top">
+<tr><td>data</td>
+<td>nd-array</td>
+<td>The image registration image values.</td>
+</tr>
+<tr><td>coords</td>
+<td>nd-array, optional</td>
+<td>The grid coordinates.</td>
+</tr>
+<tr><td>features</td>
+<td>dictionary, optional</td>
+<td>A mapping of unique ids to registration features.</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Methods</p>
 <dl class="method">
 <dt id="register.RegisterData.smooth">
 <tt class="descname">smooth</tt><big>(</big><em>variance</em><big>)</big><a class="headerlink" href="#register.RegisterData.smooth" title="Permalink to this definition">¶</a></dt>
 <dd><p>Smooth feature data in place.</p>
-<dl class="docutils">
-<dt>variance: float</dt>
-<dd>Variance of the Gaussian kernel.</dd>
-</dl>
-<p>regisger.Register.smooth</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>variance: float</strong> :</p>
+<blockquote class="last">
+<div><p>Variance of the Gaussian kernel.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition-see-also admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><tt class="xref py py-obj docutils literal"><span class="pre">regisger.Register.smooth</span></tt></p>
+</div>
 </dd></dl>
 
 </dd></dl>
@@ -208,24 +277,44 @@ best solve:</p>
 <dt id="register.directRegister">
 <tt class="descclassname">register.</tt><tt class="descname">directRegister</tt><big>(</big><em>image</em>, <em>template</em>, <em>model</em><big>)</big><a class="headerlink" href="#register.directRegister" title="Permalink to this definition">¶</a></dt>
 <dd><p>Computes the adjusted dampening factor.</p>
-<dl class="docutils">
-<dt>image: RegisterData</dt>
-<dd>The floating registration data.</dd>
-<dt>template: RegisterData</dt>
-<dd>The target registration data.</dd>
-<dt>model: Model</dt>
-<dd>The deformation model.</dd>
-</dl>
-<dl class="docutils">
-<dt>p: nd-array.</dt>
-<dd>Model parameters.</dd>
-<dt>warp: nd-array.</dt>
-<dd>Warp field estimate.</dd>
-<dt>warpedImage: nd-array</dt>
-<dd>The re-sampled image.</dd>
-<dt>error: float</dt>
-<dd>Fitting error.</dd>
-</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>image: RegisterData</strong> :</p>
+<blockquote>
+<div><p>The floating registration data.</p>
+</div></blockquote>
+<p><strong>template: RegisterData</strong> :</p>
+<blockquote>
+<div><p>The target registration data.</p>
+</div></blockquote>
+<p><strong>model: Model</strong> :</p>
+<blockquote>
+<div><p>The deformation model.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>p: nd-array.</strong> :</p>
+<blockquote>
+<div><p>Model parameters.</p>
+</div></blockquote>
+<p><strong>warp: nd-array.</strong> :</p>
+<blockquote>
+<div><p>Warp field estimate.</p>
+</div></blockquote>
+<p><strong>warpedImage: nd-array</strong> :</p>
+<blockquote>
+<div><p>The re-sampled image.</p>
+</div></blockquote>
+<p><strong>error: float</strong> :</p>
+<blockquote class="last">
+<div><p>Fitting error.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 </div>
@@ -272,6 +361,9 @@ best solve:</p>
              >index</a></li>
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="np-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
           <a href="similarity_metrics.html" title="Similarity metrics"
