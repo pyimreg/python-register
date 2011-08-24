@@ -6,10 +6,14 @@ import scipy.signal as signal
 class Model(object):
     """
     Abstract geometry model.
-
-    @param MODEL: the deformation model used.
-    @param DESCRIPTION: a meaningful description of the model used, with
-                        references where appropriate.
+    
+    Attributes
+    ----------
+    METRIC : string
+        The type of similarity metric being used.
+    DESCRIPTION : string
+        A meaningful description of the model used, with references where 
+        appropriate.
     """
 
     MODEL=None
@@ -19,20 +23,36 @@ class Model(object):
         self.coordinates = coordinates
 
     def estimate(self, warp):
-        """"
+        """
         Estimates the best fit parameters that define a warp field.
-        @param warp: a warp field, representing the warped coordinates.
-        @return: a set of parameters (n-dimensional array).
+        
+        Parameters
+        ----------
+        warp: nd-array
+            Deformation field.
+        
+        Returns
+        -------
+        parameters: nd-array
+           Model parameters.
         """
         raise NotImplementedError('')
         
     def warp(self, parameters):
         """
-        Computes the warp field given transformed coordinates.
-        @param param: array coordinates of model parameters.
-        @return: a deformation field.
+        Computes the warp field given model parameters.
+        
+        Parameters
+        ----------
+        parameters: nd-array
+            Model parameters.
+        
+        Returns
+        -------
+        warp: nd-array
+           Deformation field.
         """
-
+        
         coords = self.transform(parameters)
 
         warp = np.zeros_like(self.coordinates.tensor)
@@ -46,7 +66,16 @@ class Model(object):
     def transform(self, parameters):
         """
         A geometric transformation of coordinates.
-        @param param: array coordinates of model parameters.
+        
+        Parameters
+        ----------
+        parameters: nd-array
+            Model parameters.
+        
+        Returns
+        -------
+        coords: nd-array
+           Deformation coordinates.
         """
         raise NotImplementedError('')
     
@@ -69,8 +98,12 @@ class Shift(Model):
     MODEL='Shift (S)'
 
     DESCRIPTION="""
-        Applies the shift coordinate transformation.
-                """
+        Applies the shift coordinate transformation. Follows the derivations 
+        shown in:
+      
+        S. Baker and I. Matthews. 2004. Lucas-Kanade 20 Years On: A
+        Unifying Framework. Int. J. Comput. Vision 56, 3 (February 2004).
+        """
 
     def __init__(self, coordinates):
         Model.__init__(self, coordinates)
@@ -81,14 +114,19 @@ class Shift(Model):
 
     def transform(self, parameters):
         """
-
-        Applies an shift transformation to image coordinates.
-
-        @param parameters: a array of shift parameters.
-        @param coords: array coordinates in cartesian form (n by p).
-        @return: a transformed set of coordinates.
+        A "shift" transformation of coordinates.
+        
+        Parameters
+        ----------
+        parameters: nd-array
+            Model parameters.
+        
+        Returns
+        -------
+        coords: nd-array
+           Deformation coordinates.
         """
-
+        
         T = np.eye(3,3)
         T[0,2] = -parameters[0]
         T[1,2] = -parameters[1]
@@ -97,11 +135,6 @@ class Shift(Model):
 
     def jacobian(self):
         """
-        Follows the derivations shown in:
-
-        S. Baker and I. Matthews. 2004. Lucas-Kanade 20 Years On: A
-        Unifying Framework. Int. J. Comput. Vision 56, 3 (February 2004).
-
         Evaluates the derivative of deformation model with respect to the
         coordinates.
         """
@@ -120,8 +153,12 @@ class Affine(Model):
     MODEL='Affine (A)'
 
     DESCRIPTION="""
-        Applies the affine coordinate transformation.
-                """
+        Applies the affine coordinate transformation. Follows the derivations 
+        shown in:
+        
+        S. Baker and I. Matthews. 2004. Lucas-Kanade 20 Years On: A
+        Unifying Framework. Int. J. Comput. Vision 56, 3 (February 2004).
+        """
 
     def __init__(self, coordinates):
         Model.__init__(self, coordinates)
@@ -132,13 +169,19 @@ class Affine(Model):
 
     def transform(self, p):
         """
-        Applies an affine transformation to image coordinates.
-
-        @param parameters: a array of affine parameters.
-        @param coords: array coordinates in cartesian form (n by p).
-        @return: a transformed set of coordinates.
+        A "affine" transformation of coordinates.
+        
+        Parameters
+        ----------
+        parameters: nd-array
+            Model parameters.
+        
+        Returns
+        -------
+        coords: nd-array
+           Deformation coordinates.
         """
-
+        
         T = np.array([
                       [p[0]+1.0, p[2],     p[4]],
                       [p[1],     p[3]+1.0, p[5]],
@@ -148,12 +191,7 @@ class Affine(Model):
         return np.dot(np.linalg.inv(T), self.coordinates.homogenous)
 
     def jacobian(self):
-        """
-        Follows the derivations shown in:
-
-        S. Baker and I. Matthews. 2004. Lucas-Kanade 20 Years On: A
-        Unifying Framework. Int. J. Comput. Vision 56, 3 (February 2004).
-
+        """"
         Evaluates the derivative of deformation model with respect to the
         coordinates.
         """
@@ -192,8 +230,17 @@ class ThinPlateSpline(Model):
     
     def U(self, r):
         """
-        This is a kernel function applied to solve the biharmonic equation.
-        @param r: 
+        Kernel function, applied to solve the biharmonic equation.
+        
+        Parameters
+        ----------
+        r: float
+            Distance between sample and coordinate point.
+        
+        Returns
+        -------
+        U: float
+           Evaluated kernel.
         """
         
         if not self.kernel:
@@ -201,14 +248,21 @@ class ThinPlateSpline(Model):
         else:
             return self.kernel(r)
      
-    def approximate(self, p0, p1):
+    def estimate(self, p0, p1):
         """
-        Approximates the thinplate spline coefficients, following derivations
-        shown in:
+        Estimates the best fit parameters that define a warp field.
         
-        Bookstein, F. L. (1989). Principal warps: thin-plate splines and the 
-        decomposition of deformations. IEEE Transactions on Pattern Analysis 
-        and Machine Intelligence, 11(6), 567-585. 
+        Parameters
+        ----------
+        p0: nd-array
+            Image features (points).
+        p1: nd-array
+            Template features (points).
+            
+        Returns
+        -------
+        parameters: nd-array
+           Model parameters.
         """
         
         K = np.zeros((p0.shape[0], p0.shape[0]))
@@ -229,13 +283,18 @@ class ThinPlateSpline(Model):
         return Linv*Y
     
     
-    def __basis(self, points):
+    def __basis(self, p0):
         """
         Forms the thin plate spline deformation basis, which is composed of 
         a linear and non-linear component.
+        
+        Parameters
+        ----------
+        p0: nd-array
+            Image features (points).
         """
         
-        self.basis = np.zeros((self.coords.tenssor[0].size, len(points)+3))
+        self.basis = np.zeros((self.coords.tenssor[0].size, len(p0)+3))
         
         # linear, affine component
         self.basis[0] = 1
@@ -243,7 +302,7 @@ class ThinPlateSpline(Model):
         self.basis[2] = self.coords.tensor[0].flatten()
         
         # nonlinear, spline component.
-        for index, p in enumerate( points ):
+        for index, p in enumerate( p0 ):
             self.basis[index+6] = self.U( 
                 np.sqrt(
                     (p[1]-self.coords.tensor[1])**2 + 
@@ -252,8 +311,6 @@ class ThinPlateSpline(Model):
             ).flatten()
     
     def warp(self, parameters):
-        
-        
         # FIXME: implement this.
         pass
     
@@ -292,16 +349,15 @@ class CubicSpline(Model):
 
     def __basis(self, order=4, divisions=4):
         """
-        Follows the derivations in:
-
-        Kybic, J. and Unser, M. (2003). Fast parametric elastic image
-        registration. IEEE Transactions on Image Processing, 12(11), 1427-1442.
-
         Computes the spline tensor product and stores the products, as basis
         vectors.
-
-        @param order: b-spline order.
-        @param division: number of spline knots.
+    
+        Parameters
+        ----------
+        order: int
+            B-spline order, optional.
+        divisions: int, optional.
+            Number of spline knots.
         """
 
         shape = self.coordinates.tensor[0].shape
@@ -331,13 +387,20 @@ class CubicSpline(Model):
 
 
     def estimate(self, warp):
-        """"
-        Estimates the best fit parameters that define a warp field.
-
-        @param warp: a warp field, representing the warped coordinates.
-        @return: a set of parameters (n-dimensional array).
         """
-
+        Estimates the best fit parameters that define a warp field.
+        
+        Parameters
+        ----------
+        warp: nd-array
+            A deformation field.
+            
+        Returns
+        -------
+        parameters: nd-array
+           Model parameters.
+        """
+        
         return np.hstack(
             (
              np.dot(np.linalg.pinv(self.basis),
@@ -350,22 +413,36 @@ class CubicSpline(Model):
 
     def warp(self, parameters):
         """
-        Computes the (inverse) warp field given transformed coordinates.
-
-        @param param: array coordinates of model parameters.
-        @return: a deformation field.
+        Computes the warp field given model parameters.
+        
+        Parameters
+        ----------
+        parameters: nd-array
+            Model parameters.
+        
+        Returns
+        -------
+        warp: nd-array
+           Deformation field.
         """
-
+        
         dwarp = self.transform(parameters)
+        
         return self.coordinates.tensor - dwarp
 
     def transform(self, p):
         """
         Applies an spline transformation to image coordinates.
-
-        @param parameters: a array of affine parameters.
-        @param coords: array coordinates in cartesian form (n by p).
-        @return: a transformed set of coordinates.
+        
+        Parameters
+        ----------
+        parameters: nd-array
+            Model parameters.
+        
+        Returns
+        -------
+        coords: nd-array
+           Deformation coordinates.
         """
 
         px = np.array(p[0:self.numberOfParameters])
@@ -380,11 +457,6 @@ class CubicSpline(Model):
 
     def jacobian(self):
         """
-        Follows the derivations shown in:
-
-        Kybic, J., & Unser, M. (2003). Fast parametric elastic image
-        registration. IEEE Transactions on Image Processing, 12(11), 1427-1442.
-
         Evaluate the derivative of deformation model with respect to the
         coordinates.
         """

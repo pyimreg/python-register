@@ -43,11 +43,11 @@ class Coordinates(object):
     Attributes
     ----------
     domain : nd-array
-        The domain of the coordinate system.
+        Domain of the coordinate system.
     tensor : nd-array
-        The grid coordinates.
+        Grid coordinates.
     homogenous : nd-array
-        A homogenous coordinate system representation of grid coordinates.
+        `Homogenous` coordinate system representation of grid coordinates.
     """
     
     def __init__(self, domain, spacing=None):
@@ -132,19 +132,12 @@ class Register(object):
     
     Attributes
     ----------
-    
-    MAX_ITER: int
-        Maximum number of optimization steps.
-    MAX_BAD: int
-        Maximum number of bad iterations.
-    optStep: namedtuple
-        An optimization step definition.
-    model: Model
-        A deformation model class.
-    metric: Metric
-        A similarity metric class.
-    sampler: Sampler
-        A sampler class.
+    model: class
+        A `deformation` model class definition.
+    metric: class
+        A `similarity` metric class definition.
+    sampler: class
+        A `sampler` class definition.
         
     """
     
