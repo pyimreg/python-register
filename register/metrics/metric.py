@@ -2,7 +2,6 @@
 
 import numpy as np
 
-
 class Metric(object):
     """
     Abstract similarity metric.

@@ -56,20 +56,49 @@
 <dl class="class">
 <dt id="samplers.sampler.Sampler">
 <em class="property">class </em><tt class="descclassname">samplers.sampler.</tt><tt class="descname">Sampler</tt><big>(</big><em>coordinates</em><big>)</big><a class="headerlink" href="#samplers.sampler.Sampler" title="Permalink to this definition">¶</a></dt>
-<dd><p>Abstract sampler.</p>
-<p>&#64;param METHOD: the method implemented by the sampler.
-&#64;param DESCRIPTION: a meaningful description of the technique used, with</p>
-<blockquote>
-<div>references where appropriate.</div></blockquote>
+<dd><p>Abstract sampler</p>
 <p class="rubric">Attributes</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="11%" />
+<col width="11%" />
+<col width="78%" />
+</colgroup>
+<tbody valign="top">
+<tr><td>METRIC</td>
+<td>string</td>
+<td>The type of similarity sampler being used.</td>
+</tr>
+</tbody>
+</table>
 <p class="rubric">Methods</p>
 <dl class="method">
 <dt id="samplers.sampler.Sampler.f">
 <tt class="descname">f</tt><big>(</big><em>array</em>, <em>warp</em><big>)</big><a class="headerlink" href="#samplers.sampler.Sampler.f" title="Permalink to this definition">¶</a></dt>
 <dd><p>A sampling function, responsible for returning a sampled set of values
 from the given array.</p>
-<p>&#64;param array: an n-dimensional array (representing an image or volume).
-&#64;param coords: array coordinates in cartesian form (n by p).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>array: nd-array</strong> :</p>
+<blockquote>
+<div><p>Input array for sampling.</p>
+</div></blockquote>
+<p><strong>warp: nd-array</strong> :</p>
+<blockquote>
+<div><p>Deformation coordinates.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>sample: nd-array</strong> :</p>
+<blockquote class="last">
+<div><p>Sampled array data.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">

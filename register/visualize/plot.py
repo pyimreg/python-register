@@ -1,7 +1,6 @@
 ''' (Debug utility) Defines a set of plotting callback functions '''
 
 import matplotlib.pyplot as plt
-import numpy as np
 
 IMAGE_ORIGIN=None
 IMAGE_COLORMAP='gray'
