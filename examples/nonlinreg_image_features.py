@@ -29,24 +29,18 @@ template = register.RegisterData(
     features=yaml.load(open('data/smile.yaml'))
     )
 
-thinPlateSpline = model.ThinPlateSpline()
-
-# Define a gaussian kernel.
-def gaussKernel(r):
-    var = 50
-    return np.exp( -np.power(r,2)/(2*var**2)  )
 
 # Form the tps registration instance.
-spline = register.FeatureRegister(
+feature = register.FeatureRegister(
+    model=model.ThinPlateSpline,
     sampler=sampler.Spline,
-    kernel=gaussKernel
     )
     
 # Register using features.
-warp, img = spline.register(
+p, warp, img = feature.register(
     image,
-    template,
+    template
     )
 
-plot.featurePlot(image, template, warp, img)
+plot.featurePlot(image, template, img)
 plot.show()

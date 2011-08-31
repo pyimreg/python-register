@@ -138,7 +138,6 @@ class Register(object):
         A `similarity` metric class definition.
     sampler: class
         A `sampler` class definition.
-        
     """
     
     optStep = collections.namedtuple('optStep', 'error p deltaP')
@@ -403,50 +402,87 @@ class KybicRegister(Register):
         return alpha
 
 
-def directRegister(image, template, model):
+class FeatureRegister():
     """
-    Computes the adjusted dampening factor.
-        
-    Parameters
+    A registration class for estimating the deformation model parameters that
+    best solve:
+    
+    | :math:`\arg\min_{p} | f(p_0) - p_1 |`
+    |
+    | where:
+    |    :math:`f`     : is a transformation function.
+    |    :math:`p_0`   : is a deformation model (defined by the parameter set p).
+    |    :math:`p_1`   : is an input image (to be deformed).
+     
+    Notes:
+    ------
+    
+    Solved using linear algebra - does not consider pixel intensities
+    
+    Attributes
     ----------
-    image: RegisterData
-        The floating registration data.
-    template: RegisterData
-        The target registration data.
-    model: Model
-        The deformation model.
-        
-    Returns
-    -------
-    p: nd-array.
-            Model parameters.
-    warp: nd-array.
-        Warp field estimate.
-    warpedImage: nd-array
-        The re-sampled image.
-    error: float
-        Fitting error.
+    model: class
+        A `deformation` model class definition.
+    sampler: class
+        A `sampler` class definition.
     """
     
-    # Form corresponding point sets. 
-    imagePoints = []
-    templatePoints = []
-    
-    for id, point in image.features['points'].items():
-        if id in template.features['points']:
-            imagePoints.append(point)
-            templatePoints.append(template.features['points'][id])
-            #print '{} -> {}'.format(imagePoints[-1], templatePoints[-1])
-    
-    if not imagePoints or not templatePoints:
-        raise ValueError('Requires corresponding features to register.')
-    
-    # Note the inverse warp is estimated here.
-    p = model.approximate(
-        np.array(templatePoints),
-        np.array(imagePoints)
-        )
-    
-    # Estimate the warp field.
-    return model.warp(p)
+    def __init__(self, model, sampler):
 
+        self.model = model
+        self.sampler = sampler
+
+    def register(self, image, template):
+        """
+        Computes the registration using only image (point) features.
+            
+        Parameters
+        ----------
+        image: RegisterData
+            The floating registration data.
+        template: RegisterData
+            The target registration data.
+        model: Model
+            The deformation model.
+            
+        Returns
+        -------
+        p: nd-array.
+                Model parameters.
+        warp: nd-array.
+            Warp field estimate.
+        warpedImage: nd-array
+            The re-sampled image.
+        error: float
+            Fitting error.
+        """
+        
+        # Initialize the models, metric and sampler.
+        model = self.model(image.coords)
+        sampler = self.sampler(image.coords)
+        
+        # Form corresponding point sets. 
+        imagePoints = []
+        templatePoints = []
+        
+        for id, point in image.features['points'].items():
+            if id in template.features['points']:
+                imagePoints.append(point)
+                templatePoints.append(template.features['points'][id])
+                #print '{} -> {}'.format(imagePoints[-1], templatePoints[-1])
+        
+        if not imagePoints or not templatePoints:
+            raise ValueError('Requires corresponding features to register.')
+        
+        # Note the inverse warp is estimated here.
+        p = model.fit(
+            np.array(templatePoints),
+            np.array(imagePoints)
+            )
+        
+        warp = model.warp(p)
+        
+        # Sample the image using the inverse warp.
+        warpedImage = sampler.f(image.data, warp).reshape(image.data.shape)
+        
+        return p, warp, warpedImage

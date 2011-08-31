@@ -1,8 +1,8 @@
 - Nathan Faggian
-  Project coordination, methods development.
+  BDFL: Project coordination, methods development.
 
 - Stefan Van Der Walt
   Project coordination, methods development.
 
 - Riaan Van Den Dool
-  Methods development
+  Feature detection methods.
