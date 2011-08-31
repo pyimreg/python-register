@@ -222,12 +222,12 @@ class ThinPlateSpline(Model):
         
         """
 
-    def __init__(self, coordinates, points, kernel=None):
+    def __init__(self, coordinates, features, kernel=None):
     
         Model.__init__(self, coordinates)
+        
         self.kernel = kernel
-        self.__basis()
-    
+        
     def U(self, r):
         """
         Kernel function, applied to solve the biharmonic equation.
@@ -278,9 +278,13 @@ class ThinPlateSpline(Model):
                        np.hstack((P.transpose(), np.zeros((3,3))))))
         
         Y = np.vstack( (p1, np.zeros((3, 2))) )
-        Y = np.matrix(Y)
-        Linv = np.matrix(np.linalg.inv(L))
-        return Linv*Y
+        
+        parameters = np.dot(np.linalg.inv(L), Y)
+        
+        # Estimate the thin-plate spline basis.
+        self.__basis(p0)
+        
+        return parameters
     
     
     def __basis(self, p0):
@@ -296,24 +300,32 @@ class ThinPlateSpline(Model):
         
         self.basis = np.zeros((self.coords.tenssor[0].size, len(p0)+3))
         
-        # linear, affine component
-        self.basis[0] = 1
-        self.basis[1] = self.coords.tensor[1].flatten()
-        self.basis[2] = self.coords.tensor[0].flatten()
-        
         # nonlinear, spline component.
         for index, p in enumerate( p0 ):
-            self.basis[index+6] = self.U( 
+            self.basis[:,index] = self.U( 
                 np.sqrt(
                     (p[1]-self.coords.tensor[1])**2 + 
                     (p[0]-self.coords.tensor[0])**2 
                     )     
             ).flatten()
+
+        # linear, affine component
+        
+        self.basis[:,-3] = 1
+        self.basis[:,-2] = self.coords.tensor[1].flatten()
+        self.basis[:,-1] = self.coords.tensor[0].flatten()
     
-    def warp(self, parameters):
-        # FIXME: implement this.
-        pass
     
+    def warp(self, parameters, vectorized=True):
+        
+        warp = np.zeros_like(self.coords.tensor)
+        
+        warp[0] = np.dot(self.basis, parameters[:,0])
+        warp[1] = np.dot(self.basis, parameters[:,1])
+        
+        return warp
+        
+        
     def jacobian(self):
         raise NotImplementedError("""
             It does not make sense to use a non-linear optimization to 
