@@ -4,8 +4,6 @@ import register.models.model as model
 import register.register as register
 import register.visualize.plot as plot
 
-
-
 def test_thinPlateSpline():
     
     # Form a dummy coordinate class.
@@ -28,7 +26,6 @@ def test_thinPlateSpline():
     plot.show()
     
     assert False
-
 
 def test_thinPlateSplineApproximate():
     """ 
