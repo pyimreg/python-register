@@ -1,11 +1,11 @@
 """ 
-Estimates a linear warp field, between two images - 
+Estimates a warp field, between two images using only image features. 
 
 The target is a "smile" the image is a frown and the goal is to estimate
 the warp field between them.
     
-The deformation is estimated using thin plate splines.
-    
+The deformation is estimated using thin plate splines and an example of how to 
+define a custom kernel is shown.
 """
 
 import numpy as np
@@ -29,18 +29,54 @@ template = register.RegisterData(
     features=yaml.load(open('data/smile.yaml'))
     )
 
+###############################################################################
+# Using the implementation of thin-plate splines.
+###############################################################################
 
-# Form the tps registration instance.
+# Form the feature registrator.
 feature = register.FeatureRegister(
     model=model.ThinPlateSpline,
     sampler=sampler.Spline,
     )
-    
-# Register using features.
-p, warp, img = feature.register(
+
+# Perform the registration.
+p, warp, img, error = feature.register(
     image,
     template
     )
+
+print "Thin-plate Spline kernel error: {}".format(error)
+
+plot.featurePlot(image, template, img)
+plot.show()
+
+###############################################################################
+# Defining a custom model and registering features.
+###############################################################################
+
+class GaussSpline(model.ThinPlateSpline):
+    def __init__(self, coordinates):
+        model.ThinPlateSpline.__init__(self, coordinates)
+        
+    def U(self, r):
+        # Define a gaussian kernel.
+        var = 5.0 
+        return np.exp( -np.power(r,2)/(2*var**2)  )
+   
+
+# Form feature registrator.
+feature = register.FeatureRegister(
+    model=GaussSpline,
+    sampler=sampler.Spline,
+    )
+    
+# Perform the registration.
+p, warp, img, error = feature.register(
+    image,
+    template
+    )
+
+print "Gaussian kernel error: {}".format(error)
 
 plot.featurePlot(image, template, img)
 plot.show()

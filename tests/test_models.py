@@ -2,7 +2,6 @@ import numpy as np
 
 import register.models.model as model
 import register.register as register
-import register.visualize.plot as plot
 
 def test_thinPlateSpline():
     
@@ -17,16 +16,12 @@ def test_thinPlateSpline():
     
     spline = model.ThinPlateSpline(coords)
     
-    parameters = spline.fit(p0, p1)
+    _parameters, error = spline.fit(p0, p1)
     
-    warp = spline.warp(parameters)
+    # Assert that the alignment error is small.
+    assert error < 1.0, "Unexpected large alignment error."
     
-    plot.warpPlot(coords.tensor, coords.tensor, warp)
     
-    plot.show()
-    
-    assert False
-
 def test_thinPlateSplineApproximate():
     """ 
     Asserts that the computed K, P, L and V matrices are formed correctly.
@@ -49,7 +44,7 @@ def test_thinPlateSplineApproximate():
     
     spline = model.ThinPlateSpline(coords)
     
-    parameters, L = spline.fit(p0, p1, lmatrix=True)
+    parameters, error, L = spline.fit(p0, p1, lmatrix=True)
     
     # This expected L matrix is derived from the symmetric example in the 
     # referenced paper.

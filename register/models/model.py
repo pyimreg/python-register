@@ -3,6 +3,7 @@
 import numpy as np
 import scipy.signal as signal
 
+
 class Model(object):
     """
     Abstract geometry model.
@@ -222,11 +223,9 @@ class ThinPlateSpline(Model):
         
         """
 
-    def __init__(self, coordinates, kernel=None):
+    def __init__(self, coordinates):
     
         Model.__init__(self, coordinates)
-        
-        self.kernel = kernel
         
     def U(self, r):
         """
@@ -243,11 +242,8 @@ class ThinPlateSpline(Model):
            Evaluated kernel.
         """
         
-        if not self.kernel:
-            return np.multiply(-np.power(r,2), np.log(np.power(r,2) + 1e-20))
-        else:
-            return self.kernel(r)
-     
+        return np.multiply(-np.power(r,2), np.log(np.power(r,2) + 1e-20))
+        
     def fit(self, p0, p1, lmatrix=False):
         """
         Estimates the best fit parameters that define a warp field.
@@ -284,11 +280,65 @@ class ThinPlateSpline(Model):
         # Estimate the thin-plate spline basis.
         self.__basis(p0)
         
+        # Estimate the model fit error.
+        _p0, _p1, _projP0, error = self.align(p0, p1, parameters)
+        
         if lmatrix:
-            return parameters, L
+            return parameters, error, L
         else:
-            return parameters
+            return parameters, error
     
+    def align(self, p0, p1, parameters):
+        """
+        Estimates the point alignment and computes the alignment error.
+        
+        Parameters
+        ----------
+        p0: nd-array
+            Image features (points).
+        p1: nd-array
+            Template features (points).
+        parameters: nd-array
+            Thin-plate spline parameters.
+        
+        Returns
+        -------
+        error: float
+            Alignment error between p1 and projected p0 (RMS).
+        """
+        
+        # like __basis, compute a reduced set of basis vectors.
+        
+        basis = np.zeros((p0.shape[0], len(p0)+3))
+        
+        # nonlinear, spline component.
+        for index, p in enumerate( p0 ):
+            basis[:,index] = self.U( 
+                np.sqrt(
+                    (p[0]-p1[:,0])**2 + 
+                    (p[1]-p1[:,1])**2 
+                    )     
+                ).flatten()
+
+        # linear, affine component
+        basis[:,-3] = 1
+        basis[:,-2] = p1[:,1]
+        basis[:,-1] = p1[:,0]
+        
+        # compute the alignment error.
+        
+        projP0 = np.vstack( [
+           np.dot(basis, parameters[:,1]),
+           np.dot(basis, parameters[:,0])
+           ]
+           ).T
+        
+        error = np.sqrt( 
+           (projP0[:,0] - p1[:,0])**2 + (projP0[:,1] - p1[:,1])**2 
+           ).sum() 
+        
+        return p0, p1, projP0, error
+     
     def __basis(self, p0):
         """
         Forms the thin plate spline deformation basis, which is composed of 
@@ -333,6 +383,10 @@ class ThinPlateSpline(Model):
             model instead.
             """
             )
+    
+    @property
+    def identity(self):
+        raise NotImplementedError('')
 
 
 class CubicSpline(Model):

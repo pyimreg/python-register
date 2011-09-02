@@ -4,7 +4,6 @@ import collections
 import numpy as np
 import scipy.ndimage as nd
 
-
 def _smooth(image, variance):
     """
     Gaussian smoothing using the fast-fourier-transform (FFT)
@@ -411,8 +410,8 @@ class FeatureRegister():
     |
     | where:
     |    :math:`f`     : is a transformation function.
-    |    :math:`p_0`   : is a deformation model (defined by the parameter set p).
-    |    :math:`p_1`   : is an input image (to be deformed).
+    |    :math:`p_0`   : image features.
+    |    :math:`p_1`   : template features.
      
     Notes:
     ------
@@ -475,7 +474,7 @@ class FeatureRegister():
             raise ValueError('Requires corresponding features to register.')
         
         # Note the inverse warp is estimated here.
-        p = model.fit(
+        p, error = model.fit(
             np.array(templatePoints),
             np.array(imagePoints)
             )
@@ -485,4 +484,4 @@ class FeatureRegister():
         # Sample the image using the inverse warp.
         warpedImage = sampler.f(image.data, warp).reshape(image.data.shape)
         
-        return p, warp, warpedImage
+        return p, warp, warpedImage, error
