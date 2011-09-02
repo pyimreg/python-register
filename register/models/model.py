@@ -22,7 +22,28 @@ class Model(object):
 
     def __init__(self, coordinates):
         self.coordinates = coordinates
-
+    
+    def fit(self, p0, p1):
+        """
+        Estimates the best fit parameters that define a warp field, which 
+        deforms feature points p0 to p1.
+        
+        Parameters
+        ----------
+        p0: nd-array
+            Image features (points).
+        p1: nd-array
+            Template features (points).
+            
+        Returns
+        -------
+        parameters: nd-array
+            Model parameters.
+        error: float
+            Sum of RMS error between p1 and alinged p0.
+        """
+        raise NotImplementedError('')
+    
     def estimate(self, warp):
         """
         Estimates the best fit parameters that define a warp field.
@@ -112,7 +133,37 @@ class Shift(Model):
     @property
     def identity(self):
         return np.zeros(2)
-
+    
+    def fit(self, p0, p1, lmatrix=False):
+        """
+        Estimates the best fit parameters that define a warp field, which 
+        deforms feature points p0 to p1.
+        
+        Parameters
+        ----------
+        p0: nd-array
+            Image features (points).
+        p1: nd-array
+            Template features (points).
+            
+        Returns
+        -------
+        parameters: nd-array
+            Model parameters.
+        error: float
+            Sum of RMS error between p1 and alinged p0.
+        """
+        
+        parameters = p1.mean(axis=0) - p0.mean(axis=0)
+        
+        projP0 = p0 + parameters
+        
+        error = np.sqrt( 
+           (projP0[:,0] - p1[:,0])**2 + (projP0[:,1] - p1[:,1])**2 
+           ).sum() 
+        
+        return -parameters, error
+    
     def transform(self, parameters):
         """
         A "shift" transformation of coordinates.
@@ -167,10 +218,59 @@ class Affine(Model):
     @property
     def identity(self):
         return np.zeros(6)
-
+    
+    def fit(self, p0, p1, lmatrix=False):
+        """
+        Estimates the best fit parameters that define a warp field, which 
+        deforms feature points p0 to p1.
+        
+        Parameters
+        ----------
+        p0: nd-array
+            Image features (points).
+        p1: nd-array
+            Template features (points).
+            
+        Returns
+        -------
+        parameters: nd-array
+            Model parameters.
+        error: float
+            Sum of RMS error between p1 and alinged p0.
+        """
+        
+        # Solve: H*X = Y
+        # ---------------------
+        #          H = Y*inv(X)
+        
+        X = np.ones((3, len(p0)))
+        X[0:2,:] = p0.T
+        
+        Y = np.ones((3, len(p0)))
+        Y[0:2,:] = p1.T
+        
+        H = np.dot(Y, np.linalg.pinv(X))
+        
+        parameters = [ 
+            H[0,0] - 1.0,
+            H[1,0],
+            H[0,1],
+            H[1,1] - 1.0,
+            H[2,0],
+            H[2,1]
+            ]
+        
+        projP0 = np.dot(H, X)[0:2,:].T
+        
+        error = np.sqrt( 
+           (projP0[:,0] - p1[:,0])**2 + (projP0[:,1] - p1[:,1])**2 
+           ).sum() 
+        
+        return parameters, error
+        
     def transform(self, p):
         """
-        A "affine" transformation of coordinates.
+        An "affine" transformation of coordinates.
         
         Parameters
         ----------
@@ -243,10 +343,11 @@ class ThinPlateSpline(Model):
         """
         
         return np.multiply(-np.power(r,2), np.log(np.power(r,2) + 1e-20))
-        
+    
     def fit(self, p0, p1, lmatrix=False):
         """
-        Estimates the best fit parameters that define a warp field.
+        Estimates the best fit parameters that define a warp field, which 
+        deforms feature points p0 to p1.
         
         Parameters
         ----------
@@ -254,11 +355,17 @@ class ThinPlateSpline(Model):
             Image features (points).
         p1: nd-array
             Template features (points).
+        lmatrix: boolean
+            Enables the spline design matrix when returning.
             
         Returns
         -------
         parameters: nd-array
-           Model parameters.
+            Model parameters.
+        error: float
+            Sum of RMS error between p1 and alinged p0.
+        L: nd-array
+            Spline design matrix, optional (using lmatrix keyword).
         """
         
         K = np.zeros((p0.shape[0], p0.shape[0]))
@@ -281,14 +388,14 @@ class ThinPlateSpline(Model):
         self.__basis(p0)
         
         # Estimate the model fit error.
-        _p0, _p1, _projP0, error = self.align(p0, p1, parameters)
+        _p0, _p1, _projP0, error = self.__splineError(p0, p1, parameters)
         
         if lmatrix:
             return parameters, error, L
         else:
             return parameters, error
     
-    def align(self, p0, p1, parameters):
+    def __splineError(self, p0, p1, parameters):
         """
         Estimates the point alignment and computes the alignment error.
         
@@ -368,14 +475,46 @@ class ThinPlateSpline(Model):
         self.basis[:,-1] = self.coordinates.tensor[0].flatten()
     
     
-    def warp(self, parameters):
+    def transform(self, parameters):
+        """
+        A "thin-plate-spline" transformation of coordinates.
+        
+        Parameters
+        ----------
+        parameters: nd-array
+            Model parameters.
+        
+        Returns
+        -------
+        coords: nd-array
+           Deformation coordinates.
+        """
         
         shape = self.coordinates.tensor[0].shape
+        
         return np.array( [ np.dot(self.basis, parameters[:,1]).reshape(shape),
                            np.dot(self.basis, parameters[:,0]).reshape(shape)
                          ]
                        )
+    
+    def warp(self, parameters):
+        """
+        Computes the warp field given model parameters.
         
+        Parameters
+        ----------
+        parameters: nd-array
+            Model parameters.
+        
+        Returns
+        -------
+        warp: nd-array
+           Deformation field.
+        """
+        
+        return self.transform(parameters)
+    
+    
     def jacobian(self):
         raise NotImplementedError("""
             It does not make sense to use a non-linear optimization to 

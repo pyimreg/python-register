@@ -3,7 +3,57 @@ import numpy as np
 import register.models.model as model
 import register.register as register
 
+
+def test_shift():
+    """
+    Asserts that the feature point alignment error is sufficiently small.
+    """
+    
+    # Form a dummy coordinate class.
+    coords = register.Coordinates(
+        [0, 10, 0, 10]
+        )
+    
+    # Form corresponding feature sets.
+    p0 = np.array([0, 0, 0, 1, 1, 0, 1, 1]).reshape(4,2)
+    p1 = p0 + 2.0
+    
+    shift = model.Shift(coords)
+    
+    _parameters, error = shift.fit(p0, p1)
+    
+    print _parameters
+    
+    # Assert that the alignment error is small.
+    assert error <= 1.0, "Unexpected large alignment error : {} grid units".format(error)
+
+
+def test_affine():
+    """
+    Asserts that the feature point alignment error is sufficiently small.
+    """
+    
+    # Form a dummy coordinate class.
+    coords = register.Coordinates(
+        [0, 10, 0, 10]
+        )
+    
+    # Form corresponding feature sets.
+    p0 = np.array([0, 0, 0, 1, 1, 0, 1, 1]).reshape(4,2)
+    p1 = p0 + 2.0
+    
+    affine = model.Affine(coords)
+    
+    _parameters, error = affine.fit(p0, p1)
+    
+    # Assert that the alignment error is small.
+    assert error <= 1.0, "Unexpected large alignment error : {} grid units".format(error)
+
+
 def test_thinPlateSpline():
+    """
+    Asserts that the feature point alignment error is sufficiently small.
+    """
     
     # Form a dummy coordinate class.
     coords = register.Coordinates(
@@ -44,7 +94,7 @@ def test_thinPlateSplineApproximate():
     
     spline = model.ThinPlateSpline(coords)
     
-    parameters, error, L = spline.fit(p0, p1, lmatrix=True)
+    _parameters, _error, L = spline.fit(p0, p1, lmatrix=True)
     
     # This expected L matrix is derived from the symmetric example in the 
     # referenced paper.

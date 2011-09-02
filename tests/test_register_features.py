@@ -40,7 +40,7 @@ def test_register():
     
     # Form feature registrator.
     feature = register.FeatureRegister(
-        model=model.ThinPlateSpline,
+        model=model.Shift,
         sampler=sampler.Spline,
         )
         
@@ -52,4 +52,3 @@ def test_register():
     
     assert not np.allclose(warp, np.zeros_like(warp)), \
         "Estimated warp field is zero."
-    
