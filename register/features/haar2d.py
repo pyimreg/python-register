@@ -10,6 +10,28 @@ def _debug(something):
         print something
 
 def haar2d(image, levels, debug=False):
+    """
+    2D Haar wavelet decomposition for levels=levels.
+    
+    Parameters
+    ----------
+    image: nd-array
+        Input image 
+    levels: int
+        Number of wavelet levels to compute
+    debug:
+        Setting debug=True will produce some debug output messages
+
+    Returns
+    -------
+    haarImage: nd-array
+       An image containing the Haar decomposition of the input image. 
+       Might be larger than the input image.
+
+    See also
+    --------
+    register.features.ihaar2d
+    """
     global __debug 
     __debug = debug
     assert len(image.shape) == 2, 'Must be 2D image!'
@@ -54,6 +76,27 @@ def haar2d(image, levels, debug=False):
     return haarImage
 
 def ihaar2d(image, levels, debug=False):
+    """
+    2D Haar wavelet decomposition inverse for levels=levels.
+    
+    Parameters
+    ----------
+    image: nd-array
+        Input image 
+    levels: int
+        Number of wavelet levels to de-compute
+    debug:
+        Setting debug=True will produce some debug output messages
+
+    Returns
+    -------
+    image: nd-array
+       An image containing the inverse Haar decomposition of the input image. 
+
+    See also
+    --------
+    register.features.haar2d
+    """    
     global __debug 
     __debug = debug
     assert len(image.shape) == 2, 'Must be 2D image!'
