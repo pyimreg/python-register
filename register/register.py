@@ -4,14 +4,27 @@ import collections
 import numpy as np
 import scipy.ndimage as nd
 
-
 def _smooth(image, variance):
     """
-    A simple image smoothing method - using a Gaussian kernel.
-    @param image: the input image, a numpy ndarray object.
-    @param variance: the width of the smoothing kernel.
-    @return: the smoothing input image.
+    Gaussian smoothing using the fast-fourier-transform (FFT)
+    
+    Parameters
+    ----------
+    image: nd-array
+        Input image 
+    variance: float
+        Variance of the Gaussian kernel.
+
+    Returns
+    -------
+    image: nd-array
+       An image convolved with the Gaussian kernel.
+
+    See also
+    --------
+    regisger.Register.smooth
     """
+    
     return np.real(
         np.fft.ifft2(
             nd.fourier_gaussian(
@@ -24,8 +37,18 @@ def _smooth(image, variance):
 
 class Coordinates(object):
     """
-    A container for grid coordinates.
+    Container for grid coordinates.
+    
+    Attributes
+    ----------
+    domain : nd-array
+        Domain of the coordinate system.
+    tensor : nd-array
+        Grid coordinates.
+    homogenous : nd-array
+        `Homogenous` coordinate system representation of grid coordinates.
     """
+    
     def __init__(self, domain, spacing=None):
     
         self.domain = domain
@@ -39,8 +62,18 @@ class Coordinates(object):
 
 class RegisterData(object):
     """
-    A container for registration data.
+    Container for registration data.
+    
+    Attributes
+    ----------
+    data : nd-array
+        The image registration image values.
+    coords : nd-array, optional
+        The grid coordinates.
+    features : dictionary, optional
+        A mapping of unique ids to registration features.
     """
+    
     def __init__(self, data, coords=None, features=None):
 
         self.data = data
@@ -53,41 +86,62 @@ class RegisterData(object):
             self.coords = coords
         
         # Features are (as a starting point a dictionary) which define
-        # labelled salient image coordinates (point features). 
+        # labeled salient image coordinates (point features). 
         
         self.features = features
         
         
     def smooth(self, variance):
         """
-        A simple image smoothing method - using a Gaussian kernel.
-        @param variance: the width of the smoothing kernel.
-        """
-        self.data = _smooth(self.data, variance)
+        Smooth feature data in place.
     
+        Parameters
+        ----------
+        variance: float
+            Variance of the Gaussian kernel.
+       
+        See also
+        --------
+        regisger.Register.smooth
+        """
+
+        self.data = _smooth(self.data, variance)
+
 
 class Register(object):
     """
     A registration class for estimating the deformation model parameters that
     best solve:
-
-    f( W(I;p), T )
-
-    where:
-        f     : is a similarity metric.
-        W(x;p): is a deformation model (defined by the parameter set p).
-        I     : is an input image (to be deformed).
-        T     : is a template (which is a deformed version of the input).
-
+    
+    | :math:`f( W(I;p), T )`
+    |
+    | where:
+    |    :math:`f`     : is a similarity metric.
+    |    :math:`W(x;p)`: is a deformation model (defined by the parameter set p).
+    |    :math:`I`     : is an input image (to be deformed).
+    |    :math:`T`     : is a template (which is a deformed version of the input).
+    
+    Notes:
+    ------
+    
+    Solved using a modified gradient descent algorithm.
+    
+    .. [0] Levernberg-Marquardt algorithm, 
+           http://en.wikipedia.org/wiki/Levenberg-Marquardt_algorithm 
+    
+    Attributes
+    ----------
+    model: class
+        A `deformation` model class definition.
+    metric: class
+        A `similarity` metric class definition.
+    sampler: class
+        A `sampler` class definition.
     """
     
-    # The optimization step cache.
     optStep = collections.namedtuple('optStep', 'error p deltaP')
     
-    # The maximum number of optimization iterations. 
     MAX_ITER = 200
-    
-    # The maximum numver of bad (incorrect) optimization steps.
     MAX_BAD = 20
     
     def __init__(self, model, metric, sampler):
@@ -98,17 +152,23 @@ class Register(object):
 
     def __deltaP(self, J, e, alpha, p=None):
         """
-        Compute the parameter update.
-
-        Refer to the Levernberg-Marquardt algorithm:
-            http://en.wikipedia.org/wiki/Levenberg-Marquardt_algorithm
-
-        @param J: dE/dP the relationship between image differences and model
-                  parameters.
-        @param e: the difference between the image and template.
-        @param alpha: the dampening factor.
-        @keyword p: the current parameter set.
-        @return: deltaP, the set of model parameter updates. (p x 1).
+        Computes the parameter update.
+        
+        Parameters
+        ----------
+        J: nd-array
+            The (dE/dP) the relationship between image differences and model
+            parameters.
+        e: float
+            The evaluated similarity metric.    
+        alpha: float
+            A dampening factor.
+        p: nd-array or list of floats, optional
+        
+        Returns
+        -------
+        deltaP: nd-array
+           The parameter update vector.
         """
 
         H = np.dot(J.T, J)
@@ -119,15 +179,19 @@ class Register(object):
 
     def __dampening(self, alpha, decreasing):
         """
-        Returns the dampening value.
-
-        Refer to the Levernberg-Marquardt algorithm:
-            http://en.wikipedia.org/wiki/Levenberg-Marquardt_algorithm
-
-        @param alpha: a dampening factor.
-        @param decreasing: a boolean indicating that the error function is
-        decreasing.
-        @return: an adjusted dampening factor.
+        Computes the adjusted dampening factor.
+        
+        Parameters
+        ----------
+        alpha: float
+            The current dampening factor.
+        decreasing: boolean
+            Conditional on the decreasing error function.
+            
+        Returns
+        -------
+        alpha: float
+           The adjusted dampening factor.
         """
         return alpha / 10. if decreasing else alpha * 10.
 
@@ -140,14 +204,35 @@ class Register(object):
                  plotCB=None,
                  verbose=False):
         """
-        Performs an image registration.
-        @param image: the floating image.
-        @param template: the target image.
-        @keyword p: a list of parameters, (first guess).
-        @keyword alpha: the dampening factor.
-        @keyword warp: the warp field (first guess).
-        @keyword plotCB: a debug plotting function.
-        @keyword verbose: a debug flag for text status updates. 
+        Computes the registration between the image and template.
+        
+        Parameters
+        ----------
+        image: nd-array
+            The floating image.
+        template: nd-array
+            The target image.
+        p: list (or nd-array), optional.
+            First guess at fitting parameters.
+        warp: nd-array, optional.
+            A warp field estimate.
+        alpha: float
+            The dampening factor.
+        plotCB: function, optional
+            A plotting function.
+        verbose: boolean
+            A debug flag for text status updates. 
+        
+        Returns
+        -------
+        p: nd-array.
+            Model parameters.
+        warp: nd-array.
+            Warp field estimate.
+        warpedImage: nd-array
+            The re-sampled image.
+        error: float
+            Fitting error.
         """
         
         #TODO: Determine the common coordinate system.
@@ -272,7 +357,23 @@ class KybicRegister(Register):
 
     def __deltaP(self, J, e, alpha, p):
         """
-        Compute the parameter update.
+        Computes the parameter update.
+        
+        Parameters
+        ----------
+        J: nd-array
+            The (dE/dP) the relationship between image differences and model
+            parameters.
+        e: float
+            The evaluated similarity metric.    
+        alpha: float
+            A dampening factor.
+        p: nd-array or list of floats, optional
+        
+        Returns
+        -------
+        deltaP: nd-array
+           The parameter update vector.
         """
 
         H = np.dot(J.T, J)
@@ -283,83 +384,80 @@ class KybicRegister(Register):
 
     def __dampening(self, alpha, decreasing):
         """
-        Returns the dampening value, without adjustment.
-    
-        @param alpha: a dampening factor.
-        @param decreasing: a boolean indicating that the error function is
-        decreasing.
-        @return: an adjusted dampening factor.
+        Computes the adjusted dampening factor.
+        
+        Parameters
+        ----------
+        alpha: float
+            The current dampening factor.
+        decreasing: boolean
+            Conditional on the decreasing error function.
+            
+        Returns
+        -------
+        alpha: float
+           The adjusted dampening factor.
         """
         return alpha
 
 
-class SplineRegister():
+class FeatureRegister():
     """
-    A registration class for estimating the deformation field which minimizes 
-    feature differences using a thin-plate-spline interpolant.
+    A registration class for estimating the deformation model parameters that
+    best solve:
+    
+    | :math:`\arg\min_{p} | f(p_0) - p_1 |`
+    |
+    | where:
+    |    :math:`f`     : is a transformation function.
+    |    :math:`p_0`   : image features.
+    |    :math:`p_1`   : template features.
+     
+    Notes:
+    ------
+    
+    Solved using linear algebra - does not consider pixel intensities
+    
+    Attributes
+    ----------
+    model: class
+        A `deformation` model class definition.
+    sampler: class
+        A `sampler` class definition.
     """
     
-    def __init__(self, sampler, kernel=None):
-        
+    def __init__(self, model, sampler):
+
+        self.model = model
         self.sampler = sampler
-        self.kernel = kernel if kernel is not None else None
-        
-    def U(self, r):
+
+    def register(self, image, template):
         """
-        This is a kernel function applied to solve the biharmonic equation.
-        @param r: 
-        """
-        
-        if not self.kernel:
-            return np.multiply( -np.power(r,2), np.log(np.power(r,2) + 1e-20))
-        else:
-            return self.kernel(r)
-        
-        ## Gaussian kernel
-        ##var = 5.0
-        ##return np.exp( -pow(r,2)/(2*var**2)  )
-    
-    def approximate(self, p0, p1):
-        """
-        Approximates the thinplate spline coefficients, following derivations
-        shown in:
-        
-        Bookstein, F. L. (1989). Principal warps: thin-plate splines and the 
-        decomposition of deformations. IEEE Transactions on Pattern Analysis 
-        and Machine Intelligence, 11(6), 567-585. 
-        """
-        
-        K = np.zeros((p0.shape[0], p0.shape[0]))
-        
-        for i in range(0, p0.shape[0]):
-            for j in range(0, p0.shape[0]):
-                r = np.sqrt( (p0[i,0] - p0[j,0])**2 + (p0[i,1] - p0[j,1])**2 ) 
-                K[i,j] = self.U(r)
-                
-        P = np.hstack((np.ones((p0.shape[0], 1)), p0))
-        
-        L = np.vstack((np.hstack((K,P)), 
-                       np.hstack((P.transpose(), np.zeros((3,3))))))
-        
-        Y = np.vstack( (p1, np.zeros((3, 2))) )
-        
-        Y = np.matrix(Y)
-        
-        Linv = np.matrix(np.linalg.inv(L))
-        
-        return L, Linv*Y
-    
-    def register(self,
-                 image,
-                 template,
-                 vectorized=True):
-        """
-        Performs an image (feature based) registration.
-        
-        @param image: a floating image, registerData object.
-        @param template: a target image, registerData object.
+        Computes the registration using only image (point) features.
+            
+        Parameters
+        ----------
+        image: RegisterData
+            The floating registration data.
+        template: RegisterData
+            The target registration data.
+        model: Model
+            The deformation model.
+            
+        Returns
+        -------
+        p: nd-array.
+                Model parameters.
+        warp: nd-array.
+            Warp field estimate.
+        warpedImage: nd-array
+            The re-sampled image.
+        error: float
+            Fitting error.
         """
         
+        # Initialize the models, metric and sampler.
+        model = self.model(image.coords)
         sampler = self.sampler(image.coords)
         
         # Form corresponding point sets. 
@@ -373,76 +471,17 @@ class SplineRegister():
                 #print '{} -> {}'.format(imagePoints[-1], templatePoints[-1])
         
         if not imagePoints or not templatePoints:
-            raise ValueError('Requires image and template features to register.')
+            raise ValueError('Requires corresponding features to register.')
         
         # Note the inverse warp is estimated here.
+        p, error = model.fit(
+            np.array(templatePoints),
+            np.array(imagePoints)
+            )
         
-        p0 = np.array(templatePoints)
-        p1 = np.array(imagePoints)
+        warp = model.warp(p)
         
-        _L, model = self.approximate(p0, p1)
+        # Sample the image using the inverse warp.
+        warpedImage = sampler.f(image.data, warp).reshape(image.data.shape)
         
-        # For all coordinates in the register data, evaluate the
-        # thin-plate-spline.
-        
-        warp = np.zeros_like(image.coords.tensor)
-        
-        affine  = model[-3:, :]
-        weights = model[:-3, :]
-        
-        if vectorized:
-            
-            # Vectorized extrapolation, looping through arrays in python is 
-            # slow therefore wherever possible attempt to unroll loops. Below
-            # is an example:
-            
-            Xvec = np.matrix(image.coords.tensor[1].flatten(0)).T
-            Yvec = np.matrix(image.coords.tensor[0].flatten(0)).T
-       
-            # Fast matrix multiplication approach:
-            Px = np.matrix(np.tile(p0[:,0], (Xvec.shape[0], 1)))
-            Wx = np.matrix(np.tile(weights[:,0].T, (Xvec.shape[0], 1)))
-            Bx = np.matrix(np.tile(Xvec, (1, p0.shape[0])))
-            Ax = np.matrix(np.tile(affine[:,0].T, (Xvec.shape[0], 1)))
-        
-            Py = np.matrix(np.tile(p0[:,1], (Xvec.shape[0], 1)))
-            Wy = np.matrix(np.tile(weights[:,1].T, (Xvec.shape[0], 1)))
-            By = np.matrix(np.tile(Yvec, (1, p0.shape[0])))
-            Ay = np.matrix(np.tile(affine[:,1].T, (Xvec.shape[0], 1)))
-        
-            # Form the R matrix:
-            R = self.U( np.sqrt( np.power(Px - Bx,2) + np.power(Py - By,2)) )
-        
-            # Compute the sum of the weighted R matrix, row wise.
-            Rx = np.sum( np.multiply(Wx, R), 1 )
-            Ry = np.sum( np.multiply(Wy, R), 1 )
-        
-            one = np.ones_like(Xvec)
-            a = np.hstack(( one, Xvec, Yvec, one))
-   
-            warp[1] = np.sum( np.multiply(a, np.hstack((Ax, Rx)) ), 1 ).reshape(warp[1].shape)
-            warp[0] = np.sum( np.multiply(a, np.hstack((Ay, Ry)) ), 1 ).reshape(warp[0].shape)
-            
-        else:
-            
-            # Slow nested loop approach:
-            for x in xrange(0, image.coords.domain[1]):
-                for y in xrange(0, image.coords.domain[3]):
-                    
-                    # Refer to page 570 (of BookStein paper) first column, last 
-                    # equation (relating map coordinates to coefficients).
-                    
-                    zx = 0.0
-                    zy = 0.0
-                    
-                    for n in range(0, len(p0[:,0])):
-                        r = np.sqrt( (p0[n,0] - x)**2 + (p0[n,1] - y)**2 ) 
-                        zx += float(weights[n,0])*float(self.U(r)) 
-                        zy += float(weights[n,1])*float(self.U(r)) 
-            
-                    warp[0][y,x] = affine[0,1] + affine[1,1]*x + affine[2,1]*y + zy
-                    warp[1][y,x] = affine[0,0] + affine[1,0]*x + affine[2,0]*y + zx
-        
-        img = sampler.f(image.data, warp).reshape(image.data.shape)
-        
-        return warp, img
+        return p, warp, warpedImage, error

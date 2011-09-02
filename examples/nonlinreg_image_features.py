@@ -1,18 +1,19 @@
 """ 
-Estimates a linear warp field, between two images - 
+Estimates a warp field, between two images using only image features. 
 
 The target is a "smile" the image is a frown and the goal is to estimate
 the warp field between them.
     
-The deformation is estimated using thin plate splines.
-    
+The deformation is estimated using thin plate splines and an example of how to 
+define a custom kernel is shown.
 """
 
 import numpy as np
 import yaml 
 
 import matplotlib.pyplot as plt
- 
+
+from register.models import model
 from register.samplers import sampler
 from register.visualize import plot
 
@@ -28,23 +29,54 @@ template = register.RegisterData(
     features=yaml.load(open('data/smile.yaml'))
     )
 
-# Define a gaussian kernel.
-def gaussKernel(r):
-    var = 50
-    return np.exp( -np.power(r,2)/(2*var**2)  )
+###############################################################################
+# Using the implementation of thin-plate splines.
+###############################################################################
 
-# Form the tps registration instance.
-spline = register.SplineRegister(
+# Form the feature registrator.
+feature = register.FeatureRegister(
+    model=model.ThinPlateSpline,
     sampler=sampler.Spline,
-    kernel=gaussKernel
+    )
+
+# Perform the registration.
+p, warp, img, error = feature.register(
+    image,
+    template
+    )
+
+print "Thin-plate Spline kernel error: {}".format(error)
+
+plot.featurePlot(image, template, img)
+plot.show()
+
+###############################################################################
+# Defining a custom model and registering features.
+###############################################################################
+
+class GaussSpline(model.ThinPlateSpline):
+    def __init__(self, coordinates):
+        model.ThinPlateSpline.__init__(self, coordinates)
+        
+    def U(self, r):
+        # Define a gaussian kernel.
+        var = 5.0 
+        return np.exp( -np.power(r,2)/(2*var**2)  )
+   
+
+# Form feature registrator.
+feature = register.FeatureRegister(
+    model=GaussSpline,
+    sampler=sampler.Spline,
     )
     
-# Register using features.
-warp, img = spline.register(
+# Perform the registration.
+p, warp, img, error = feature.register(
     image,
-    template,
-    vectorized=True,
+    template
     )
 
-plot.featurePlot(image, template, warp, img)
+print "Gaussian kernel error: {}".format(error)
+
+plot.featurePlot(image, template, img)
 plot.show()

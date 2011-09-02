@@ -1,7 +1,6 @@
 ''' (Debug utility) Defines a set of plotting callback functions '''
 
 import matplotlib.pyplot as plt
-import numpy as np
 
 IMAGE_ORIGIN=None
 IMAGE_COLORMAP='gray'
@@ -30,7 +29,7 @@ def show():
     plt.ioff()
     plt.show()
 
-def coordPlt(grid, buffer=10, step=10):
+def coordPlt(grid, buffer=10, step=5):
     """
     Plot the grid coordinates.
     """

@@ -1,0 +1,426 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Deformation models &mdash; python-register v0.0 documentation</title>
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="python-register v0.0 documentation" href="index.html" />
+    <link rel="next" title="Similarity metrics" href="similarity_metrics.html" />
+    <link rel="prev" title="python-register" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="similarity_metrics.html" title="Similarity metrics"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="python-register"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">python-register v0.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-register">
+<span id="deformation-models"></span><h1>Deformation models<a class="headerlink" href="#module-register" title="Permalink to this headline">¶</a></h1>
+<p>A top level registration module</p>
+<dl class="class">
+<dt id="register.Coordinates">
+<em class="property">class </em><tt class="descclassname">register.</tt><tt class="descname">Coordinates</tt><big>(</big><em>domain</em>, <em>spacing=None</em><big>)</big><a class="headerlink" href="#register.Coordinates" title="Permalink to this definition">¶</a></dt>
+<dd><p>Container for grid coordinates.</p>
+<p class="rubric">Attributes</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="12%" />
+<col width="10%" />
+<col width="79%" />
+</colgroup>
+<tbody valign="top">
+<tr><td>domain</td>
+<td>nd-array</td>
+<td>Domain of the coordinate system.</td>
+</tr>
+<tr><td>tensor</td>
+<td>nd-array</td>
+<td>Grid coordinates.</td>
+</tr>
+<tr><td>homogenous</td>
+<td>nd-array</td>
+<td><cite>Homogenous</cite> coordinate system representation of grid coordinates.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="class">
+<dt id="register.FeatureRegister">
+<em class="property">class </em><tt class="descclassname">register.</tt><tt class="descname">FeatureRegister</tt><big>(</big><em>model</em>, <em>sampler</em><big>)</big><a class="headerlink" href="#register.FeatureRegister" title="Permalink to this definition">¶</a></dt>
+<dd><p>A registration class for estimating the deformation model parameters that
+best solve:</p>
+<div class="line-block">
+<div class="line"><div class="system-message">
+<p class="system-message-title">System Message: ERROR/3 (<tt class="docutils">[u'FeatureRegister(model, sampler)', u':module: register', u'', u'', u'', u'A registration class for estimating the deformation model parameters that', u'best solve:', u'', u'| :math:`\x07rg\\min_{p} \\eps = | f(p_0) - p_1 |`', u'|', u'| where:', u'|    :math:`f`     : is a transformation function.', u'|    :math:`p_0`   : image features.', u'|    :math:`p_1`   : template features.', u'', u'.. rubric:: Attributes', u'', u'==============    ==========', u'  model: class    ', u'                  A `deformation` model class definition.', u'sampler: class    ', u'                  A `sampler` class definition.', u'==============    ==========', u'', u'.. rubric:: Methods', u'', u'.. autosummary::', u'   :toctree:', u'', u'   register', u'', u'', u'.. py:method:: FeatureRegister.register(image, template)', u'   :module: register', u'', u'   ', u'   ', u'   Computes the registration using only image (point) features.', u'   ', u'   ', u'   :Parameters:', u'   ', u'       **image: RegisterData** : ', u'   ', u'           The floating registration data.', u'   ', u'       **template: RegisterData** : ', u'   ', u'           The target registration data.', u'   ', u'       **model: Model** : ', u'   ', u'           The deformation model.', u'   ', u'   :Returns:', u'   ', u'       **p: nd-array.** : ', u'   ', u'           Model parameters.', u'   ', u'       **warp: nd-array.** : ', u'   ', u'           Warp field estimate.', u'   ', u'       **warpedImage: nd-array** : ', u'   ', u'           The re-sampled image.', u'   ', u'       **error: float** : ', u'   ', u'           Fitting error.']</tt>, line 6)</p>
+<p>
+Illegal character: ""</p>
+<pre class="literal-block">
+rg\min_{p} \eps = | f(p_0) - p_1 |
+</pre>
+</div>
+</div>
+<div class="line"><br /></div>
+<div class="line">where:</div>
+<div class="line-block">
+<div class="line"><math xmlns="http://www.w3.org/1998/Math/MathML">
+<mrow><mi>f</mi></mrow></math>     : is a transformation function.</div>
+<div class="line"><math xmlns="http://www.w3.org/1998/Math/MathML">
+<mrow><msub><mi>p</mi><mn>0</mn></msub></mrow></math>   : image features.</div>
+<div class="line"><math xmlns="http://www.w3.org/1998/Math/MathML">
+<mrow><msub><mi>p</mi><mn>1</mn></msub></mrow></math>   : template features.</div>
+</div>
+</div>
+<p class="rubric">Attributes</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="26%" />
+<col width="74%" />
+</colgroup>
+<tbody valign="top">
+<tr><td>model: class</td>
+<td>A <cite>deformation</cite> model class definition.</td>
+</tr>
+<tr><td>sampler: class</td>
+<td>A <cite>sampler</cite> class definition.</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Methods</p>
+<dl class="method">
+<dt id="register.FeatureRegister.register">
+<tt class="descname">register</tt><big>(</big><em>image</em>, <em>template</em><big>)</big><a class="headerlink" href="#register.FeatureRegister.register" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the registration using only image (point) features.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>image: RegisterData</strong> :</p>
+<blockquote>
+<div><p>The floating registration data.</p>
+</div></blockquote>
+<p><strong>template: RegisterData</strong> :</p>
+<blockquote>
+<div><p>The target registration data.</p>
+</div></blockquote>
+<p><strong>model: Model</strong> :</p>
+<blockquote>
+<div><p>The deformation model.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>p: nd-array.</strong> :</p>
+<blockquote>
+<div><p>Model parameters.</p>
+</div></blockquote>
+<p><strong>warp: nd-array.</strong> :</p>
+<blockquote>
+<div><p>Warp field estimate.</p>
+</div></blockquote>
+<p><strong>warpedImage: nd-array</strong> :</p>
+<blockquote>
+<div><p>The re-sampled image.</p>
+</div></blockquote>
+<p><strong>error: float</strong> :</p>
+<blockquote class="last">
+<div><p>Fitting error.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="register.KybicRegister">
+<em class="property">class </em><tt class="descclassname">register.</tt><tt class="descname">KybicRegister</tt><big>(</big><em>model</em>, <em>metric</em>, <em>sampler</em><big>)</big><a class="headerlink" href="#register.KybicRegister" title="Permalink to this definition">¶</a></dt>
+<dd><p>Variant of LM algorithm as described by:</p>
+<dl class="docutils">
+<dt>Kybic, J. and Unser, M. (2003). Fast parametric elastic image</dt>
+<dd>registration. IEEE Transactions on Image Processing, 12(11), 1427-1442.</dd>
+</dl>
+<p class="rubric">Methods</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="register.Register">
+<em class="property">class </em><tt class="descclassname">register.</tt><tt class="descname">Register</tt><big>(</big><em>model</em>, <em>metric</em>, <em>sampler</em><big>)</big><a class="headerlink" href="#register.Register" title="Permalink to this definition">¶</a></dt>
+<dd><p>A registration class for estimating the deformation model parameters that
+best solve:</p>
+<div class="line-block">
+<div class="line"><math xmlns="http://www.w3.org/1998/Math/MathML">
+<mrow><mi>f</mi><mo>(</mo><mi>W</mi><mo>(</mo><mi>I</mi><mo>;</mo><mi>p</mi><mo>)</mo><mo>,</mo><mi>T</mi><mo>)</mo></mrow></math></div>
+<div class="line"><br /></div>
+<div class="line">where:</div>
+<div class="line-block">
+<div class="line"><math xmlns="http://www.w3.org/1998/Math/MathML">
+<mrow><mi>f</mi></mrow></math>     : is a similarity metric.</div>
+<div class="line"><math xmlns="http://www.w3.org/1998/Math/MathML">
+<mrow><mi>W</mi><mo>(</mo><mi>x</mi><mo>;</mo><mi>p</mi><mo>)</mo></mrow></math>: is a deformation model (defined by the parameter set p).</div>
+<div class="line"><math xmlns="http://www.w3.org/1998/Math/MathML">
+<mrow><mi>I</mi></mrow></math>     : is an input image (to be deformed).</div>
+<div class="line"><math xmlns="http://www.w3.org/1998/Math/MathML">
+<mrow><mi>T</mi></mrow></math>     : is a template (which is a deformed version of the input).</div>
+</div>
+</div>
+<p class="rubric">Attributes</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="26%" />
+<col width="74%" />
+</colgroup>
+<tbody valign="top">
+<tr><td>model: class</td>
+<td>A <cite>deformation</cite> model class definition.</td>
+</tr>
+<tr><td>metric: class</td>
+<td>A <cite>similarity</cite> metric class definition.</td>
+</tr>
+<tr><td>sampler: class</td>
+<td>A <cite>sampler</cite> class definition.</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Methods</p>
+<dl class="class">
+<dt id="register.Register.optStep">
+<em class="property">class </em><tt class="descname">optStep</tt><a class="headerlink" href="#register.Register.optStep" title="Permalink to this definition">¶</a></dt>
+<dd><p class="rubric">Methods</p>
+<dl class="attribute">
+<dt id="register.Register.optStep.deltaP">
+<tt class="descname">deltaP</tt><a class="headerlink" href="#register.Register.optStep.deltaP" title="Permalink to this definition">¶</a></dt>
+<dd><p>Alias for field number 2</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="register.Register.optStep.error">
+<tt class="descname">error</tt><a class="headerlink" href="#register.Register.optStep.error" title="Permalink to this definition">¶</a></dt>
+<dd><p>Alias for field number 0</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="register.Register.optStep.p">
+<tt class="descname">p</tt><a class="headerlink" href="#register.Register.optStep.p" title="Permalink to this definition">¶</a></dt>
+<dd><p>Alias for field number 1</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="method">
+<dt id="register.Register.register">
+<tt class="descclassname">Register.</tt><tt class="descname">register</tt><big>(</big><em>image</em>, <em>template</em>, <em>p=None</em>, <em>alpha=None</em>, <em>warp=None</em>, <em>plotCB=None</em>, <em>verbose=False</em><big>)</big><a class="headerlink" href="#register.Register.register" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the registration between the image and template.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>image: nd-array</strong> :</p>
+<blockquote>
+<div><p>The floating image.</p>
+</div></blockquote>
+<p><strong>template: nd-array</strong> :</p>
+<blockquote>
+<div><p>The target image.</p>
+</div></blockquote>
+<p><strong>p: list (or nd-array), optional.</strong> :</p>
+<blockquote>
+<div><p>First guess at fitting parameters.</p>
+</div></blockquote>
+<p><strong>warp: nd-array, optional.</strong> :</p>
+<blockquote>
+<div><p>A warp field estimate.</p>
+</div></blockquote>
+<p><strong>alpha: float</strong> :</p>
+<blockquote>
+<div><p>The dampening factor.</p>
+</div></blockquote>
+<p><strong>plotCB: function, optional</strong> :</p>
+<blockquote>
+<div><p>A plotting function.</p>
+</div></blockquote>
+<p><strong>verbose: boolean</strong> :</p>
+<blockquote>
+<div><p>A debug flag for text status updates.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>p: nd-array.</strong> :</p>
+<blockquote>
+<div><p>Model parameters.</p>
+</div></blockquote>
+<p><strong>warp: nd-array.</strong> :</p>
+<blockquote>
+<div><p>Warp field estimate.</p>
+</div></blockquote>
+<p><strong>warpedImage: nd-array</strong> :</p>
+<blockquote>
+<div><p>The re-sampled image.</p>
+</div></blockquote>
+<p><strong>error: float</strong> :</p>
+<blockquote class="last">
+<div><p>Fitting error.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="register.RegisterData">
+<em class="property">class </em><tt class="descclassname">register.</tt><tt class="descname">RegisterData</tt><big>(</big><em>data</em>, <em>coords=None</em>, <em>features=None</em><big>)</big><a class="headerlink" href="#register.RegisterData" title="Permalink to this definition">¶</a></dt>
+<dd><p>Container for registration data.</p>
+<p class="rubric">Attributes</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="10%" />
+<col width="26%" />
+<col width="64%" />
+</colgroup>
+<tbody valign="top">
+<tr><td>data</td>
+<td>nd-array</td>
+<td>The image registration image values.</td>
+</tr>
+<tr><td>coords</td>
+<td>nd-array, optional</td>
+<td>The grid coordinates.</td>
+</tr>
+<tr><td>features</td>
+<td>dictionary, optional</td>
+<td>A mapping of unique ids to registration features.</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Methods</p>
+<dl class="method">
+<dt id="register.RegisterData.smooth">
+<tt class="descname">smooth</tt><big>(</big><em>variance</em><big>)</big><a class="headerlink" href="#register.RegisterData.smooth" title="Permalink to this definition">¶</a></dt>
+<dd><p>Smooth feature data in place.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>variance: float</strong> :</p>
+<blockquote class="last">
+<div><p>Variance of the Gaussian kernel.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition-see-also admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><tt class="xref py py-obj docutils literal"><span class="pre">regisger.Register.smooth</span></tt></p>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">python-register</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="similarity_metrics.html"
+                        title="next chapter">Similarity metrics</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/deformation_models.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="similarity_metrics.html" title="Similarity metrics"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="python-register"
+             >previous</a> |</li>
+        <li><a href="index.html">python-register v0.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, Nathan Faggian, Stefan Van Der Walt, Riaan Van Den Dool.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
+    </div>
+  </body>
+</html>

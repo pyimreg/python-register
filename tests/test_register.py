@@ -11,12 +11,7 @@ from register import register
 
 def warp(image, p, model, sampler):
     """
-    Warps an image given a deformation model a set of parameters.
-
-    @param image: an numpy ndarray.
-    @param p: warp parameters.
-    @param model: a deformation model.
-
+    Warps an image.
     """
     coords = register.Coordinates(
         [0, image.shape[0], 0, image.shape[1]]

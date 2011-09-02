@@ -10,11 +10,15 @@ libsampler = load_library('libsampler', __file__)
 
 class Sampler(object):
     """
-    Abstract sampler.
-
-    @param METHOD: the method implemented by the sampler.
-    @param DESCRIPTION: a meaningful description of the technique used, with
-                        references where appropriate.
+    Abstract sampler
+    
+    Attributes
+    ----------
+    METRIC : string
+        The type of similarity sampler being used.
+    DESCRIPTION : string
+        A meaningful description of the sampler used, with references where 
+        appropriate.
     """
 
     METHOD=None
@@ -28,11 +32,20 @@ class Sampler(object):
         """
         A sampling function, responsible for returning a sampled set of values
         from the given array.
-
-        @param array: an n-dimensional array (representing an image or volume).
-        @param coords: array coordinates in cartesian form (n by p).
+        
+        Parameters
+        ----------
+        array: nd-array
+            Input array for sampling.
+        warp: nd-array
+            Deformation coordinates.
+    
+        Returns
+        -------
+        sample: nd-array
+           Sampled array data.
         """
-
+        
         if self.coordinates is None:
             raise ValueError('Appropriately defined coordinates not provided.')
 
@@ -65,7 +78,7 @@ class Nearest(Sampler):
         Given coordinate in the array nearest neighbour sampling simply rounds
         coordinates points:
             f(I; i,j) = I( round(i), round(j))
-                """
+        """
 
     def __init__(self, coordinates):
         Sampler.__init__(self, coordinates)
@@ -75,11 +88,20 @@ class Nearest(Sampler):
         """
         A sampling function, responsible for returning a sampled set of values
         from the given array.
-
-        @param array: an n-dimensional array (representing an image or volume).
-        @param coords: array coordinates in cartesian form (n by p).
+        
+        Parameters
+        ----------
+        array: nd-array
+            Input array for sampling.
+        warp: nd-array
+            Deformation coordinates.
+    
+        Returns
+        -------
+        sample: nd-array
+           Sampled array data.
         """
-
+    
         if self.coordinates is None:
             raise ValueError('Appropriately defined coordinates not provided.')
 
@@ -100,7 +122,7 @@ class CubicConvolution(Sampler):
     DESCRIPTION="""
         Given a coordinate in the array cubic convolution interpolates between
         16 (4x4) nearest values.
-                """
+        """
 
     def __init__(self, coordinates):
         Sampler.__init__(self, coordinates)
@@ -110,11 +132,20 @@ class CubicConvolution(Sampler):
         """
         A sampling function, responsible for returning a sampled set of values
         from the given array.
-
-        @param array: an n-dimensional array (representing an image or volume).
-        @param coords: array coordinates in cartesian form (n by p).
+        
+        Parameters
+        ----------
+        array: nd-array
+            Input array for sampling.
+        warp: nd-array
+            Deformation coordinates.
+    
+        Returns
+        -------
+        sample: nd-array
+           Sampled array data.
         """
-
+    
         if self.coordinates is None:
             raise ValueError('Appropriately defined coordinates not provided.')
 
@@ -138,8 +169,7 @@ class Spline(Sampler):
 
         http://docs.scipy.org/doc/scipy/reference/generated/
             scipy.ndimage.interpolation.map_coordinates.html
-
-                """
+        """
 
     def __init__(self, coordinates):
         Sampler.__init__(self, coordinates)
@@ -148,11 +178,20 @@ class Spline(Sampler):
         """
         A sampling function, responsible for returning a sampled set of values
         from the given array.
-
-        @param array: an n-dimensional array (representing an image or volume).
-        @param coords: array coordinates in cartesian form (n by p).
+        
+        Parameters
+        ----------
+        array: nd-array
+            Input array for sampling.
+        warp: nd-array
+            Deformation coordinates.
+    
+        Returns
+        -------
+        sample: nd-array
+           Sampled array data.
         """
-
+    
         if self.coordinates is None:
             raise ValueError('Appropriately defined coordinates not provided.')
 

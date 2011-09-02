@@ -22,7 +22,7 @@ def warp(image):
         [0, image.shape[0], 0, image.shape[1]]
         )
         
-    spline_model = model.Spline(coords)
+    spline_model = model.CubicSpline(coords)
     spline_sampler = sampler.Spline(coords)
 
     p = spline_model.identity
@@ -52,7 +52,7 @@ affine = register.Register(
     )
 # Form the spline registration instance.
 spline = register.Register(
-    model.Spline,
+    model.CubicSpline,
     metric.Residual,
     sampler.CubicConvolution
     )

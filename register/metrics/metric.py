@@ -2,14 +2,17 @@
 
 import numpy as np
 
-
 class Metric(object):
     """
     Abstract similarity metric.
-
-    @param METRIC: the type of similarity metric being used.
-    @param DESCRIPTION: a meaningful description of the metric used, with
-                        references where appropriate.
+    
+    Attributes
+    ----------
+    METRIC : string
+        The type of similarity metric being used.
+    DESCRIPTION : string
+        A meaningful description of the metric used, with references where 
+        appropriate.
     """
 
     METRIC=None
@@ -20,20 +23,38 @@ class Metric(object):
 
     def error(self, warpedImage, template):
         """
-        Computes the metric.
-
-        @param warpedImage: a numpy array, representing the image.
-        @param template: a numpy arrary, representing the template.
+        Evaluates the metric.
+        
+        Parameters
+        ----------
+        warpedImage: nd-array
+            Input image after warping.
+        template: nd-array
+            Template image.
+    
+        Returns
+        -------
+        error: nd-array
+           Metric evaluated over all image coordinates.
         """
         
         raise NotImplementedError('')
         
     def jacobian(self, model, warpedImage):
         """
-        Computes the jacobian dP/dE
-
-        @param model: the deformation model.
-        @param warpedImage: the transformed image.
+        Computes the jacobian dP/dE.
+        
+        Parameters
+        ----------
+        model: deformation model
+            A particular deformation model.
+        warpedImage: nd-array
+            Input image after warping.
+    
+        Returns
+        -------
+        jacobian: nd-array
+           A derivative of model parameters with respect to the metric.
         """
         raise NotImplementedError('')
         
@@ -62,22 +83,26 @@ class Residual(Metric):
 
     def jacobian(self, model, warpedImage):
         """
-        Follows the derivations shown in:
-
-        Simon Baker and Iain Matthews. 2004. Lucas-Kanade 20 Years On: A
-        Unifying Framework. Int. J. Comput. Vision 56, 3 (February 2004).
-
-        @param model: the deformation model.
-        @param warpedModel: a transformed image.
-        @return: a jacobain matrix. (m x n)
-            where: m = number of image pixels,
-                   p = number of parameters.
+        Computes the jacobian dP/dE.
+        
+        Parameters
+        ----------
+        model: deformation model
+            A particular deformation model.
+        warpedImage: nd-array
+            Input image after warping.
+    
+        Returns
+        -------
+        jacobian: nd-array
+            A jacobain matrix. (m x n)
+                | where: m = number of image pixels,
+                |        p = number of parameters.
         """
 
         grad = np.gradient(warpedImage)
 
         dIx = grad[1].flatten()
-
         dIy = grad[0].flatten()
 
         dPx, dPy = model.jacobian()
@@ -85,9 +110,22 @@ class Residual(Metric):
         J = np.zeros_like(dPx)
         for index in range(0, dPx.shape[1]):
             J[:,index] = dPx[:,index]*dIx + dPy[:,index]*dIy
-
         return J
 
     def error(self, warpedImage, template):
+        """
+        Evaluates the residual metric.
         
+        Parameters
+        ----------
+        warpedImage: nd-array
+            Input image after warping.
+        template: nd-array
+            Template image.
+    
+        Returns
+        -------
+        error: nd-array
+           Metric evaluated over all image coordinates.
+        """
         return warpedImage.flatten() - template.flatten()
