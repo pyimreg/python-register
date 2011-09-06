@@ -3,6 +3,10 @@
 import numpy as np
 import scipy.ndimage as nd
 import math
+import sys
+
+from register.features import region
+from register.features import distance
 
 import matplotlib.pyplot as plt
 
@@ -34,7 +38,6 @@ def _getPointOffset(refChip, rawChip, padSize = 64):
 
 
 def phaseCorrelationMatch(refdata, inputimage, chipsize=32, searchsize=64, threshold=0.0):
-    plt.ion()
     matchedfeatures = {} 
     for id, point in refdata.features['points'].items():
         if point[0] > chipsize/2 and point[1] > chipsize/2 and point[0] < refdata.data.shape[0] - chipsize/2 and point[1] < refdata.data.shape[1] - chipsize/2:
@@ -45,10 +48,33 @@ def phaseCorrelationMatch(refdata, inputimage, chipsize=32, searchsize=64, thres
             
             offsetX, offsetY, correlation = _getPointOffset(refChip, inpChip, padSize=searchsize)
             
-            print "(%d, %d) -> %f" % (offsetX, offsetY, correlation)
             if correlation > threshold:
                 matchedfeatures[id] = (point[0] + offsetY, point[1] + offsetX) 
     
     result = {}
     result['points'] = matchedfeatures
     return result
+
+def regionCovarianceMatch(refdata, inputimage, chipsize=32, searchsize=64):
+    matchedfeatures = {} 
+    searchDist = (searchsize-chipsize)/2
+    for id, point in refdata.features['points'].items():
+        print id, point
+        mindist = np.finfo(np.float).max
+        mindistRC = None
+        for r in range(point[0]-searchDist, point[0]+searchDist):
+            for c in range(point[1]-searchDist, point[1]+searchDist):
+                R = inputimage[r:r+chipsize, c:c+chipsize]
+                C_R = region.covariance(R)
+                C_F = refdata.features['regionCovariances'][id]
+                d = distance.frobeniusNorm(C_F - C_R)
+                if d < mindist:
+                    mindist = d
+                    mindistRC = (r,c)
+        if not mindistRC is None:
+            print mindist
+            matchedfeatures[id] = (mindistRC[0] + chipsize/2, mindistRC[1] + chipsize/2)
+    result = {}
+    result['points'] = matchedfeatures
+    return result
+    

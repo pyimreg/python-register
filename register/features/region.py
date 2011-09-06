@@ -69,7 +69,7 @@ def _p_Q(featureDescriptors):
 _saved_work = {}
 
 
-def covariance(image, upperleft, lowerright):
+def covariance(image, upperleft=(0,0), lowerright=None):
     """ Calculates the 7x7 covariance matrix for the region specified. (lowerright is excluded rom the region). 
     
         @param image: The input image (MxN)
@@ -77,13 +77,14 @@ def covariance(image, upperleft, lowerright):
         @param lowerright: The lower right point (row,col)
         @return: The covariance matrix (7x7) of the region specified. 
     """
+    if lowerright is None:
+        lowerright = image.shape
     region = image[upperleft[0]:lowerright[0], upperleft[1]:lowerright[1]]
     regionfeatures = _featureDescriptors(region)
     d = regionfeatures.shape[2]
     n = np.prod(region.shape)
     C = np.cov(regionfeatures.reshape([n,d]))            
     return C
-    
 
 def flush_work():
     """ Flush all saved work for previously processed images from memory. 
