@@ -70,7 +70,7 @@ def test_affine_warp():
     # Warp image using warp field
     warpedImage = test_sampler.f(image, warp).reshape(image.shape)
     # Assert identity model did not warp image
-    assert (image - warpedImage < 0.01).all(), "Identity model must not warp image."
+    assert (image - warpedImage <= 1).all(), "Identity model must not warp image."
 
 
 
