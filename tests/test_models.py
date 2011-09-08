@@ -1,8 +1,13 @@
 import numpy as np
 
 import register.models.model as model
+import register.samplers.sampler as sampler
 import register.register as register
+import scipy.misc as misc
+import scipy.ndimage as nd
 
+
+from matplotlib import pyplot
 
 def test_shift():
     """
@@ -48,6 +53,25 @@ def test_affine():
     
     # Assert that the alignment error is small.
     assert error <= 1.0, "Unexpected large alignment error : {} grid units".format(error)
+
+def test_affine_warp():
+    # Form a dummy coordinate class.
+    image = misc.lena()
+    image = nd.zoom(image, 0.1)
+    coords = register.Coordinates([0, image.shape[0]-1, 0, image.shape[1]-1])
+    # Create an affine model
+    test_model = model.Affine(coords)
+    # Initialize model
+    p = [0,0,0,0,0,0]
+    # Create warp field from model
+    warp = test_model.warp(p)
+    # Create a sampler
+    test_sampler = sampler.Nearest(coords)
+    # Warp image using warp field
+    warpedImage = test_sampler.f(image, warp).reshape(image.shape)
+    # Assert identity model did not warp image
+    assert (image - warpedImage < 0.01).all(), "Identity model must not warp image."
+
 
 
 def test_thinPlateSpline():
