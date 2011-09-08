@@ -244,12 +244,14 @@ class Register(object):
         sampler = self.sampler(image.coords)
         metric = self.metric()
 
-        if warp is not None:
+        if not (warp is None):
             # Estimate p, using the warp field.
+            print "Estimating warp field..."
             p = model.estimate(warp)
 
         p = model.identity if p is None else p
         deltaP = np.zeros_like(p)
+        print p
 
         search = []
         alpha = alpha if alpha is not None else 1e-4
@@ -262,10 +264,12 @@ class Register(object):
             warp = model.warp(p)
             
             # Sample the image using the inverse warp.
-            warpedImage = _smooth(
-                sampler.f(image.data, warp).reshape(image.data.shape),
-                0.5
-                )
+            #warpedImage = _smooth(
+            #    sampler.f(image.data, warp).reshape(image.data.shape),
+            #    0.5
+            #    )
+            
+            warpedImage = sampler.f(image.data, warp).reshape(image.data.shape)
             
             # Evaluate the error metric.
             e = metric.error(warpedImage, template.data)
@@ -319,11 +323,6 @@ class Register(object):
                 p=p
                 )
 
-            # Evaluate stopping condition:
-            if np.dot(deltaP.T, deltaP) < 1e-4:
-                break
-
-            p += deltaP
 
             if verbose and decreasing:
                 print ('{0}\n'
@@ -337,6 +336,12 @@ class Register(object):
                             ' '.join( '{0:3.2f}'.format(param) for param in searchStep.p),
                             searchStep.error
                             )
+
+            # Evaluate stopping condition:
+            if np.dot(deltaP.T, deltaP) < 1e-4:
+                break
+
+            p += deltaP
 
             # Append the search step to the search.
             search.append(searchStep)
