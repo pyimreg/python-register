@@ -56,7 +56,7 @@ def test_affine():
 
 def test_affine_warp():
     # Form a dummy coordinate class.
-    image = misc.lena()
+    image = misc.lena().astype(np.double)
     image = nd.zoom(image, 0.1)
     coords = register.Coordinates([0, image.shape[0]-1, 0, image.shape[1]-1])
     # Create an affine model
