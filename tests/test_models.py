@@ -56,7 +56,7 @@ def test_affine():
 
 def test_affine_warp():
     # Form a dummy coordinate class.
-    image = misc.lena()
+    image = misc.lena().astype(np.double)
     image = nd.zoom(image, 0.1)
     coords = register.Coordinates([0, image.shape[0]-1, 0, image.shape[1]-1])
     # Create an affine model
@@ -70,8 +70,7 @@ def test_affine_warp():
     # Warp image using warp field
     warpedImage = test_sampler.f(image, warp).reshape(image.shape)
     # Assert identity model did not warp image
-    assert (image - warpedImage < 0.01).all(), "Identity model must not warp image."
-
+    assert (image - warpedImage <= 1).all(), "Identity model must not warp image."
 
 
 def test_thinPlateSpline():
