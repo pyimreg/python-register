@@ -27,6 +27,7 @@ class Sampler(object):
     def __init__(self, coordinates):
 
         self.coordinates = coordinates
+        self.border = 0
 
     def f(self, array, warp):
         """
@@ -82,6 +83,7 @@ class Nearest(Sampler):
 
     def __init__(self, coordinates):
         Sampler.__init__(self, coordinates)
+        self.border = 0
 
 
     def f(self, array, warp):
@@ -126,7 +128,7 @@ class CubicConvolution(Sampler):
 
     def __init__(self, coordinates):
         Sampler.__init__(self, coordinates)
-
+        self.border = 10
 
     def f(self, array, warp):
         """
@@ -173,6 +175,7 @@ class Spline(Sampler):
 
     def __init__(self, coordinates):
         Sampler.__init__(self, coordinates)
+        self.border = 0
 
     def f(self, array, warp):
         """

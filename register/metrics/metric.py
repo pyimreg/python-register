@@ -18,7 +18,8 @@ class Metric(object):
     METRIC=None
     DESCRIPTION=None
 
-    def __init__(self):
+    def __init__(self, border=0):
+        self.border = border
         pass
 
     def error(self, warpedImage, template):
@@ -78,8 +79,8 @@ class Residual(Metric):
 
         """
 
-    def __init__(self):
-        Metric.__init__(self)
+    def __init__(self, border=0):
+        Metric.__init__(self, border)
 
     def jacobian(self, model, warpedImage):
         """
@@ -128,4 +129,15 @@ class Residual(Metric):
         error: nd-array
            Metric evaluated over all image coordinates.
         """
-        return warpedImage.flatten() - template.flatten()
+        
+        border = self.border
+        if border != 0:
+            temp = np.zeros(template.shape)
+            temp[border:-border, border:-border] = template[border:-border, border:-border]
+            warp = np.zeros(warpedImage.shape)   
+            warp[border:-border, border:-border] = warpedImage[border:-border, border:-border]
+        else:
+            temp = template
+            warp = warpedImage
+        
+        return (warp.flatten() - temp.flatten())

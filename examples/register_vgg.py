@@ -32,7 +32,7 @@ template = dsTemplate.GetRasterBand(1).ReadAsArray().astype(np.double)
 
 # Form the affine registration instance.
 print "Setting up affine registration..."
-affine = register.Register(
+affine = register.KybicRegister(
     model.CubicSpline,
     metric.Residual,
     sampler.CubicConvolution
@@ -48,8 +48,8 @@ print "Registering..."
 p, warp, img, error = affine.register(
     image,
     template,
-    alpha=0.000001,
-    #plotCB=plot.gridPlot,
+    alpha=0.001,
+    plotCB=plot.gridPlot,
     verbose=True
     )
 
@@ -71,15 +71,15 @@ p = affine.model(template.coords).identity
 warp = affine.model(template.coords).warp(p)
 resampledTemplate = affine.sampler(template.coords).f(template.data, warp).reshape(template.data.shape)
 
-print "Before: ", int(np.abs(metric.Residual().error(resampledImage, resampledTemplate)).sum())
-print "After: ", int(np.abs(metric.Residual().error(resampledImage, img)).sum())
+print "Before: ", int(np.abs(affine.metric(affine.sampler(None).border).error(resampledImage, resampledTemplate)).sum())
+print "After: ", int(np.abs(affine.metric(affine.sampler(None).border).error(img, resampledTemplate)).sum())
 
 pyplot.figure()
 pyplot.axis('image')
 pyplot.subplot(1,2,1)
 pyplot.imshow(np.abs(resampledImage-resampledTemplate).astype(np.uint8), cmap='gray')
 pyplot.subplot(1,2,2)
-pyplot.imshow(np.abs(resampledImage-img).astype(np.uint8), cmap='gray')
+pyplot.imshow(np.abs(img-resampledTemplate).astype(np.uint8), cmap='gray')
 pyplot.show()
 pyplot.close()
 

@@ -142,8 +142,8 @@ class Register(object):
     
     optStep = collections.namedtuple('optStep', 'error p deltaP')
     
-    MAX_ITER = 200
-    MAX_BAD = 20
+    MAX_ITER = 100
+    MAX_BAD = 100
     
     def __init__(self, model, metric, sampler):
 
@@ -243,7 +243,7 @@ class Register(object):
         # Initialize the models, metric and sampler.
         model = self.model(image.coords)
         sampler = self.sampler(image.coords)
-        metric = self.metric()
+        metric = self.metric(sampler.border)
 
         if not (warp is None):
             # Estimate p, using the warp field.
@@ -255,7 +255,7 @@ class Register(object):
 
         search = []
         lastGoodParams = None
-        alpha = alpha if alpha is not None else 1e-4
+        alpha = alpha if not (alpha is None) else 1e-4
         decreasing = True
         badSteps = 0
 
@@ -291,7 +291,6 @@ class Register(object):
 
                 if decreasing:
                     lastGoodParams = copy.deepcopy(searchParams)
-                    print itteration, ": ", searchParams.p
                     
                     if plotCB is not None:
                         plotCB(image.data,
@@ -319,7 +318,6 @@ class Register(object):
                     #continue
             else: # first iteration
                 lastGoodParams = copy.deepcopy(searchParams)
-                print itteration, ": ", searchParams.p
 
 
             # Computes the derivative of the error with respect to model
@@ -349,7 +347,7 @@ class Register(object):
                             )
 
             # Evaluate stopping condition:
-            if np.dot(deltaP.T, deltaP) < 1e-4:
+            if np.dot(deltaP.T, deltaP) < 1e-6:
                 break
 
             # Append the search step to the search.
