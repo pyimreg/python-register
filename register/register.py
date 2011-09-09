@@ -3,6 +3,7 @@
 import collections
 import numpy as np
 import scipy.ndimage as nd
+import copy
 
 def _smooth(image, variance):
     """
@@ -251,9 +252,9 @@ class Register(object):
 
         p = model.identity if p is None else p
         deltaP = np.zeros_like(p)
-        print p
 
         search = []
+        lastGoodParams = None
         alpha = alpha if alpha is not None else 1e-4
         decreasing = True
         badSteps = 0
@@ -274,14 +275,14 @@ class Register(object):
             # Evaluate the error metric.
             e = metric.error(warpedImage, template.data)
 
-            searchStep = self.optStep(error=np.abs(e).sum(),
-                                      p=p,
+            searchParams = self.optStep(error=np.abs(e).sum(),
+                                      p=p.copy(),
                                       deltaP=deltaP,
                                       )
 
-            if (len(search) > 1):
+            if (len(search) >= 1):
 
-                decreasing = (searchStep.error < search[-1].error)
+                decreasing = (searchParams.error < lastGoodParams.error)
 
                 alpha = self.__dampening(
                     alpha,
@@ -289,7 +290,9 @@ class Register(object):
                     )
 
                 if decreasing:
-
+                    lastGoodParams = copy.deepcopy(searchParams)
+                    print itteration, ": ", searchParams.p
+                    
                     if plotCB is not None:
                         plotCB(image.data,
                                template.data,
@@ -305,11 +308,19 @@ class Register(object):
                         if verbose:
                             print ('Optimization break, maximum number '
                                    'of bad iterations exceeded.')
+                        
                         break
+                    else:
+                        print "Bad iteration..."
 
-                    # Restore the parameters from the previous iteration.
-                    p = search[-1].p
-                    continue
+                    # Restore the parameters from the last good iteration.
+                    p = lastGoodParams.p.copy()
+
+                    #continue
+            else: # first iteration
+                lastGoodParams = copy.deepcopy(searchParams)
+                print itteration, ": ", searchParams.p
+
 
             # Computes the derivative of the error with respect to model
             # parameters.
@@ -317,14 +328,14 @@ class Register(object):
             J = metric.jacobian(model, warpedImage)
 
             deltaP = self.__deltaP(
-                J,
-                e,
+                J.copy(),
+                e.copy(),
                 alpha,
-                p=p
+                p=p.copy()
                 )
 
 
-            if verbose and decreasing:
+            if verbose:
                 print ('{0}\n'
                        'iteration  : {1} \n'
                        'parameters : {2} \n'
@@ -333,20 +344,24 @@ class Register(object):
                       ).format(
                             '='*80,
                             itteration,
-                            ' '.join( '{0:3.2f}'.format(param) for param in searchStep.p),
-                            searchStep.error
+                            ' '.join( '{0:3.2f}'.format(param) for param in searchParams.p),
+                            searchParams.error
                             )
 
             # Evaluate stopping condition:
             if np.dot(deltaP.T, deltaP) < 1e-4:
                 break
 
+            # Append the search step to the search.
+            search.append(copy.deepcopy(searchParams))
+            
+            # Take the step
             p += deltaP
 
-            # Append the search step to the search.
-            search.append(searchStep)
 
-        return p, warp, warpedImage, searchStep.error
+        warp = model.warp(lastGoodParams.p)
+        warpedImage = sampler.f(image.data, warp).reshape(image.data.shape)
+        return lastGoodParams.p, warp, warpedImage, lastGoodParams.error
 
 
 class KybicRegister(Register):
