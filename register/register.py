@@ -142,8 +142,8 @@ class Register(object):
     
     optStep = collections.namedtuple('optStep', 'error p deltaP')
     
-    MAX_ITER = 100
-    MAX_BAD = 100
+    MAX_ITER = 30
+    MAX_BAD = 20
     
     def __init__(self, model, metric, sampler):
 
