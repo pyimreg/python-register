@@ -5,6 +5,8 @@ import numpy as np
 import scipy.ndimage as nd
 import copy
 
+from features import region
+
 def _smooth(image, variance):
     """
     Gaussian smoothing using the fast-fourier-transform (FFT)
@@ -91,6 +93,14 @@ class RegisterData(object):
         
         self.features = features
         
+        if not self.features is None:
+            if not self.features.has_key('featureShape'):
+                self.features['featureShape'] = (16,16)
+            if not self.features.has_key('regionCovariances'):
+                shape = self.features['featureShape']
+                features['regionCovariances'] = {}
+                for id, point in self.features['points'].items():
+                    features['regionCovariances'][id] = region.covariance(data, (point[0]-shape[0]/2, point[1]-shape[1]/2), (point[0]+shape[0]/2, point[1]+shape[1]/2))
         
     def smooth(self, variance):
         """
