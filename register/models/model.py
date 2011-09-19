@@ -310,6 +310,119 @@ class Affine(Model):
 
         return (dx, dy)
 
+class Projective(Model):
+
+    MODEL='Projective (P)'
+
+    DESCRIPTION="""
+        Applies the projective coordinate transformation. Follows the derivations 
+        shown in:
+        
+        S. Baker and I. Matthews. 2004. Lucas-Kanade 20 Years On: A
+        Unifying Framework. Int. J. Comput. Vision 56, 3 (February 2004).
+        """
+
+    def __init__(self, coordinates):
+        Model.__init__(self, coordinates)
+
+    @property
+    def identity(self):
+        return np.zeros(9)
+    
+    def fit(self, p0, p1, lmatrix=False):
+        """
+        Estimates the best fit parameters that define a warp field, which 
+        deforms feature points p0 to p1.
+        
+        Parameters
+        ----------
+        p0: nd-array
+            Image features (points).
+        p1: nd-array
+            Template features (points).
+            
+        Returns
+        -------
+        parameters: nd-array
+            Model parameters.
+        error: float
+            Sum of RMS error between p1 and alinged p0.
+        """
+        
+        # Solve: H*X = Y
+        # ---------------------
+        #          H = Y*inv(X)
+        
+        X = np.ones((3, len(p0)))
+        X[0:2,:] = p0.T
+        
+        Y = np.ones((3, len(p0)))
+        Y[0:2,:] = p1.T
+        
+        H = np.dot(Y, np.linalg.pinv(X))
+        
+        parameters = [ 
+            H[0,0] - 1.0,
+            H[1,0],
+            H[0,1],
+            H[1,1] - 1.0,
+            H[0,2],
+            H[1,2],
+            H[2,0],
+            H[2,1],
+            H[2,2] - 1.0
+            ]
+        
+        projP0 = np.dot(H, X)[0:2,:].T
+        
+        error = np.sqrt( 
+           (projP0[:,0] - p1[:,0])**2 + (projP0[:,1] - p1[:,1])**2 
+           ).sum() 
+        
+        return parameters, error
+        
+    def transform(self, p):
+        """
+        An "projective" transformation of coordinates.
+        
+        Parameters
+        ----------
+        parameters: nd-array
+            Model parameters.
+        
+        Returns
+        -------
+        coords: nd-array
+           Deformation coordinates.
+        """
+        
+        T = np.array([
+                      [p[0]+1.0, p[2],     p[4]],
+                      [p[1],     p[3]+1.0, p[5]],
+                      [p[6],     p[7],     p[8]+1.0]
+                      ])
+
+        return np.dot(np.linalg.inv(T), self.coordinates.homogenous)
+
+    def jacobian(self):
+        """"
+        Evaluates the derivative of deformation model with respect to the
+        coordinates.
+        """
+
+        dx = np.zeros((self.coordinates.tensor[0].size, 6))
+        dy = np.zeros((self.coordinates.tensor[0].size, 6))
+
+        dx[:,0] = self.coordinates.tensor[1].flatten()
+        dx[:,2] = self.coordinates.tensor[0].flatten()
+        dx[:,4] = 1.0
+
+        dy[:,1] = self.coordinates.tensor[1].flatten()
+        dy[:,3] = self.coordinates.tensor[0].flatten()
+        dy[:,5] = 1.0
+
+        return (dx, dy)
+
 class ThinPlateSpline(Model):
 
     MODEL='Thin Plate Spline (TPS)'
