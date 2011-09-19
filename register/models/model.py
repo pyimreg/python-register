@@ -101,7 +101,7 @@ class Model(object):
         """
         raise NotImplementedError('')
     
-    def jacobian(self, p):
+    def jacobian(self, p=None):
         """
         Evaluates the derivative of deformation model with respect to the
         coordinates.
@@ -185,7 +185,7 @@ class Shift(Model):
 
         return np.dot(T, self.coordinates.homogenous)
 
-    def jacobian(self, p):
+    def jacobian(self, p=None):
         """
         Evaluates the derivative of deformation model with respect to the
         coordinates.
@@ -291,7 +291,7 @@ class Affine(Model):
 
         return np.dot(np.linalg.inv(T), self.coordinates.homogenous)
 
-    def jacobian(self, p):
+    def jacobian(self, p=None):
         """"
         Evaluates the derivative of deformation model with respect to the
         coordinates.
@@ -637,7 +637,7 @@ class ThinPlateSpline(Model):
         return self.transform(parameters)
     
     
-    def jacobian(self, p):
+    def jacobian(self, p=None):
         raise NotImplementedError("""
             It does not make sense to use a non-linear optimization to 
             fit a thin-plate-spline model. Try the "CubicSpline" deformation
@@ -782,7 +782,7 @@ class CubicSpline(Model):
                          ]
                        )
 
-    def jacobian(self, p):
+    def jacobian(self, p=None):
         """
         Evaluate the derivative of deformation model with respect to the
         coordinates.
