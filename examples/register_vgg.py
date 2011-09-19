@@ -22,7 +22,7 @@ from os.path import basename
 
 import osgeo.gdal as gdal
 import sys
-
+import re
 
 print "Loading images..."
 dsImage = gdal.Open(sys.argv[1])
@@ -33,7 +33,7 @@ otemplate = dsTemplate.GetRasterBand(1).ReadAsArray().astype(np.double)
 # Form the affine registration instance.
 print "Setting up affine registration..."
 affine = register.Register(
-    model.Affine,
+    model.Projective,
     metric.Residual,
     sampler.CubicConvolution
     )
@@ -60,7 +60,8 @@ p, warp, img, error = affine.register(
 p[4] = p[4]/1.0
 p[5] = p[5]/1.0
 
-filenum = int(basename(sys.argv[1])[5:8])
+numstr = re.search('\\d+', basename(sys.argv[1])).group(0)
+filenum = int(numstr)
 
 pyplot.imsave('png/%03d.png' % (filenum), oimage, cmap='gray', format='png') 
 pyplot.imsave('png/%03d.png' % (filenum - 1), otemplate, cmap='gray', format='png') 
@@ -83,7 +84,7 @@ after = int(np.abs(affine.metric(affine.sampler(None).border).error(img, resampl
 print "After: ", after
 
 thres = 300000
-if after > thres: 
+if False: 
     pyplot.figure()
     pyplot.axis('image')
     pyplot.subplot(1,2,1)
