@@ -12,10 +12,10 @@ dir = sys.argv[1]
 
 files = []
 os.path.walk(dir, DirFound, files)
-for file in files:
+for file in files: 
     filenum = int(basename(file)[5:8])
     if filenum > 0 and filenum <= 50:
-        filename = dir + '/%08d.jpg.tiff.cropped' % filenum
-        refname = dir + '/%08d.jpg.tiff.cropped' % (filenum - 1)
+        filename = dir + '/%08d.png.tiff.cropped' % filenum
+        refname = dir + '/%08d.png.tiff.cropped' % (filenum - 1)
         os.system("python register_vgg.py %s %s" % (filename, refname))
     

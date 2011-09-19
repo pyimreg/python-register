@@ -96,11 +96,11 @@ class RegisterData(object):
         if not self.features is None:
             if not self.features.has_key('featureShape'):
                 self.features['featureShape'] = (16,16)
-            if not self.features.has_key('regionCovariances'):
-                shape = self.features['featureShape']
-                features['regionCovariances'] = {}
-                for id, point in self.features['points'].items():
-                    features['regionCovariances'][id] = region.covariance(data, (point[0]-shape[0]/2, point[1]-shape[1]/2), (point[0]+shape[0]/2, point[1]+shape[1]/2))
+            #if not self.features.has_key('regionCovariances'):
+            #    shape = self.features['featureShape']
+            #    features['regionCovariances'] = {}
+            #    for id, point in self.features['points'].items():
+            #        features['regionCovariances'][id] = region.covariance(data, (point[0]-shape[0]/2, point[1]-shape[1]/2), (point[0]+shape[0]/2, point[1]+shape[1]/2))
         
     def smooth(self, variance):
         """

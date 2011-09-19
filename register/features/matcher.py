@@ -15,18 +15,18 @@ def _getPointOffset(refChip, rawChip, padSize = 64):
     diffX = rawChip.shape[1] - refChip.shape[1]
     diffY = rawChip.shape[0] - refChip.shape[0]
 
-    refChip = refChip - np.mean(refChip)
-    rawChip = rawChip - np.mean(rawChip)
+    #refChip = refChip - np.mean(refChip)
+    #rawChip = rawChip - np.mean(rawChip)
     
-    paddedRefChip = np.zeros([padSize,padSize])
-    paddedRawChip = np.zeros([padSize,padSize])
-    paddedRefChip[:refChip.shape[0],:refChip.shape[1]] = refChip 
-    paddedRawChip[:rawChip.shape[0],:rawChip.shape[1]] = rawChip 
+    #paddedRefChip = np.zeros([padSize,padSize])
+    #paddedRawChip = np.zeros([padSize,padSize])
+    #paddedRefChip[:refChip.shape[0],:refChip.shape[1]] = refChip 
+    #paddedRawChip[:rawChip.shape[0],:rawChip.shape[1]] = rawChip 
     
-    rawFFTarray = np.fft.fft2(paddedRawChip)
-    refFFTarray = np.fft.fft2(paddedRefChip)
+    rawFFTarray = np.fft.fft2(rawChip)#, padSize)
+    refFFTarray = np.fft.fft2(refChip)#, padSize)
     
-    normCongProduct = (rawFFTarray*refFFTarray.conj())#/np.abs(rawFFTarray*refFFTarray.conj())
+    normCongProduct = (rawFFTarray*refFFTarray.conj())/np.abs(rawFFTarray*refFFTarray.conj())
 
     ncOutputArray = np.fft.fftshift(np.fft.ifft2(normCongProduct))
 
@@ -48,7 +48,7 @@ def phaseCorrelationMatch(refdata, inputimage, chipsize=32, searchsize=64, thres
             
             offsetX, offsetY, correlation = _getPointOffset(refChip, inpChip, padSize=searchsize)
             
-            if correlation > threshold:
+            if (correlation > threshold) and (offsetX >= 0) and (offsetY >= 0) and (offsetX < inputimage.shape[1]) and (offsetY < inputimage.shape[0]):
                 matchedfeatures[id] = (point[0] + offsetY, point[1] + offsetX) 
     
     result = {}

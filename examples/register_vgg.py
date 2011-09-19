@@ -27,12 +27,12 @@ import sys
 print "Loading images..."
 dsImage = gdal.Open(sys.argv[1])
 dsTemplate = gdal.Open(sys.argv[2])
-image = dsImage.GetRasterBand(1).ReadAsArray().astype(np.double)
-template = dsTemplate.GetRasterBand(1).ReadAsArray().astype(np.double)
+oimage = dsImage.GetRasterBand(1).ReadAsArray().astype(np.double)
+otemplate = dsTemplate.GetRasterBand(1).ReadAsArray().astype(np.double)
 
 # Form the affine registration instance.
 print "Setting up affine registration..."
-affine = register.KybicRegister(
+affine = register.Register(
     model.Affine,
     metric.Residual,
     sampler.CubicConvolution
@@ -40,15 +40,16 @@ affine = register.KybicRegister(
 
 # Coerce the image data into RegisterData.
 print "Loading images into RegisterData objects..."
-image = register.RegisterData(image)
-template = register.RegisterData(template)
+image = register.RegisterData(nd.zoom(oimage, 1.0))
+template = register.RegisterData(nd.zoom(otemplate, 1.0))
+
 
 # Register.
 print "Registering..."
 p, warp, img, error = affine.register(
     image,
     template,
-    alpha=0.1,
+    alpha=0.0000001,
     #plotCB=plot.gridPlot,
     verbose=True
     )
@@ -56,10 +57,13 @@ p, warp, img, error = affine.register(
 #print "Close dialog to exit..."
 #plot.show()
 
+p[4] = p[4]/1.0
+p[5] = p[5]/1.0
+
 filenum = int(basename(sys.argv[1])[5:8])
 
-pyplot.imsave('png/%03d.png' % (filenum), image.data, cmap='gray', format='png') 
-pyplot.imsave('png/%03d.png' % (filenum - 1), template.data, cmap='gray', format='png') 
+pyplot.imsave('png/%03d.png' % (filenum), oimage, cmap='gray', format='png') 
+pyplot.imsave('png/%03d.png' % (filenum - 1), otemplate, cmap='gray', format='png') 
 
 Hfile = open('H/%03d.%03d.H' % (filenum-1, filenum), 'w')
 H = np.linalg.inv(np.array([[p[0]+1.0, p[2], p[4]], [p[1], p[3]+1.0, p[5]], [0.0, 0.0, 1.0]]))
@@ -73,10 +77,13 @@ p = affine.model(template.coords).identity
 warp = affine.model(template.coords).warp(p)
 resampledTemplate = affine.sampler(template.coords).f(template.data, warp).reshape(template.data.shape)
 
+print filenum
 print "Before: ", int(np.abs(affine.metric(affine.sampler(None).border).error(resampledImage, resampledTemplate)).sum())
-print "After: ", int(np.abs(affine.metric(affine.sampler(None).border).error(img, resampledTemplate)).sum())
+after = int(np.abs(affine.metric(affine.sampler(None).border).error(img, resampledTemplate)).sum())
+print "After: ", after
 
-if False: 
+thres = 300000
+if after > thres: 
     pyplot.figure()
     pyplot.axis('image')
     pyplot.subplot(1,2,1)

@@ -75,8 +75,8 @@ def _detectHaarFeatures(image, options={}):
     sthreshold = threshold * maximum
     
     # Extract features by finding local maxima
-    rows = haarData.shape[0] / 2
-    cols = haarData.shape[1] / 2
+    rows = image.shape[0] / 2
+    cols = image.shape[1] / 2
     features = {}
     id = 0
     for row in range(locality,rows-locality):

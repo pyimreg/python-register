@@ -13,6 +13,8 @@ from register.features.detector import detect, HaarDetector
 from register.features import matcher
 
 import register.features.region as region
+import osgeo.gdal as gdal
+import sys
 
 def warp(image):
     """
@@ -22,8 +24,8 @@ def warp(image):
         [0, image.shape[0], 0, image.shape[1]]
         )
         
-    spline_model = model.Spline(coords)
-    spline_sampler = sampler.Spline(coords)
+    spline_model = model.CubicSpline(coords)
+    spline_sampler = sampler.CubicConvolution(coords)
 
     p = spline_model.identity
     #TODO: Understand the effect of parameter magnitude:
@@ -32,18 +34,23 @@ def warp(image):
     return spline_sampler.f(image, spline_model.warp(p)).reshape(image.shape)
 
 # Load the image and warp it
-reference = plt.imread('data/cameraman.png')
-other = warp(reference)
+#reference = plt.imread('data/cameraman.png').astype(np.double)
+#other = warp(reference)
 
+dsImage = gdal.Open(sys.argv[1])
+image = dsImage.GetRasterBand(1).ReadAsArray()
+reference = image
+dsOther = gdal.Open(sys.argv[2])
+other = dsOther.GetRasterBand(1).ReadAsArray()
 
 options = {}
 options['levels'] = 5         # number of wavelet levels
-options['threshold'] = 0.7    # threshold between 0.0 and 1.0 to filter out weak features (0.0 includes all features)
-options['locality'] = 5       # minimum (approx) distance between two features  
+options['threshold'] = 0.1    # threshold between 0.0 and 1.0 to filter out weak features (0.0 includes all features)
+options['locality'] = 1       # minimum (approx) distance between two features  
 
 features = detect(reference, HaarDetector, options)
 refData = register.RegisterData(reference, features=features)
-matchedfeatures = matcher.regionCovarianceMatch(refData, other, chipsize=16, searchsize=50)
+matchedfeatures = matcher.phaseCorrelationMatch(refData, other, chipsize=16, searchsize=16)
 
 #plt.show()
 
