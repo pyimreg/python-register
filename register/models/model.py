@@ -101,7 +101,7 @@ class Model(object):
         """
         raise NotImplementedError('')
     
-    def jacobian(self):
+    def jacobian(self, p):
         """
         Evaluates the derivative of deformation model with respect to the
         coordinates.
@@ -185,7 +185,7 @@ class Shift(Model):
 
         return np.dot(T, self.coordinates.homogenous)
 
-    def jacobian(self):
+    def jacobian(self, p):
         """
         Evaluates the derivative of deformation model with respect to the
         coordinates.
@@ -291,7 +291,7 @@ class Affine(Model):
 
         return np.dot(np.linalg.inv(T), self.coordinates.homogenous)
 
-    def jacobian(self):
+    def jacobian(self, p):
         """"
         Evaluates the derivative of deformation model with respect to the
         coordinates.
@@ -404,22 +404,31 @@ class Projective(Model):
 
         return np.dot(np.linalg.inv(T), self.coordinates.homogenous)
 
-    def jacobian(self):
+    def jacobian(self, p):
         """"
         Evaluates the derivative of deformation model with respect to the
         coordinates.
         """
 
-        dx = np.zeros((self.coordinates.tensor[0].size, 6))
-        dy = np.zeros((self.coordinates.tensor[0].size, 6))
+        dx = np.zeros((self.coordinates.tensor[0].size, 9))
+        dy = np.zeros((self.coordinates.tensor[0].size, 9))
+    
+        x = self.coordinates.tensor[1].flatten()
+        y = self.coordinates.tensor[0].flatten()
+        
+        dx[:,0] = x / (p[6]*x + p[7]*y + p[8] + 1) 
+        dx[:,2] = y / (p[6]*x + p[7]*y + p[8] + 1) 
+        dx[:,4] = 1.0 / (p[6]*x + p[7]*y + p[8] + 1) 
+        dx[:,6] = x * (p[0]*x + p[2]*y + p[4] + x) / (p[6]*x + p[7]*y + p[8] + 1)**2
+        dx[:,7] = y * (p[0]*x + p[2]*y + p[4] + x) / (p[6]*x + p[7]*y + p[8] + 1)**2
+        dx[:,8] = 1.0 * (p[0]*x + p[2]*y + p[4] + x) / (p[6]*x + p[7]*y + p[8] + 1)**2
 
-        dx[:,0] = self.coordinates.tensor[1].flatten()
-        dx[:,2] = self.coordinates.tensor[0].flatten()
-        dx[:,4] = 1.0
-
-        dy[:,1] = self.coordinates.tensor[1].flatten()
-        dy[:,3] = self.coordinates.tensor[0].flatten()
-        dy[:,5] = 1.0
+        dy[:,1] = x / (p[6]*x + p[7]*y + p[8] + 1) 
+        dy[:,3] = y / (p[6]*x + p[7]*y + p[8] + 1) 
+        dy[:,5] = 1.0 / (p[6]*x + p[7]*y + p[8] + 1) 
+        dy[:,6] = x * (p[1]*x + p[3]*y + p[5] + y) / (p[6]*x + p[7]*y + p[8] + 1)**2
+        dy[:,7] = y * (p[1]*x + p[3]*y + p[5] + y) / (p[6]*x + p[7]*y + p[8] + 1)**2
+        dy[:,8] = 1.0 * (p[1]*x + p[3]*y + p[5] + y) / (p[6]*x + p[7]*y + p[8] + 1)**2
 
         return (dx, dy)
 
@@ -628,7 +637,7 @@ class ThinPlateSpline(Model):
         return self.transform(parameters)
     
     
-    def jacobian(self):
+    def jacobian(self, p):
         raise NotImplementedError("""
             It does not make sense to use a non-linear optimization to 
             fit a thin-plate-spline model. Try the "CubicSpline" deformation
@@ -773,7 +782,7 @@ class CubicSpline(Model):
                          ]
                        )
 
-    def jacobian(self):
+    def jacobian(self, p):
         """
         Evaluate the derivative of deformation model with respect to the
         coordinates.
