@@ -40,7 +40,7 @@ class Metric(object):
         
         raise NotImplementedError('')
         
-    def jacobian(self, model, warpedImage, p):
+    def jacobian(self, model, warpedImage, p=None):
         """
         Computes the jacobian dP/dE.
         
@@ -83,7 +83,7 @@ class Residual(Metric):
     def __init__(self):
         Metric.__init__(self)
 
-    def jacobian(self, model, warpedImage, p):
+    def jacobian(self, model, warpedImage, p=None):
         """
         Computes the jacobian dP/dE.
         
