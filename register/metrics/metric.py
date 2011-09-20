@@ -50,7 +50,7 @@ class Metric(object):
             A particular deformation model.
         warpedImage: nd-array
             Input image after warping.
-        p : list
+        p : optional list
             Current warp parameters
     
         Returns
@@ -93,7 +93,7 @@ class Residual(Metric):
             A particular deformation model.
         warpedImage: nd-array
             Input image after warping.
-        p : list
+        p : optional list
             Current warp parameters
     
         Returns
