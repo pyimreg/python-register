@@ -350,9 +350,9 @@ class Register(object):
                        'error      : {3} \n'
                        '{0}\n'
                       ).format(
-                            '='*80,
+                            '='*85,
                             itteration,
-                            ' '.join( '{0:3.2f}'.format(param) for param in searchParams.p),
+                            ' '.join( '{0:5.4f}'.format(param) for param in searchParams.p),
                             searchParams.error
                             )
 

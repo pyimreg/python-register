@@ -30,10 +30,10 @@ dsTemplate = gdal.Open(sys.argv[2])
 oimage = dsImage.GetRasterBand(1).ReadAsArray().astype(np.double)
 otemplate = dsTemplate.GetRasterBand(1).ReadAsArray().astype(np.double)
 
-# Form the affine registration instance.
-print "Setting up affine registration..."
-affine = register.Register(
-    model.Projective,
+# Form the mysetup registration instance.
+print "Setting up mysetup registration..."
+mysetup = register.Register(
+    model.Affine,
     metric.Residual,
     sampler.CubicConvolution
     )
@@ -46,7 +46,7 @@ template = register.RegisterData(nd.zoom(otemplate, 1.0))
 
 # Register.
 print "Registering..."
-p, warp, img, error = affine.register(
+p, warp, img, error = mysetup.register(
     image,
     template,
     alpha=0.0000001,
@@ -57,9 +57,6 @@ p, warp, img, error = affine.register(
 #print "Close dialog to exit..."
 #plot.show()
 
-p[4] = p[4]/1.0
-p[5] = p[5]/1.0
-
 numstr = re.search('\\d+', basename(sys.argv[1])).group(0)
 filenum = int(numstr)
 
@@ -67,23 +64,22 @@ pyplot.imsave('png/%03d.png' % (filenum), oimage, cmap='gray', format='png')
 pyplot.imsave('png/%03d.png' % (filenum - 1), otemplate, cmap='gray', format='png') 
 
 Hfile = open('H/%03d.%03d.H' % (filenum-1, filenum), 'w')
-H = np.linalg.inv(np.array([[p[0]+1.0, p[2], p[4]], [p[1], p[3]+1.0, p[5]], [0.0, 0.0, 1.0]]))
-Hfile.write('%f %f %f\n%f %f %f\n%f %f %f\n' % (H[0,0],H[0,1],H[0,2],H[1,0],H[1,1],H[1,2],H[2,0],H[2,1],H[2,2]))
+H = np.linalg.inv(np.array([[p[0]+1.0, p[2], p[4]], [p[1], p[3]+1.0, p[5]], [0.0, 0.0, 1.0]])) #[p[6], p[7], p[8] + 1.0]]))
+Hfile.write('%.9f %.9f %.9f\n%.9f %.9f %.9f\n%.9f %.9f %.9f\n' % (H[0,0],H[0,1],H[0,2],H[1,0],H[1,1],H[1,2],H[2,0],H[2,1],H[2,2]))
 Hfile.close()
 
-p = affine.model(image.coords).identity
-warp = affine.model(image.coords).warp(p)
-resampledImage = affine.sampler(template.coords).f(image.data, warp).reshape(image.data.shape)
-p = affine.model(template.coords).identity
-warp = affine.model(template.coords).warp(p)
-resampledTemplate = affine.sampler(template.coords).f(template.data, warp).reshape(template.data.shape)
+p = mysetup.model(image.coords).identity
+warp = mysetup.model(image.coords).warp(p)
+resampledImage = mysetup.sampler(template.coords).f(image.data, warp).reshape(image.data.shape)
+p = mysetup.model(template.coords).identity
+warp = mysetup.model(template.coords).warp(p)
+resampledTemplate = mysetup.sampler(template.coords).f(template.data, warp).reshape(template.data.shape)
 
 print filenum
-print "Before: ", int(np.abs(affine.metric(affine.sampler(None).border).error(resampledImage, resampledTemplate)).sum())
-after = int(np.abs(affine.metric(affine.sampler(None).border).error(img, resampledTemplate)).sum())
+print "Before: ", int(np.abs(mysetup.metric(mysetup.sampler(None).border).error(resampledImage, resampledTemplate)).sum())
+after = int(np.abs(mysetup.metric(mysetup.sampler(None).border).error(img, resampledTemplate)).sum())
 print "After: ", after
 
-thres = 300000
 if False: 
     pyplot.figure()
     pyplot.axis('image')
