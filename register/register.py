@@ -310,7 +310,7 @@ class Register(object):
             # Computes the derivative of the error with respect to model
             # parameters.
 
-            J = metric.jacobian(model, warpedImage)
+            J = metric.jacobian(model, warpedImage, p)
 
             deltaP = self.__deltaP(
                 J,

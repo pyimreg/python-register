@@ -40,7 +40,7 @@ class Metric(object):
         
         raise NotImplementedError('')
         
-    def jacobian(self, model, warpedImage):
+    def jacobian(self, model, warpedImage, p=None):
         """
         Computes the jacobian dP/dE.
         
@@ -50,6 +50,8 @@ class Metric(object):
             A particular deformation model.
         warpedImage: nd-array
             Input image after warping.
+        p : optional list
+            Current warp parameters
     
         Returns
         -------
@@ -81,7 +83,7 @@ class Residual(Metric):
     def __init__(self):
         Metric.__init__(self)
 
-    def jacobian(self, model, warpedImage):
+    def jacobian(self, model, warpedImage, p=None):
         """
         Computes the jacobian dP/dE.
         
@@ -91,6 +93,8 @@ class Residual(Metric):
             A particular deformation model.
         warpedImage: nd-array
             Input image after warping.
+        p : optional list
+            Current warp parameters
     
         Returns
         -------
@@ -105,7 +109,7 @@ class Residual(Metric):
         dIx = grad[1].flatten()
         dIy = grad[0].flatten()
 
-        dPx, dPy = model.jacobian()
+        dPx, dPy = model.jacobian(p)
 
         J = np.zeros_like(dPx)
         for index in range(0, dPx.shape[1]):
