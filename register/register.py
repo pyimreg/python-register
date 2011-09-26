@@ -50,7 +50,8 @@ class Coordinates(object):
     """
     
     def __init__(self, domain, spacing=None):
-    
+        
+        self.spacing = 1.0 if not spacing else spacing
         self.domain = domain
         self.tensor = np.mgrid[0.:domain[1], 0.:domain[3]]
         
@@ -74,13 +75,14 @@ class RegisterData(object):
         A mapping of unique ids to registration features.
     """
     
-    def __init__(self, data, coords=None, features=None):
+    def __init__(self, data, coords=None, features=None, spacing=1.0):
 
-        self.data = data
+        self.data = data.astype(np.double)
         
         if not coords:
             self.coords = Coordinates(
-                [0, data.shape[0], 0, data.shape[1]]
+                [0, data.shape[0], 0, data.shape[1]],
+                spacing=spacing
                 )
         else:
             self.coords = coords
@@ -90,7 +92,32 @@ class RegisterData(object):
         
         self.features = features
         
+    
+    def downsample(self, factor=2):
+        """
+        Down samples the RegisterData by a user defined factor. The ndimage 
+        zoom function is used to interpolate the image, with a scale defined 
+        as 1/factor.
         
+        Spacing is used to infer the scale difference between images - defining
+        the size of a pixel in arbitrary units (atm).
+        
+        Parameters
+        ----------
+        factor: float (optional)
+            The scaling factor which is applied to image data and coordinates.
+            
+        Returns
+        -------
+        scaled: nd-array
+           The parameter update vector.
+        """
+        
+        resampled = nd.zoom(self.data, 1. / factor)
+        
+        # TODO: features need to be scaled also.
+        return RegisterData(resampled, spacing=factor)
+    
     def smooth(self, variance):
         """
         Smooth feature data in place.
@@ -102,7 +129,7 @@ class RegisterData(object):
        
         See also
         --------
-        regisger.Register.smooth
+        register.Register.smooth
         """
 
         self.data = _smooth(self.data, variance)
@@ -304,7 +331,7 @@ class Register(object):
                         break
 
                     # Restore the parameters from the previous iteration.
-                    p = search[-1].p
+                    p = search[-1].p.copy()
                     continue
 
             # Computes the derivative of the error with respect to model
