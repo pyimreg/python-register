@@ -1,7 +1,6 @@
 """ 
-Estimates a linear warp field, the target is a transformed version of lenna:
-
-    http://en.wikipedia.org/wiki/Lenna
+Estimates a linear warp field, using an image pyramid to speed up the 
+computation.
 """
 
 import scipy.ndimage as nd
@@ -14,14 +13,13 @@ from register.samplers import sampler
 from register.visualize import plot
 from register import register
 
-# Form some test data (lena, lena rotated 40 degrees)
+# Form some test data (lena, lena rotated 20 degrees)
 image = register.RegisterData(misc.lena())
 template = register.RegisterData(
     nd.rotate(image.data, 20, reshape=False)
     )
 
 # Form the registrator.
-
 affine = register.Register(
     model.Affine,
     metric.Residual,
@@ -29,9 +27,7 @@ affine = register.Register(
     )
 
 # Image pyramid registration can be executed like so:
-
 pHat = None
-
 for factor in [20, 10, 5]:
     
     if pHat is not None:
@@ -40,16 +36,16 @@ for factor in [20, 10, 5]:
         pHat = model.Affine.scale(pHat, scale)
         
     downImage = image.downsample(factor) 
-    downTemplate = template.downsample(factor
-                                       )
-    p, warp, img, error = affine.register(
+    downTemplate = template.downsample(factor) 
+    
+    p, _warp, _img, _error = affine.register(
         downImage,
         downTemplate,
         p=pHat,
         plotCB=plot.gridPlot,
         verbose=True
         )
-    
+
     pHat = p
-    
+
 plot.show()

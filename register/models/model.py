@@ -44,6 +44,26 @@ class Model(object):
         """
         raise NotImplementedError('')
     
+    @staticmethod
+    def scale(p, factor):
+        """
+        Scales an transformtaion by a factor.
+        
+        Parameters
+        ----------
+        p: nd-array
+            Model parameters.
+        factor: float
+            A scaling factor.
+            
+        Returns
+        -------
+        parameters: nd-array
+            Model parameters.
+        """
+        raise NotImplementedError('')
+    
+    
     def estimate(self, warp):
         """
         Estimates the best fit parameters that define a warp field.
@@ -134,6 +154,29 @@ class Shift(Model):
     def identity(self):
         return np.zeros(2)
     
+    @staticmethod
+    def scale(p, factor):
+        """
+        Scales an shift transformation by a factor.
+        
+        Parameters
+        ----------
+        p: nd-array
+            Model parameters.
+        factor: float
+            A scaling factor.
+            
+        Returns
+        -------
+        parameters: nd-array
+            Model parameters.
+        """
+        
+        pHat = p.copy()
+        pHat *= factor
+        return pHat
+    
+    
     def fit(self, p0, p1, lmatrix=False):
         """
         Estimates the best fit parameters that define a warp field, which 
@@ -222,12 +265,12 @@ class Affine(Model):
     @staticmethod
     def scale(p, factor):
         """
-        Scales an affine transformtaion by a factor.
+        Scales an affine transformation by a factor.
         
         Parameters
         ----------
-        p0: nd-array
-            Image features (points).
+        p: nd-array
+            Model parameters.
         factor: float
             A scaling factor.
             
@@ -236,15 +279,11 @@ class Affine(Model):
         parameters: nd-array
             Model parameters.
         """
-        return  [ 
-            p[0],
-            p[1],
-            p[2],
-            p[3],
-            p[4]*factor,
-            p[5]*factor
-            ]
         
+        pHat = p.copy()
+        pHat[4:] *= factor
+        return pHat
+    
     def fit(self, p0, p1, lmatrix=False):
         """
         Estimates the best fit parameters that define a warp field, which 
@@ -474,7 +513,7 @@ class ThinPlateSpline(Model):
     def __init__(self, coordinates):
     
         Model.__init__(self, coordinates)
-        
+    
     def U(self, r):
         """
         Kernel function, applied to solve the biharmonic equation.
@@ -674,8 +713,7 @@ class ThinPlateSpline(Model):
     @property
     def identity(self):
         raise NotImplementedError('')
-
-
+    
 class CubicSpline(Model):
 
     MODEL='CubicSpline (CS)'

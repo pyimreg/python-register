@@ -77,7 +77,7 @@ class RegisterData(object):
     
     def __init__(self, data, coords=None, features=None, spacing=1.0):
 
-        self.data = data
+        self.data = data.astype(np.double)
         
         if not coords:
             self.coords = Coordinates(
@@ -95,15 +95,16 @@ class RegisterData(object):
     
     def downsample(self, factor=2):
         """
-        Down samples the RegisterData by a user defined factor. A mean operator
-        is used as the estimator.
+        Down samples the RegisterData by a user defined factor. The ndimage 
+        zoom function is used to interpolate the image, with a scale defined 
+        as 1/factor.
         
         Spacing is used to infer the scale difference between images - defining
         the size of a pixel in arbitrary units (atm).
         
         Parameters
         ----------
-        factor: integer (optional)
+        factor: float (optional)
             The scaling factor which is applied to image data and coordinates.
             
         Returns
@@ -112,13 +113,7 @@ class RegisterData(object):
            The parameter update vector.
         """
         
-        ys,xs = self.data.shape
-        
-        crarr = self.data[:ys-(ys % int(factor)),:xs-(xs % int(factor))]
-        
-        resampled = np.mean( np.concatenate([[crarr[i::factor,j::factor] 
-             for i in range(factor)] 
-             for j in range(factor)]), axis=0)
+        resampled = nd.zoom(self.data, 1. / factor)
         
         # TODO: features need to be scaled also.
         return RegisterData(resampled, spacing=factor)
