@@ -219,6 +219,32 @@ class Affine(Model):
     def identity(self):
         return np.zeros(6)
     
+    @staticmethod
+    def scale(p, factor):
+        """
+        Scales an affine transformtaion by a factor.
+        
+        Parameters
+        ----------
+        p0: nd-array
+            Image features (points).
+        factor: float
+            A scaling factor.
+            
+        Returns
+        -------
+        parameters: nd-array
+            Model parameters.
+        """
+        return  [ 
+            p[0],
+            p[1],
+            p[2],
+            p[3],
+            p[4]*factor,
+            p[5]*factor
+            ]
+        
     def fit(self, p0, p1, lmatrix=False):
         """
         Estimates the best fit parameters that define a warp field, which 
@@ -256,8 +282,8 @@ class Affine(Model):
             H[1,0],
             H[0,1],
             H[1,1] - 1.0,
-            H[2,0],
-            H[2,1]
+            H[0,1],
+            H[1,2]
             ]
         
         projP0 = np.dot(H, X)[0:2,:].T
