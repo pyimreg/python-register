@@ -86,7 +86,7 @@ class Ui_Dialog(object):
         QtCore.QMetaObject.connectSlotsByName(Dialog)
     
     def itemChangedSlot(self, item, item2):
-        self.widget.formPlot(self.searchMap[item].warpedImage)
+        self.widget.formPlot(self.searchMap[item])
         
     def updateList(self, search):
         """
@@ -98,7 +98,7 @@ class Ui_Dialog(object):
         for index, step in enumerate(search):
             item = QtGui.QListWidgetItem(self.listWidget)
             item.setText(
-                "itteration: {}, error: {}".format(
+                "#{}, e: {}".format(
                     index,
                     step.error
                     )
@@ -118,16 +118,24 @@ from matplotlib.figure import Figure
 
 class MyMplCanvas(FigureCanvas):
     """Ultimately, this is a QWidget (as well as a FigureCanvasAgg, etc.)."""
-    def __init__(self, parent=None, image=None):
-        fig = Figure()
-        self.axes = fig.add_subplot(111)
-        # We want the axes cleared every time plot() is called
-        self.axes.hold(False)
+    def __init__(self, parent=None, step=None):
+        self.fig = Figure()
         
-        if image is not None:
-            self.formPlot(image)
+        self.ax1 = self.fig.add_subplot(1,3,1)
+        self.ax1.hold(False)
+
+        self.ax2 = self.fig.add_subplot(1,3,2)
+        self.ax2.hold(False)
+
+        self.ax3 = self.fig.add_subplot(1,3,3)
+        self.ax3.hold(False)
+
+        if step is not None:
+            self.formPlot(step)
+        
+        
             
-        FigureCanvas.__init__(self, fig)
+        FigureCanvas.__init__(self, self.fig)
         self.setParent(parent)
 
         FigureCanvas.setSizePolicy(self,
@@ -140,11 +148,33 @@ class MyDynamicMplCanvas(MyMplCanvas):
     def __init__(self, *args, **kwargs):
         MyMplCanvas.__init__(self, *args, **kwargs)
 
-    def formPlot(self, image):
-        self.axes.imshow(
-            image, 
+    def formPlot(self, step):
+        
+        self.img1 = self.ax1.imshow(
+            step.warpedImage, 
             #origin='lower', 
             interpolation='nearest',
             cmap='gray'
             )
+        
+        self.img2 = self.ax2.imshow(
+            step.warp[0], 
+            #origin='lower', 
+            interpolation='nearest',
+            cmap='gray'
+            )
+        
+        self.img3 = self.ax3.imshow(
+            step.warp[1], 
+            #origin='lower', 
+            interpolation='nearest',
+            cmap='gray'
+            )
+    
+        self.draw()
+    
+    def updatePlot(self, step):
+        self.img1.set_data(step.warpedImage)
+        self.img2.set_data(step.warped[0])
+        self.img3.set_data(step.warped[1])
         self.draw()

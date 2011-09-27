@@ -24,14 +24,14 @@ template = register.RegisterData(
 affine = register.Register(
     model.Affine,
     metric.Residual,
-    sampler.CubicConvolution
+    sampler.Nearest
     )
 
 fullSearch = []
 
 # Image pyramid registration can be executed like so:
 pHat = None
-for factor in [20, 10, 5]:
+for factor in [30, 20, 10, 5, 1, 0.5]:
     
     if pHat is not None:
         scale = downImage.coords.spacing / factor
@@ -45,6 +45,7 @@ for factor in [20, 10, 5]:
         downImage,
         downTemplate,
         p=pHat,
+        verbose=True
         )
 
     pHat = search[-1].p
