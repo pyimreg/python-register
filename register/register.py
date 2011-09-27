@@ -297,7 +297,7 @@ class Register(object):
             # Evaluate the error metric.
             e = metric.error(warpedImage, template.data)
 
-            searchStep = self.optStep(error=np.abs(e).sum(),
+            searchStep = self.optStep(error=np.abs(e).sum()/np.prod(image.data.shape),
                                       p=p.copy(),
                                       deltaP=deltaP.copy(),
                                       grid=image.coords.tensor.copy(),
