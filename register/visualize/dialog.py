@@ -103,6 +103,11 @@ class Ui_Dialog(object):
                     step.error
                     )
                 )
+            
+            if index > 1:
+                if step.error > search[index-1].error:
+                    item.setBackgroundColor(QtGui.QColor("red"))
+            
             self.searchMap[item] = step
             
     def retranslateUi(self, Dialog):
