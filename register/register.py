@@ -166,7 +166,7 @@ class Register(object):
         A `sampler` class definition.
     """
     
-    optStep = collections.namedtuple('optStep', 'warpedImage warp error p deltaP')
+    optStep = collections.namedtuple('optStep', 'warpedImage warp grid error p deltaP')
     
     MAX_ITER = 200
     MAX_BAD = 20
@@ -300,6 +300,7 @@ class Register(object):
             searchStep = self.optStep(error=np.abs(e).sum(),
                                       p=p.copy(),
                                       deltaP=deltaP.copy(),
+                                      grid=image.coords.tensor.copy(),
                                       warp=warp.copy(),
                                       warpedImage=warpedImage.copy()
                                       )

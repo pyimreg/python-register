@@ -11,7 +11,7 @@ from register.models import model
 from register.metrics import metric
 from register.samplers import sampler
 
-from register.visualize import plot
+from register.visualize import qtplot
 from register import register
 
 def warp(image):
@@ -58,20 +58,18 @@ spline = register.Register(
     )
 
 # Compute an affine registration between the template and image.
-p, warp, img, error = affine.register(
+search = affine.register(
     image,
     template,
-    plotCB=plot.gridPlot
     )
 
 # Compute a nonlinear (spline) registration, initialized with the warp field
 # found using the affine registration.
-p, warp, img, error = spline.register(
+search = spline.register(
     image,
     template,
-    warp=warp,
+    warp=search[-1].warp,
     verbose=True,
-    plotCB=plot.gridPlot
     )
 
-plot.show()
+qtplot.searchInspector(search)

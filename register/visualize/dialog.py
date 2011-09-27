@@ -112,6 +112,7 @@ class Ui_Dialog(object):
 # MPL widget 
 ###############################################################################
 import plot
+import numpy as np
 
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
@@ -122,14 +123,9 @@ class MyMplCanvas(FigureCanvas):
         self.fig = Figure()
         
         self.ax1 = self.fig.add_subplot(1,3,1)
-        self.ax1.hold(False)
-
         self.ax2 = self.fig.add_subplot(1,3,2)
-        self.ax2.hold(False)
-
         self.ax3 = self.fig.add_subplot(1,3,3)
-        self.ax3.hold(False)
-
+        
         if step is not None:
             self.formPlot(step)
         
@@ -158,19 +154,19 @@ class MyDynamicMplCanvas(MyMplCanvas):
             )
         
         self.img2 = self.ax2.imshow(
-            step.warp[0], 
+            step.warp[0] - step.grid[0], 
             #origin='lower', 
             interpolation='nearest',
-            cmap='gray'
+            cmap='jet'
             )
-        
+      
         self.img3 = self.ax3.imshow(
-            step.warp[1], 
+            step.warp[1] - step.grid[1], 
             #origin='lower', 
             interpolation='nearest',
-            cmap='gray'
+            cmap='jet'
             )
-    
+       
         self.draw()
     
     def updatePlot(self, step):

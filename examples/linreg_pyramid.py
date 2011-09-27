@@ -31,7 +31,7 @@ fullSearch = []
 
 # Image pyramid registration can be executed like so:
 pHat = None
-for factor in [30, 20, 10, 5, 1, 0.5]:
+for factor in [30, 20, 10, 5]:
     
     if pHat is not None:
         scale = downImage.coords.spacing / factor
