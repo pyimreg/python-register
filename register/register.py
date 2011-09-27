@@ -327,6 +327,9 @@ class Register(object):
                 else:
                     badSteps += 1
 
+                    if verbose:
+                        print ('Oops, bad step!')
+
                     if badSteps > self.MAX_BAD:
                         if verbose:
                             print ('Optimization break, maximum number '

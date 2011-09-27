@@ -17,7 +17,7 @@ from register import register
 # Form some test data (lena, lena rotated 20 degrees)
 image = register.RegisterData(misc.lena())
 template = register.RegisterData(
-    nd.rotate(image.data, 20, reshape=False)
+    nd.rotate(image.data, 0, reshape=False)
     )
 
 # Form the registrator.
