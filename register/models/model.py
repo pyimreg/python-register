@@ -502,6 +502,13 @@ class Projective(Model):
         """
         Scales an projective transformation by a factor.
         
+        Derivation: If    Hx =  x^ ,
+                    then SHx = Sx^ ,
+                    where  S = [[s, 0, 0], [0, s, 0], [0, 0, 1]] .
+                    Now   SH = S[[h00, h01, h02], [h10, h11, h12], [h20, h21, h22]]
+                             =  [[s.h00, s.h01, s.h02], [s.h10, s.h11, s.h12], [h20, h21, h22]] .
+        
+        
         Parameters
         ----------
         p: nd-array
@@ -516,7 +523,7 @@ class Projective(Model):
         """
 
         pHat = p.copy()
-        pHat[4:6] *= factor
+        pHat[0:6] *= factor
         return pHat
 
 class ThinPlateSpline(Model):
