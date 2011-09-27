@@ -166,7 +166,7 @@ class Register(object):
         A `sampler` class definition.
     """
     
-    optStep = collections.namedtuple('optStep', 'error p deltaP')
+    optStep = collections.namedtuple('optStep', 'warpedImage warp error p deltaP')
     
     MAX_ITER = 200
     MAX_BAD = 20
@@ -298,8 +298,10 @@ class Register(object):
             e = metric.error(warpedImage, template.data)
 
             searchStep = self.optStep(error=np.abs(e).sum(),
-                                      p=p,
-                                      deltaP=deltaP,
+                                      p=p.copy(),
+                                      deltaP=deltaP.copy(),
+                                      warp=warp.copy(),
+                                      warpedImage=warpedImage.copy()
                                       )
 
             if (len(search) > 1):
@@ -368,8 +370,7 @@ class Register(object):
             # Append the search step to the search.
             search.append(searchStep)
 
-        return p, warp, warpedImage, searchStep.error
-
+        return search
 
 class KybicRegister(Register):
     """

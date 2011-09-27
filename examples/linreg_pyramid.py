@@ -10,7 +10,8 @@ from register.models import model
 from register.metrics import metric
 from register.samplers import sampler
 
-from register.visualize import plot
+from register.visualize import qtplot
+
 from register import register
 
 # Form some test data (lena, lena rotated 20 degrees)
@@ -26,9 +27,11 @@ affine = register.Register(
     sampler.CubicConvolution
     )
 
+fullSearch = []
+
 # Image pyramid registration can be executed like so:
 pHat = None
-for factor in [20, 10, 5, 1, 0.5]:
+for factor in [20, 10, 5]:
     
     if pHat is not None:
         scale = downImage.coords.spacing / factor
@@ -38,14 +41,14 @@ for factor in [20, 10, 5, 1, 0.5]:
     downImage = image.downsample(factor) 
     downTemplate = template.downsample(factor) 
     
-    p, _warp, _img, _error = affine.register(
+    search = affine.register(
         downImage,
         downTemplate,
         p=pHat,
-        plotCB=plot.gridPlot,
-        verbose=True
         )
 
-    pHat = p
-
-plot.show()
+    pHat = search[-1].p
+    
+    fullSearch.extend(search)
+    
+qtplot.searchInspector(fullSearch)

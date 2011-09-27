@@ -10,9 +10,9 @@ import scipy.misc as misc
 from register.models import model
 from register.metrics import metric
 from register.samplers import sampler
-
-from register.visualize import plot
 from register import register
+
+from register.visualize import qtplot
 
 # Form some test data (lena, lena rotated 20 degrees)
 image = misc.lena()
@@ -35,11 +35,10 @@ image.smooth(1.5)
 template.smooth(1.5)
 
 # Register.
-p, warp, img, error = affine.register(
+search = affine.register(
     image,
     template,
-    plotCB=plot.gridPlot,
-    verbose=True
     )
 
-plot.show()
+# Call the debug tool "searchInspector"
+qtplot.searchInspector(search)
