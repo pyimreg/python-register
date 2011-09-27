@@ -321,7 +321,7 @@ class Affine(Model):
             H[1,0],
             H[0,1],
             H[1,1] - 1.0,
-            H[0,1],
+            H[0,2],
             H[1,2]
             ]
         
@@ -496,6 +496,28 @@ class Projective(Model):
         dy[:,8] = 1.0 * (p[1]*x + p[3]*y + p[5] + y) / (p[6]*x + p[7]*y + p[8] + 1)**2
 
         return (dx, dy)
+
+    @staticmethod
+    def scale(p, factor):
+        """
+        Scales an projective transformation by a factor.
+        
+        Parameters
+        ----------
+        p: nd-array
+            Model parameters.
+        factor: float
+            A scaling factor.
+            
+        Returns
+        -------
+        parameters: nd-array
+            Model parameters.
+        """
+
+        pHat = p.copy()
+        pHat[4:6] *= factor
+        return pHat
 
 class ThinPlateSpline(Model):
 
