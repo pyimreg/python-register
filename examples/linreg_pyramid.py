@@ -17,7 +17,7 @@ from register import register
 # Form some test data (lena, lena rotated 20 degrees)
 image = register.RegisterData(misc.lena())
 template = register.RegisterData(
-    nd.rotate(image.data, 0, reshape=False)
+    nd.rotate(image.data, 20, reshape=False)
     )
 
 # Form the registrator.
@@ -31,7 +31,7 @@ fullSearch = []
 
 # Image pyramid registration can be executed like so:
 pHat = None
-for factor in  [30, 20, 10, 5, 3, 1]:
+for factor in [30, 20 ,10, 5]:
     
     if pHat is not None:
         scale = downImage.coords.spacing / factor

@@ -282,6 +282,7 @@ class Register(object):
         alpha = alpha if alpha is not None else 1e-4
         decreasing = True
         badSteps = 0
+        lastGoodIteration = None
 
         for itteration in range(0,self.MAX_ITER):
 
@@ -304,10 +305,29 @@ class Register(object):
                                       warp=warp.copy(),
                                       warpedImage=warpedImage.copy()
                                       )
+                                      
+            if lastGoodIteration is None:
+                lastGoodIteration = searchStep
+
+            if verbose:
+                print ('{0}\n'
+                       'iteration  : {1} \n'
+                       'parameters : {2} \n'
+                       'error      : {3} \n'
+                       '{0}'
+                      ).format(
+                            '='*80,
+                            itteration,
+                            ' '.join( '{0:3.2f}'.format(param) for param in searchStep.p),
+                            searchStep.error
+                            )
+
+            # Append the search step to the search.
+            search.append(searchStep)
 
             if (len(search) > 1):
 
-                decreasing = (searchStep.error < search[-1].error)
+                decreasing = (searchStep.error < lastGoodIteration.error)
 
                 alpha = self.__dampening(
                     alpha,
@@ -315,6 +335,8 @@ class Register(object):
                     )
 
                 if decreasing:
+                    
+                    lastGoodIteration = searchStep
 
                     if plotCB is not None:
                         plotCB(image.data,
@@ -328,7 +350,7 @@ class Register(object):
                     badSteps += 1
 
                     if verbose:
-                        print ('Oops, bad step!')
+                        print ('Oops, bad step!\n')
 
                     if badSteps > self.MAX_BAD:
                         if verbose:
@@ -337,8 +359,7 @@ class Register(object):
                         break
 
                     # Restore the parameters from the previous iteration.
-                    p = search[-1].p.copy()
-                    continue
+                    p = lastGoodIteration.p.copy()
 
             # Computes the derivative of the error with respect to model
             # parameters.
@@ -349,7 +370,7 @@ class Register(object):
                 J,
                 e,
                 alpha,
-                p=p
+                p
                 )
 
             # Evaluate stopping condition:
@@ -358,21 +379,6 @@ class Register(object):
 
             p += deltaP
 
-            if verbose and decreasing:
-                print ('{0}\n'
-                       'iteration  : {1} \n'
-                       'parameters : {2} \n'
-                       'error      : {3} \n'
-                       '{0}\n'
-                      ).format(
-                            '='*80,
-                            itteration,
-                            ' '.join( '{0:3.2f}'.format(param) for param in searchStep.p),
-                            searchStep.error
-                            )
-
-            # Append the search step to the search.
-            search.append(searchStep)
 
         return search
 
