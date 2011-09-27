@@ -98,7 +98,7 @@ class Ui_Dialog(object):
         for index, step in enumerate(search):
             item = QtGui.QListWidgetItem(self.listWidget)
             item.setText(
-                "#{}, e: {}".format(
+                "#{0}, e: {1}".format(
                     index,
                     step.error
                     )
