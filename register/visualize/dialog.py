@@ -73,8 +73,6 @@ class Ui_Dialog(object):
         """
         
         self.searchMap = {}
-        minError = 10000000000.0
-        
         for index, step in enumerate(search):
             item = QtGui.QListWidgetItem(self.listWidget)
             item.setText(
@@ -84,12 +82,8 @@ class Ui_Dialog(object):
                     )
                 )
             
-            if step.error < minError:
-                minError = step.error
-            
-            if step.error > minError:
+            if not step.decreasing:
                 item.setBackgroundColor(QtGui.QColor("red"))
-            
             self.searchMap[item] = step
             
     def retranslateUi(self, Dialog):
