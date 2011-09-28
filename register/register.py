@@ -426,7 +426,7 @@ class Register(object):
             # Update the estimated parameters.
             p += deltaP
 
-        return search
+        return bestStep, search
 
 class KybicRegister(Register):
     """

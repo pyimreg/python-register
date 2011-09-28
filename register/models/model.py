@@ -767,7 +767,7 @@ class CubicSpline(Model):
     def numberOfParameters(self):
         return self.basis.shape[1]
 
-    def __basis(self, order=4, divisions=4):
+    def __basis(self, order=4, divisions=5):
         """
         Computes the spline tensor product and stores the products, as basis
         vectors.

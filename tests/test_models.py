@@ -6,7 +6,6 @@ import register.register as register
 import scipy.misc as misc
 import scipy.ndimage as nd
 
-
 from matplotlib import pyplot
 
 def test_shift():
@@ -54,6 +53,7 @@ def test_affine():
     # Assert that the alignment error is small.
     assert error <= 1.0, "Unexpected large alignment error : {} grid units".format(error)
 
+
 def test_affine_warp():
     # Form a dummy coordinate class.
     image = misc.lena().astype(np.double)
@@ -72,6 +72,51 @@ def test_affine_warp():
     # Assert identity model did not warp image
     assert (image - warpedImage <= 1).all(), "Identity model must not warp image."
 
+
+def test_CubicSpline_estimate():
+    """
+    Asserts that scaling a warp field is a reasonable thing to do.
+    """
+    
+    # Form a high resolution image.
+    high = register.RegisterData(misc.lena().astype(np.double))
+    
+    # Form a low resolution image.
+    low = high.downsample(2.)
+    
+    # Make a deformed low resolution image.
+    p = model.CubicSpline(low.coords).identity
+    p += np.random.rand(p.shape[0]) * 100 - 50
+    
+    warp = model.CubicSpline(low.coords).warp(p)
+    dlow = sampler.Nearest(low.coords).f(low.data, warp).reshape(low.data.shape)
+    
+    # Scale the low resolution warp field to the same size as the high resolution 
+    # image. 
+    
+    hwarp = np.array( [nd.zoom(warp[0],2.0), nd.zoom(warp[1],2.0)] ) 
+    
+    # Estimate the high resolution spline parameters that best fit the 
+    # enlarged warp field.
+    pHat = model.CubicSpline(high.coords).estimate(hwarp-high.coords.tensor)
+    warpHat = model.CubicSpline(high.coords).warp(p)
+    
+    # Make a deformed high resolution image.
+    dhigh = sampler.Nearest(high.coords).f(high.data, warpHat).reshape(high.data.shape)
+    
+    # Compare the outputs - then should look the same.
+    import matplotlib.pyplot as plt
+    
+    plt.subplot(2,2,1)
+    plt.imshow(dlow)
+    plt.subplot(2,2,2)
+    plt.imshow(dhigh)
+    plt.subplot(2,2,3)
+    plt.imshow(hwarp[0]-warpHat[0])
+    plt.subplot(2,2,4)
+    plt.imshow(hwarp[1]-warpHat[1])
+    
+    plt.show()
 
 
 def test_thinPlateSpline():
