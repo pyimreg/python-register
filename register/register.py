@@ -135,6 +135,48 @@ class RegisterData(object):
         self.data = _smooth(self.data, variance)
 
 
+class optStep():
+    """
+    A container class for optimization steps.
+    
+    Attributes
+    ----------
+    warpedImage: nd-array
+        Deformed image.
+    warp: nd-array
+        Estimated deformation field.
+    grid: nd-array
+        Grid coordinates in tensor form.
+    error: float
+        Normalised fitting error.
+    p: nd-array
+        Model parameters.
+    deltaP: nd-array
+        Model parameter update vector.
+    decreasing: boolean.
+        State of the error function at this point.
+    """
+    
+    def __init__(
+        self, 
+        warpedImage=None,
+        warp=None,
+        grid=None, 
+        error=None, 
+        p=None,
+        deltaP=None, 
+        decreasing=None
+        ):
+        
+        self.warpedImage = warpedImage
+        self.warp = warp
+        self.grid = grid
+        self.error = error
+        self.p = p
+        self.deltaP = deltaP
+        self.decreasing = decreasing
+
+
 class Register(object):
     """
     A registration class for estimating the deformation model parameters that
@@ -166,13 +208,10 @@ class Register(object):
         A `sampler` class definition.
     """
     
-    optStep = collections.namedtuple(
-        'optStep', 
-        'warpedImage warp grid error p deltaP decreasing'
-        )
+   
     
     MAX_ITER = 200
-    MAX_BAD = 20
+    MAX_BAD = 5
     
     def __init__(self, model, metric, sampler):
 
@@ -304,14 +343,14 @@ class Register(object):
             e = metric.error(warpedImage, template.data)
             
             # Cache the optimization step.
-            searchStep = self.optStep(
+            searchStep = optStep(
                error=np.abs(e).sum()/np.prod(image.data.shape),
                p=p.copy(),
                deltaP=deltaP.copy(),
                grid=image.coords.tensor.copy(),
                warp=warp.copy(),
                warpedImage=warpedImage.copy(),
-               decreasing=False
+               decreasing=True
                )
             
             # Update the current best step.
@@ -339,7 +378,7 @@ class Register(object):
 
                 alpha = self.__dampening(
                     alpha,
-                    decreasing
+                    searchStep.decreasing
                     )
 
                 if searchStep.decreasing:
