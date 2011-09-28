@@ -10,12 +10,8 @@ import scipy.misc as misc
 from register.models import model
 from register.metrics import metric
 from register.samplers import sampler
-
 from register.visualize import plot
-
 from register import register
-
-
 
 def warp(image):
     """
@@ -42,7 +38,7 @@ template = register.RegisterData(warp(misc.lena()))
 affine = register.Register(
     model.CubicSpline,
     metric.Residual,
-    sampler.Nearest
+    sampler.Spline
     )
 
 fullSearch = []
@@ -50,7 +46,7 @@ fullSearch = []
 # Image pyramid registration can be executed like so:
 warp = None
 
-for factor in [ 10., 5. ]:
+for factor in [ 10.,  5.]:
     
     if warp is not None:
         scale = downImage.coords.spacing / factor

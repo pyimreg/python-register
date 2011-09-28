@@ -1,6 +1,5 @@
 """ A top level registration module """
 
-import collections
 import numpy as np
 import scipy.ndimage as nd
 
