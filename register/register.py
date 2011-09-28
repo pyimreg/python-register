@@ -278,11 +278,13 @@ class Register(object):
         p = model.identity if p is None else p
         deltaP = np.zeros_like(p)
 
-        search = []
+        # Dampening factor.
         alpha = alpha if alpha is not None else 1e-4
-        decreasing = True
+        
+        # Variables used to implement a back-tracking algorithm.
+        search = []
         badSteps = 0
-        lastGoodIteration = None
+        bestStep = None
 
         for itteration in range(0,self.MAX_ITER):
 
@@ -297,18 +299,20 @@ class Register(object):
             
             # Evaluate the error metric.
             e = metric.error(warpedImage, template.data)
-
-            searchStep = self.optStep(error=np.abs(e).sum()/np.prod(image.data.shape),
-                                      p=p.copy(),
-                                      deltaP=deltaP.copy(),
-                                      grid=image.coords.tensor.copy(),
-                                      warp=warp.copy(),
-                                      warpedImage=warpedImage.copy()
-                                      )
-                                      
-            if lastGoodIteration is None:
-                lastGoodIteration = searchStep
-
+            
+            # Cache the optimization step.
+            searchStep = self.optStep(
+               error=np.abs(e).sum()/np.prod(image.data.shape),
+               p=p.copy(),
+               deltaP=deltaP.copy(),
+               grid=image.coords.tensor.copy(),
+               warp=warp.copy(),
+               warpedImage=warpedImage.copy()
+               )
+            
+            # Update the current best step.
+            bestStep = searchStep if bestStep is None else bestStep
+            
             if verbose:
                 print ('{0}\n'
                        'iteration  : {1} \n'
@@ -325,18 +329,18 @@ class Register(object):
             # Append the search step to the search.
             search.append(searchStep)
 
-            if (len(search) > 1):
-
-                decreasing = (searchStep.error < lastGoodIteration.error)
+            if len(search) > 1:
+                
+                searchStep.decreasing = (searchStep.error < bestStep.error)
 
                 alpha = self.__dampening(
                     alpha,
                     decreasing
                     )
 
-                if decreasing:
+                if searchStep.decreasing:
                     
-                    lastGoodIteration = searchStep
+                    bestStep = searchStep
 
                     if plotCB is not None:
                         plotCB(image.data,
@@ -347,25 +351,24 @@ class Register(object):
                                '{0}:{1}'.format(model.MODEL, itteration)
                                )
                 else:
+                    
                     badSteps += 1
-
-                    if verbose:
-                        print ('Oops, bad step!\n')
-
+                    
                     if badSteps > self.MAX_BAD:
                         if verbose:
                             print ('Optimization break, maximum number '
                                    'of bad iterations exceeded.')
                         break
 
-                    # Restore the parameters from the previous iteration.
-                    p = lastGoodIteration.p.copy()
+                    # Restore the parameters from the previous best iteration.
+                    p = bestStep.p.copy()
 
             # Computes the derivative of the error with respect to model
             # parameters.
 
             J = metric.jacobian(model, warpedImage, p)
-
+            
+            # Compute the parameter update vector.
             deltaP = self.__deltaP(
                 J,
                 e,
@@ -376,9 +379,9 @@ class Register(object):
             # Evaluate stopping condition:
             if np.dot(deltaP.T, deltaP) < 1e-4:
                 break
-
+            
+            # Update the estimated parameters.
             p += deltaP
-
 
         return search
 
