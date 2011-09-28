@@ -37,8 +37,8 @@ image = nd.zoom(image, 0.30)
 template = warp(image)
 
 # Coerce the image data into RegisterData.
-image = register.RegisterData(image)
-template = register.RegisterData(template)
+image = register.RegisterData(image).downsample()
+template = register.RegisterData(template).downsample()
 
 # Smooth the template and image.
 image.smooth(0.5)

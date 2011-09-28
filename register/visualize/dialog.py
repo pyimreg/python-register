@@ -2,6 +2,7 @@
 
 import numpy as np
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.backends.backend_qt4agg import NavigationToolbar2QTAgg as NavigationToolbar
 from matplotlib.figure import Figure
 
 from PyQt4 import QtCore, QtGui
@@ -55,6 +56,7 @@ class Ui_Dialog(object):
         self.listWidget.setObjectName(_fromUtf8("listWidget"))
         self.verticalLayout_2.addWidget(self.listWidget)
         self.horizontalLayout.addWidget(self.splitter)
+        self.verticalLayout_2.addWidget(NavigationToolbar(self.widget, Dialog))
         
         self.listWidget.connect(
             self.listWidget, 
@@ -98,9 +100,8 @@ class MyMplCanvas(FigureCanvas):
     def __init__(self, parent=None, step=None):
         self.fig = Figure()
         
-        self.ax1 = self.fig.add_subplot(1,3,1)
-        self.ax2 = self.fig.add_subplot(1,3,2)
-        self.ax3 = self.fig.add_subplot(1,3,3)
+        self.ax1 = self.fig.add_subplot(1,2,1)
+        self.ax2 = self.fig.add_subplot(1,2,2)#, sharex=self.ax1, sharey=self.ax1)
         
         if step is not None:
             self.formPlot(step)
@@ -136,16 +137,15 @@ class MyDynamicMplCanvas(MyMplCanvas):
             cmap='gray'
             )
         
-        self.img2 = self.ax2.imshow(
-            step.warp[0] - step.grid[0], 
-            interpolation='nearest',
-            cmap='jet'
+        self.ax2.cla()
+        
+        self.ax2.quiver(
+            step.grid[1],
+            step.grid[0],
+            step.warp[1],
+            step.warp[0]
             )
-      
-        self.img3 = self.ax3.imshow(
-            step.warp[1] - step.grid[1], 
-            interpolation='nearest',
-            cmap='jet'
-            )
-       
+        
+        self.ax2.axis('image')
+        
         self.draw()
