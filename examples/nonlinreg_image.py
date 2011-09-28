@@ -38,7 +38,7 @@ image.smooth(1.5)
 template.smooth(1.5)
 
 # Register.
-search = affine.register(
+step, search = affine.register(
     image,
     template,
     verbose=True

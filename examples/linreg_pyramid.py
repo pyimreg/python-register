@@ -41,14 +41,14 @@ for factor in [30, 20 ,10, 5]:
     downImage = image.downsample(factor) 
     downTemplate = template.downsample(factor) 
     
-    search = affine.register(
+    step, search = affine.register(
         downImage,
         downTemplate,
         p=pHat,
         verbose=True
         )
 
-    pHat = search[-1].p
+    pHat = step.p
     
     fullSearch.extend(search)
     

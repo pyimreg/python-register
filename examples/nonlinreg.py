@@ -65,7 +65,7 @@ search = affine.register(
 
 # Compute a nonlinear (spline) registration, initialized with the warp field
 # found using the affine registration.
-search = spline.register(
+step, search = spline.register(
     image,
     template,
     warp=search[-1].warp,
