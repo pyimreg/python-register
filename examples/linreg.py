@@ -12,7 +12,7 @@ from register.metrics import metric
 from register.samplers import sampler
 from register import register
 
-from register.visualize import qtplot
+from register.visualize import plot
 
 # Form some test data (lena, lena rotated 20 degrees)
 image = misc.lena()
@@ -41,4 +41,4 @@ search = affine.register(
     )
 
 # Call the debug tool "searchInspector"
-qtplot.searchInspector(search)
+plot.searchInspector(search)

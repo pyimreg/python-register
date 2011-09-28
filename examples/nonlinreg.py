@@ -11,7 +11,7 @@ from register.models import model
 from register.metrics import metric
 from register.samplers import sampler
 
-from register.visualize import qtplot
+from register.visualize import plot
 from register import register
 
 def warp(image):
@@ -72,4 +72,4 @@ search = spline.register(
     verbose=True,
     )
 
-qtplot.searchInspector(search)
+plot.searchInspector(search)

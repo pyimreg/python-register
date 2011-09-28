@@ -10,7 +10,7 @@ from register.models import model
 from register.metrics import metric
 from register.samplers import sampler
 
-from register.visualize import qtplot
+from register.visualize import plot
 
 from register import register
 
@@ -52,4 +52,4 @@ for factor in [30, 20 ,10, 5]:
     
     fullSearch.extend(search)
     
-qtplot.searchInspector(fullSearch)
+plot.searchInspector(fullSearch)

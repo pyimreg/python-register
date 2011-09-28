@@ -1,28 +1,63 @@
 ''' (Debug utility) Defines a set of plotting callback functions '''
 
+import sys
 import matplotlib.pyplot as plt
 
-IMAGE_ORIGIN=None
-IMAGE_COLORMAP='gray'
-IMAGE_VMIN=None
-IMAGE_VMAX=None
+#===============================================================================
+# Plot configuration 
+#===============================================================================
 
-params = {'axes.labelsize': 10,
-          'axes.titlesize': 10,
-          'figure.titlesize': 12,
-          'font.size': 10,
-          'font.weight':'normal',
-          'text.fontsize': 10,
-          'axes.fontsize': 10,
-          'legend.fontsize': 11,
-          'xtick.labelsize': 8,
-          'ytick.labelsize': 8,
-          'figure.figsize': (12,6),
-          'figure.facecolor': 'w',
-          }
+params = {
+    'axes.labelsize': 10,
+    'axes.titlesize': 10,
+    'figure.titlesize': 12,
+    'font.size': 10,
+    'font.weight':'normal',
+    'text.fontsize': 10,
+    'axes.fontsize': 10,
+    'legend.fontsize': 11,
+    'xtick.labelsize': 8,
+    'ytick.labelsize': 8,
+    'figure.figsize': (12,6),
+    'figure.facecolor': 'w',
+    }
+
+plt.rcParams.update(params);
+
+#===============================================================================
+# Debug tools that make use of PyQt4.
+#===============================================================================
+
+def searchInspector(search):
+    """
+    A Qt based GUI to inspect the output of search algorithms. 
+    
+    Parameters
+    ----------
+    search: list of Register.optstepnd-array
+        The output of a registration.
+    """
+    
+    try:
+        from PyQt4.QtGui import QApplication, QDialog
+        from dialog import Ui_Dialog
+    except Exception:
+        print "Missing a required library - please install pyQt4."
+        return
+    
+    app = QApplication(sys.argv)
+    window = QDialog()
+    ui = Ui_Dialog()
+    ui.setupUi(window)
+    ui.updateList(search)
+    window.show()
+    app.exec_()
+
+#===============================================================================
+# Code below needs to be cleaned up.
+#===============================================================================
 
 plt.ion()
-plt.rcParams.update(params);
 
 def show():
 
