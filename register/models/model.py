@@ -821,14 +821,12 @@ class CubicSpline(Model):
            Model parameters.
         """
         
+        invB = np.linalg.pinv(self.basis)
+                          
         return np.hstack(
-            (
-             np.dot(np.linalg.pinv(self.basis),
-                    (self.coordinates.tensor[0] - warp[0]).flatten()),
-             np.dot(np.linalg.pinv(self.basis),
-                    (self.coordinates.tensor[1] - warp[1]).flatten()),
+            (np.dot(invB, warp[1].flatten()), 
+             np.dot(invB, warp[0].flatten()))
             )
-           ).T
 
 
     def warp(self, parameters):

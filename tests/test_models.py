@@ -78,7 +78,7 @@ def test_CubicSpline_estimate():
     Asserts that scaling a warp field is a reasonable thing to do.
     """
     
-    scale = 4.0
+    scale = 8.0
     
     # Form a high resolution image.
     high = register.RegisterData(misc.lena().astype(np.double))

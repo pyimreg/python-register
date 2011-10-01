@@ -35,7 +35,7 @@ image = register.RegisterData(misc.lena())
 template = register.RegisterData(warp(misc.lena()))
 
 # Form the registrator.
-affine = register.Register(
+spline = register.Register(
     model.CubicSpline,
     metric.Residual,
     sampler.Spline
@@ -45,24 +45,26 @@ fullSearch = []
 
 # Image pyramid registration can be executed like so:
 warp = None
+scale = None
 
 for factor in [ 10.,  5.]:
     
     if warp is not None:
         scale = downImage.coords.spacing / factor
         # FIXME: Find a nicer way to do this.
-        
+        warp = model.CubicSpline(downImage.coords).transform(step.p)
         warp = np.array(
-            [scale*nd.zoom(warp[0], scale), scale*nd.zoom(warp[1], scale)]
+            [nd.zoom(warp[0], scale), nd.zoom(warp[1], scale)]
             )
         
     downImage = image.downsample(factor) 
     downTemplate = template.downsample(factor) 
     
-    step, search = affine.register(
+    step, search = spline.register(
         downImage,
         downTemplate,
         warp=warp,
+        scale=scale,
         verbose=True
         )
     

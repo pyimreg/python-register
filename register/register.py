@@ -270,6 +270,7 @@ class Register(object):
                  alpha=None,
                  warp=None,
                  plotCB=None,
+                 scale=None,
                  verbose=False):
         """
         Computes the registration between the image and template.
@@ -315,7 +316,10 @@ class Register(object):
         if warp is not None:
             # Estimate p, using the warp field.
             p = model.estimate(warp)
-
+            # Need to scale?
+            if scale:
+                p *= scale
+        
         p = model.identity if p is None else p
         deltaP = np.zeros_like(p)
 
