@@ -78,28 +78,41 @@ def test_CubicSpline_estimate():
     Asserts that scaling a warp field is a reasonable thing to do.
     """
     
+    scale = 4.0
+    
     # Form a high resolution image.
     high = register.RegisterData(misc.lena().astype(np.double))
     
     # Form a low resolution image.
-    low = high.downsample(2.)
+    low = high.downsample(scale)
     
     # Make a deformed low resolution image.
     p = model.CubicSpline(low.coords).identity
     p += np.random.rand(p.shape[0]) * 100 - 50
     
-    warp = model.CubicSpline(low.coords).warp(p)
-    dlow = sampler.Nearest(low.coords).f(low.data, warp).reshape(low.data.shape)
+    warp = model.CubicSpline(low.coords).transform(p)
+    
+    dlow = sampler.Nearest(low.coords).f(
+        low.data, 
+        low.coords.tensor - warp
+        ).reshape(low.data.shape)
     
     # Scale the low resolution warp field to the same size as the high resolution 
     # image. 
     
-    hwarp = np.array( [nd.zoom(warp[0],2.0), nd.zoom(warp[1],2.0)] ) 
+    hwarp = np.array( [nd.zoom(warp[0],scale), nd.zoom(warp[1],scale)] ) 
     
     # Estimate the high resolution spline parameters that best fit the 
     # enlarged warp field.
-    pHat = model.CubicSpline(high.coords).estimate(hwarp-high.coords.tensor)
-    warpHat = model.CubicSpline(high.coords).warp(p)
+    
+    invB = np.linalg.pinv(model.CubicSpline(high.coords).basis)
+                          
+    pHat = np.hstack(
+        (np.dot(invB, hwarp[1].flatten()), 
+         np.dot(invB, hwarp[0].flatten()))
+        )
+    
+    warpHat = model.CubicSpline(high.coords).warp(pHat*scale)
     
     # Make a deformed high resolution image.
     dhigh = sampler.Nearest(high.coords).f(high.data, warpHat).reshape(high.data.shape)
