@@ -54,10 +54,14 @@ int bilinear(numpyArray<double> array0,
     Ndarray<double,2> image(array1);
     Ndarray<double,2> result(array2);
 
-    int u = 0;
-    int v = 0;
-    int iu = 0;
-    int iv = 0;
+    double di = 0.0;
+    double dj = 0.0;
+
+    double fi = 0;
+    double fj = 0;
+    
+    int ii = 0;
+    int jj = 0;
 
     double w0 = 0.0;
     double w1 = 0.0;
@@ -67,33 +71,37 @@ int bilinear(numpyArray<double> array0,
     int rows = image.getShape(0);
     int cols = image.getShape(1);
 
-    for (int y = 0; y < rows; y++)
+    for (int i = 0; i < rows; i++)
     {
-        for (int x = 0; x < cols; x++)
-        {
-        	iu = (int)warp[1][y][x];
-        	iv = (int)warp[0][y][x];
-
-        	u = floor(warp[1][y][x]);
-        	v = floor(warp[0][y][x]);
-
-        	w0 = (u+1-x)*(v+1-y);
-        	w1 = (x-u)*(v+1-y);
-        	w2 = (u+1-x)*(y-v);
-        	w3 = (x-u)*(y-v);
-
-        	if ( ( iv < rows-1 && iv >= 1 ) &&
-                 ( iu < cols-1 && iu >= 1 ) )
-            {
-        		result[y][x] = (w0*image[iv][iu]) +
-        					   (w1*image[iv][iu+1]) +
-        					   (w2*image[iv+1][iu]) +
-        					   (w3*image[iv+1][iu+1]);
+        for (int j = 0; j < cols; j++)
+	{
+	        // Floating point coordinates
+	        fi = warp[0][i][j];
+        	fj = warp[1][i][j];
+		
+		// Integer component
+		di = floor(warp[0][i][j]);
+        	dj = floor(warp[1][i][j]);
+		
+		ii = (int)di;
+		jj = (int)dj;
+		
+		// Bilinear interpolation weights
+        	w0 = (dj+1-fj)*(di+1-fi);
+        	w1 = (fj-dj)*(di+1-fi);
+        	w2 = (dj+1-fj)*(fi-di);
+        	w3 = (fj-dj)*(fi-di);
+				
+        	if ( ( ii < rows-1 && ii >= 1 ) &&
+                     ( jj < cols-1 && jj >= 1 ) )
+		{
+		    result[i][j] = (w0*image[ii][jj]) + (w1*image[ii][jj+1]) + (w2*image[ii+1][jj]) + (w3*image[ii+1][jj+1]);
         	}
         	else
         	{
-        		result[y][x] = 0.0;
+        	    result[i][j] = 0.0;
         	}
+        	
         }
     }
 

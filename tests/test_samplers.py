@@ -1,8 +1,13 @@
-import numpy as np
-import register.samplers.sampler as sampler
 import time
 
+import numpy as np
+import scipy as sp
+
+import register.models.model as model
+import register.samplers.sampler as sampler
+
 from register import register
+
 
 def test_sampler():
     """
@@ -61,4 +66,47 @@ def test_sampler():
         assert np.average(ntimes) < np.average(ctimes)
         assert np.average(ntimes) < np.average(stimes)
         assert np.average(ctimes) < np.average(stimes)
-        
+
+
+
+def test_rotate_lenna():
+    """
+    Warps an image.
+    """
+    
+    image = register.RegisterData(sp.misc.lena())
+    
+    p = np.array([0., 0.1, 0., 0.0, 0., 0.])
+    
+    affine = model.Affine(image.coords)
+    
+    warp = affine.warp(p)
+    
+    bilinear = sampler.Bilinear(image.coords)
+    
+    resampled = bilinear.f(image.data, warp)
+    
+    print resampled.min(), resampled.max()
+    
+    
+    import matplotlib.pyplot as plt
+    plt.subplot(1,2,1)
+    plt.imshow(image.data)
+    
+    plt.subplot(1,2,2)
+    plt.imshow(
+        resampled.reshape(image.data.shape), 
+        vmin=image.data.min(), 
+        vmax=image.data.max() 
+        )
+    
+    plt.show()
+    
+    assert False
+    
+    
+    
+    
+    
+    
+    

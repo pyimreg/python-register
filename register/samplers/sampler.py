@@ -148,13 +148,13 @@ class Bilinear(Sampler):
     
         if self.coordinates is None:
             raise ValueError('Appropriately defined coordinates not provided.')
-
+        
         result = np.zeros_like(array)
 
         arg0 = c_ndarray(warp, dtype=np.double, ndim=3)
         arg1 = c_ndarray(array, dtype=np.double, ndim=2)
         arg2 = c_ndarray(result, dtype=np.double, ndim=2)
-
+        
         libsampler.bilinear(arg0, arg1, arg2)
         
         return result.flatten()
