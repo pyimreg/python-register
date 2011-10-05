@@ -74,30 +74,43 @@ def test_rotate_lenna():
     Warps an image.
     """
     
+    
+    
     image = register.RegisterData(sp.misc.lena())
     
-    p = np.array([0., 0.1, 0., 0.0, 0., 0.])
+    p = np.array([0., 0.1, 0.1, 0.0, 0., 0.])
     
     affine = model.Affine(image.coords)
     
     warp = affine.warp(p)
     
     bilinear = sampler.Bilinear(image.coords)
+    nearest = sampler.Nearest(image.coords)
     
-    resampled = bilinear.f(image.data, warp)
-    
-    print resampled.min(), resampled.max()
-    
+    resampled_bilinear = bilinear.f(image.data, warp)
+    resampled_nearest = nearest.f(image.data, warp)        
     
     import matplotlib.pyplot as plt
-    plt.subplot(1,2,1)
+    plt.subplot(1,4,1)
     plt.imshow(image.data)
     
-    plt.subplot(1,2,2)
+    plt.subplot(1,4,2)
     plt.imshow(
-        resampled.reshape(image.data.shape), 
+        resampled_bilinear.reshape(image.data.shape), 
         vmin=image.data.min(), 
         vmax=image.data.max() 
+        )
+
+    plt.subplot(1,4,3)
+    plt.imshow(
+        resampled_nearest.reshape(image.data.shape), 
+        vmin=image.data.min(), 
+        vmax=image.data.max() 
+        )
+    
+    plt.subplot(1,4,4)
+    plt.imshow(
+        resampled_bilinear.reshape(image.data.shape) - resampled_nearest.reshape(image.data.shape), 
         )
     
     plt.show()
