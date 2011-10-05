@@ -6,6 +6,7 @@ using namespace std;
 
 extern "C" {
 
+
 int nearest(numpyArray<double> array0,
             numpyArray<double> array1,
             numpyArray<double> array2
@@ -21,9 +22,9 @@ int nearest(numpyArray<double> array0,
     int rows = image.getShape(0);
     int cols = image.getShape(1);
 
-    for (int i = 0; i < image.getShape(0); i++)
+    for (int i = 0; i < rows; i++)
     {
-        for (int j = 0; j < image.getShape(1); j++)
+        for (int j = 0; j < cols; j++)
         {
         	di = (int)warp[0][i][j];
         	dj = (int)warp[1][i][j];
@@ -42,6 +43,63 @@ int nearest(numpyArray<double> array0,
 
     return 0;
 }
+
+
+int bilinear(numpyArray<double> array0,
+             numpyArray<double> array1,
+             numpyArray<double> array2
+        )
+{
+    Ndarray<double,3> warp(array0);
+    Ndarray<double,2> image(array1);
+    Ndarray<double,2> result(array2);
+
+    int u = 0;
+    int v = 0;
+    int iu = 0;
+    int iv = 0;
+
+    double w0 = 0.0;
+    double w1 = 0.0;
+    double w2 = 0.0;
+    double w3 = 0.0;
+
+    int rows = image.getShape(0);
+    int cols = image.getShape(1);
+
+    for (int y = 0; y < rows; y++)
+    {
+        for (int x = 0; x < cols; x++)
+        {
+        	iu = (int)warp[1][y][x];
+        	iv = (int)warp[0][y][x];
+
+        	u = floor(warp[1][y][x]);
+        	v = floor(warp[0][y][x]);
+
+        	w0 = (u+1-x)*(v+1-y);
+        	w1 = (x-u)*(v+1-y);
+        	w2 = (u+1-x)*(y-v);
+        	w3 = (x-u)*(y-v);
+
+        	if ( ( iv < rows-1 && iv >= 1 ) &&
+                 ( iu < cols-1 && iu >= 1 ) )
+            {
+        		result[y][x] = (w0*image[iv][iu]) +
+        					   (w1*image[iv][iu+1]) +
+        					   (w2*image[iv+1][iu]) +
+        					   (w3*image[iv+1][iu+1]);
+        	}
+        	else
+        	{
+        		result[y][x] = 0.0;
+        	}
+        }
+    }
+
+    return 0;
+}
+
 
 int cubicConvolution(numpyArray<double> array0,
             numpyArray<double> array1,

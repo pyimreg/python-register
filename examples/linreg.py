@@ -23,7 +23,7 @@ template = nd.rotate(image, 20, reshape=False)
 affine = register.Register(
     model.Affine,
     metric.Residual,
-    sampler.CubicConvolution
+    sampler.Bilinear
     )
 
 # Coerce the image data into RegisterData.
