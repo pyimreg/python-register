@@ -30,7 +30,7 @@ int nearest(numpyArray<double> array0,
         	dj = (int)warp[1][i][j];
 
         	if ( ( di < rows && di >= 0 ) &&
-        		 ( dj < cols && dj >= 0 ) )
+        	     ( dj < cols && dj >= 0 ) )
         	{
         		result[i][j] = image[di][dj];
         	}
@@ -80,26 +80,38 @@ int bilinear(numpyArray<double> array0,
         	fj = warp[1][i][j];
 		
 		// Integer component
-		di = floor(warp[0][i][j]);
-        	dj = floor(warp[1][i][j]);
+		di = (double)((int)(warp[0][i][j]));
+  	        dj = (double)((int)(warp[1][i][j]));
 		
 		ii = (int)di;
 		jj = (int)dj;
 		
-		// Bilinear interpolation weights
-        	w0 = (dj+1-fj)*(di+1-fi);
-        	w1 = (fj-dj)*(di+1-fi);
-        	w2 = (dj+1-fj)*(fi-di);
-        	w3 = (fj-dj)*(fi-di);
-				
-        	if ( ( ii < rows-1 && ii >= 1 ) &&
-                     ( jj < cols-1 && jj >= 1 ) )
+        	if ( ( ii < rows && ii >= 0 ) &&
+                     ( jj < cols && jj >= 0 ) )
 		{
-		    result[i][j] = (w0*image[ii][jj]) + (w1*image[ii][jj+1]) + (w2*image[ii+1][jj]) + (w3*image[ii+1][jj+1]);
+		  
+		  // Bilinear interpolation weights
+		  w0 = ((dj+1-fj)*(di+1-fi))*image[ii][jj];
+		  
+		  w1 = 0.0;
+		  if (jj+1 < cols)
+		    w1 = ((fj-dj)*(di+1-fi))*image[ii][jj+1];  
+		  
+		  w2 = 0.0;
+		  if (ii+1 < rows)
+		    w2 = ((dj+1-fj)*(fi-di))*image[ii+1][jj];  
+		  
+		  w3 = 0.0;
+		  if ((ii+1 < rows) && (jj+1 < cols))
+		    w3 = ((fj-dj)*(fi-di))*image[ii+1][jj+1];  
+		  
+		  result[i][j] = w0 + w1 + w2 + w3;
+		
         	}
         	else
         	{
-        	    result[i][j] = 0.0;
+		  result[i][j] = 0.0;
+
         	}
         	
         }

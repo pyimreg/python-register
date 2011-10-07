@@ -39,6 +39,18 @@ def test_sampler():
         print 'Nearest : {0}x{0} image - {1:0.3f} ms'.format(n, np.average(ntimes))
         
         # cubic convolution sampler - ctypes
+        bilinear = sampler.Bilinear(coords)
+        
+        btimes = np.zeros(10)
+        for i in range(0,10):
+            t1 = time.time()
+            bilinear.f(img, warp)
+            t2 = time.time()
+            btimes[i] = (t2-t1)*1000.0
+        
+        print 'Bilinear : {0}x{0} image - {1:0.3f} ms'.format(n, np.average(btimes))
+        
+        # cubic convolution sampler - ctypes
         cubic = sampler.CubicConvolution(coords)
         
         ctimes = np.zeros(10)
@@ -64,62 +76,74 @@ def test_sampler():
         print '===================================='
         
         assert np.average(ntimes) < np.average(ctimes)
+        assert np.average(ntimes) < np.average(btimes)
         assert np.average(ntimes) < np.average(stimes)
         assert np.average(ctimes) < np.average(stimes)
 
-
-
-def test_rotate_lenna():
-    """
-    Warps an image.
-    """
-    
-    
-    
-    image = register.RegisterData(sp.misc.lena())
-    
-    p = np.array([0., 0.1, 0.1, 0.0, 0., 0.])
-    
-    affine = model.Affine(image.coords)
-    
-    warp = affine.warp(p)
-    
-    bilinear = sampler.Bilinear(image.coords)
-    nearest = sampler.Nearest(image.coords)
-    
-    resampled_bilinear = bilinear.f(image.data, warp)
-    resampled_nearest = nearest.f(image.data, warp)        
-    
-    import matplotlib.pyplot as plt
-    plt.subplot(1,4,1)
-    plt.imshow(image.data)
-    
-    plt.subplot(1,4,2)
-    plt.imshow(
-        resampled_bilinear.reshape(image.data.shape), 
-        vmin=image.data.min(), 
-        vmax=image.data.max() 
-        )
-
-    plt.subplot(1,4,3)
-    plt.imshow(
-        resampled_nearest.reshape(image.data.shape), 
-        vmin=image.data.min(), 
-        vmax=image.data.max() 
-        )
-    
-    plt.subplot(1,4,4)
-    plt.imshow(
-        resampled_bilinear.reshape(image.data.shape) - resampled_nearest.reshape(image.data.shape), 
-        )
-    
-    plt.show()
-    
     assert False
-    
-    
-    
-    
-    
-    
-    
+#
+#def test_bilinear():
+#    
+#    image = register.RegisterData(sp.misc.lena())
+#    
+#    p = np.array([0., 0., 0., 0., 0., 0.])
+#    
+#    affine = model.Affine(image.coords)
+#    
+#    warp = affine.warp(p)
+#    
+#    bilinear = sampler.Bilinear(image.coords)
+#    resampled_bilinear = bilinear.f(image.data, warp)
+#    
+#    error = np.abs( image.data.flatten() - resampled_bilinear.flatten() ).sum() / resampled_bilinear.size
+#    
+#    import matplotlib.pyplot as plt
+#    plt.subplot(1,2,1)
+#    plt.imshow(image.data)
+#    plt.subplot(1,2,2)
+#    plt.imshow(resampled_bilinear.reshape(image.data.shape))
+#    plt.show()
+#    
+#    assert False
+#    
+#    
+##    
+##    
+##    nearest = sampler.Nearest(image.coords)
+##    
+##    
+##    resampled_nearest = nearest.f(image.data, warp)        
+##    
+##    import matplotlib.pyplot as plt
+##    plt.subplot(1,4,1)
+##    plt.imshow(image.data)
+##    
+##    plt.subplot(1,4,2)
+##    plt.imshow(
+##        resampled_bilinear.reshape(image.data.shape), 
+##        vmin=image.data.min(), 
+##        vmax=image.data.max() 
+##        )
+##
+##    plt.subplot(1,4,3)
+##    plt.imshow(
+##        resampled_nearest.reshape(image.data.shape), 
+##        vmin=image.data.min(), 
+##        vmax=image.data.max() 
+##        )
+##    
+##    plt.subplot(1,4,4)
+##    plt.imshow(
+##        resampled_bilinear.reshape(image.data.shape) - resampled_nearest.reshape(image.data.shape), 
+##        )
+##    
+##    plt.show()
+##    
+##    assert False
+##    
+##    
+##    
+##    
+#    
+#    
+#    
