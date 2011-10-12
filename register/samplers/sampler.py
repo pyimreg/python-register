@@ -111,7 +111,7 @@ class Nearest(Sampler):
         if self.coordinates is None:
             raise ValueError('Appropriately defined coordinates not provided.')
 
-        result = np.zeros_like(array)
+        result = np.zeros_like(warp[0])
 
         arg0 = c_ndarray(warp, dtype=np.double, ndim=3)
         arg1 = c_ndarray(array, dtype=np.double, ndim=2)
@@ -161,7 +161,7 @@ class Bilinear(Sampler):
         if self.coordinates is None:
             raise ValueError('Appropriately defined coordinates not provided.')
         
-        result = np.zeros_like(array)
+        result = np.zeros_like(warp[0])
 
         arg0 = c_ndarray(warp, dtype=np.double, ndim=3)
         arg1 = c_ndarray(array, dtype=np.double, ndim=2)
