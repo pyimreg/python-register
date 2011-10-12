@@ -6,42 +6,204 @@ using namespace std;
 
 extern "C" {
 
+/*
+
+A mapping function which adjusts coordinates outside the domain in the following way:
+   
+   'n' nearest : sampler the nearest valid coordinate.
+
+   'r' reflect : reflect the coordinate into the boundary.
+
+   'w' wrap : wrap the coordinate around the appropriate axis.
+*/
+
+int map(int *coords, int rows, int cols, char mode)
+  {
+    switch (mode) 
+      {
+	
+      case 'c': /* constant */
+	
+	if (coords[0] < 0) return 0;
+	if (coords[1] < 0) return 0;
+
+	if (coords[0] == rows) return 0;
+	if (coords[1] == cols) return 0;
+
+	if (coords[0] > rows) return 0;
+	if (coords[1] > cols) return 0;
+
+	break;
+
+      case 'n': /* nearest */
+
+	if (coords[0] < 0) coords[0] = 0;
+	if (coords[1] < 0) coords[1] = 0;
+
+	if (coords[0] == rows) coords[0] = rows-1;
+	if (coords[1] == cols) coords[1] = cols-1;
+
+	if (coords[0] > rows) coords[0] = rows;
+	if (coords[1] > cols) coords[1] = cols;
+
+	break;
+
+      case 'r': /* reflect */
+
+	if (coords[0] < 0) coords[0] = fmod(-coords[0],rows);
+	if (coords[1] < 0) coords[1] = fmod(-coords[1],cols);
+
+	if (coords[0] == rows) coords[0] = rows-1;
+	if (coords[1] == cols) coords[1] = cols-1;
+
+	if (coords[0] > rows) coords[0] = rows;
+	if (coords[1] > cols) coords[1] = cols;
+
+	break;
+
+      case 'w': /* wrap */
+
+	if (coords[0] < 0) coords[0] = rows - fmod(-coords[0],rows);
+	if (coords[1] < 0) coords[1] = cols - fmod(-coords[1],cols);
+
+	if (coords[0] == rows) coords[0] = 0;
+	if (coords[1] == cols) coords[1] = 0;
+
+	if (coords[0] > rows) coords[0] = fmod(coords[0],rows);
+	if (coords[1] > cols) coords[1] = fmod(coords[1],cols);
+
+	break;
+    }
+    
+    return 1;
+  }
+
+/*
+  nearest neighbour interpolator.
+ */
+
 int nearest(numpyArray<double> array0,
             numpyArray<double> array1,
-            numpyArray<double> array2
+            numpyArray<double> array2,
+	    char mode,
+	    double cvalue
+           )
+{
+    Ndarray<double,3> warp(array0);
+    Ndarray<double,2> image(array1);
+    Ndarray<double,2> result(array2);
+
+    int coords[2] = {0, 0};
+
+    int rows = image.getShape(0);
+    int cols = image.getShape(1);
+
+    for (int i = 0; i < warp.getShape(1); i++)
+    {
+      for (int j = 0; j < warp.getShape(2); j++)
+        {
+        	coords[0] = (int)warp[0][i][j];
+        	coords[1] = (int)warp[1][i][j];
+
+		if ( not map(coords, rows, cols, mode) ) 
+		  {
+		    result[i][j] = cvalue;
+		  }
+		else
+		  {
+		    result[i][j] = image[coords[0]][coords[1]];
+		  }
+        }
+    }
+
+    return 0;
+}
+
+
+/* 
+   bilinear interpolator 
+ */
+
+int bilinear(numpyArray<double> array0,
+             numpyArray<double> array1,
+             numpyArray<double> array2,
+	     char mode,
+	     double cvalue
         )
 {
     Ndarray<double,3> warp(array0);
     Ndarray<double,2> image(array1);
     Ndarray<double,2> result(array2);
 
-    int di = 0;
-    int dj = 0;
+    double di = 0.0;
+    double dj = 0.0;
+
+    double fi = 0;
+    double fj = 0;
+
+    double w0 = 0.0;
+    double w1 = 0.0;
+    double w2 = 0.0;
+    double w3 = 0.0;
+    
+    int tl[2] = {0, 0};
+    int tr[2] = {0, 0};
+    int ll[2] = {0, 0};
+    int lr[2] = {0, 0};
 
     int rows = image.getShape(0);
     int cols = image.getShape(1);
 
-    for (int i = 0; i < image.getShape(0); i++)
+    for (int i = 0; i < warp.getShape(1); i++)
     {
-        for (int j = 0; j < image.getShape(1); j++)
-        {
-        	di = (int)warp[0][i][j];
-        	dj = (int)warp[1][i][j];
+      for (int j = 0; j < warp.getShape(2); j++)
+	{
+	  /* Floating point coordinates */
+	  fi = warp[0][i][j];
+	  fj = warp[1][i][j];
+		
+	  /* Integer component */
+	  di = (double)((int)(warp[0][i][j]));
+	  dj = (double)((int)(warp[1][i][j]));
+	
+	  /* Defined sampling coordinates */
+	  
+	  tl[0] = (int)fi;
+	  tl[1] = (int)fj;
+	
+	  tr[0] = tl[0];
+	  tr[1] = tl[1] + 1;
 
-        	if ( ( di < rows && di >= 0 ) &&
-        		 ( dj < cols && dj >= 0 ) )
-        	{
-        		result[i][j] = image[di][dj];
-        	}
-        	else
-        	{
-        		result[i][j] = 0.0;
-        	}
+	  ll[0] = tl[0] + 1;
+	  ll[1] = tl[1];
+
+	  lr[0] = tl[0] + 1;
+	  lr[1] = tl[1] + 1;
+	  
+	  w0 = 0.0;
+	  if ( map(tl, rows, cols, mode) ) 
+	    w0 = ((dj+1-fj)*(di+1-fi))*image[tl[0]][tl[1]];
+	  			  
+	  w1 = 0.0;
+	  if ( map(tr, rows, cols, mode) )
+	    w1 = ((fj-dj)*(di+1-fi))*image[tr[0]][tr[1]]; 
+		  
+	  w2 = 0.0;
+	  if ( map(ll, rows, cols, mode) )
+	    w2 = ((dj+1-fj)*(fi-di))*image[ll[0]][ll[1]];  
+		  
+	  w3 = 0.0;
+	  if ( map(lr, rows, cols, mode) )
+	    w3 = ((fj-dj)*(fi-di))*image[lr[0]][lr[1]];  
+		  
+	  result[i][j] = w0 + w1 + w2 + w3;
+	        	
         }
     }
 
     return 0;
 }
+
 
 int cubicConvolution(numpyArray<double> array0,
             numpyArray<double> array1,
