@@ -133,8 +133,8 @@ class Bilinear(Sampler):
     METHOD='Bilinear (BL)'
 
     DESCRIPTION="""
-        Given a coordinate in the array cubic convolution interpolates between
-        4 (2x2) nearest values. 
+        Given a coordinate in the array a linear interpolation is performed 
+        between 4 (2x2) nearest values. 
         """
 
     def __init__(self, coordinates):
