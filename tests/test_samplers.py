@@ -18,7 +18,7 @@ def test_sampler():
     
     """
     
-    for n in range(128, 2024, 128):
+    for n in range(128, 1024, 128):
         coords = register.Coordinates(
             [0, n, 0, n]
             )
@@ -74,7 +74,7 @@ def test_sampler():
         
         print 'Spline : {0}x{0} image - {1:0.3f} ms'.format(n, np.average(stimes))
         print '===================================='
-        
+
         assert np.average(ntimes) < np.average(ctimes)
         assert np.average(ntimes) < np.average(btimes)
         assert np.average(ntimes) < np.average(stimes)
