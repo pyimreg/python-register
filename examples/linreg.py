@@ -16,7 +16,6 @@ from register import register
 
 # Form some test data (lena, lena rotated 20 degrees)
 image = misc.lena()
-image = nd.zoom(image, 0.20)
 template = nd.rotate(image, 20, reshape=False)
 
 # Form the affine registration instance.
@@ -27,12 +26,8 @@ affine = register.Register(
     )
 
 # Coerce the image data into RegisterData.
-image = register.RegisterData(image)
-template = register.RegisterData(template)
-
-# Smooth the template and image.
-image.smooth(1.5)
-template.smooth(1.5)
+image = register.RegisterData(image).downsample(8)
+template = register.RegisterData(template).downsample(8)
 
 # Register.
 p, warp, img, error = affine.register(

@@ -98,9 +98,9 @@ int nearest(numpyArray<double> array0,
     int rows = image.getShape(0);
     int cols = image.getShape(1);
 
-    for (int i = 0; i < rows; i++)
+    for (int i = 0; i < warp.getShape(1); i++)
     {
-      for (int j = 0; j < cols; j++)
+      for (int j = 0; j < warp.getShape(2); j++)
         {
         	coords[0] = (int)warp[0][i][j];
         	coords[1] = (int)warp[1][i][j];
@@ -154,9 +154,9 @@ int bilinear(numpyArray<double> array0,
     int rows = image.getShape(0);
     int cols = image.getShape(1);
 
-    for (int i = 0; i < rows; i++)
+    for (int i = 0; i < warp.getShape(1); i++)
     {
-        for (int j = 0; j < cols; j++)
+      for (int j = 0; j < warp.getShape(2); j++)
 	{
 	  /* Floating point coordinates */
 	  fi = warp[0][i][j];
