@@ -128,7 +128,7 @@ def featurePlotSingle(image):
     featurePlt(image.features)
     
 
-def gridPlot(image, template, warpedImage, grid, warp, title):
+def gridPlot(image, template, warpedImage, grid, warp, title, metric=None):
 
     plt.subplot(2,3,1)
     plt.title('I')
@@ -161,8 +161,14 @@ def gridPlot(image, template, warpedImage, grid, warp, title):
     plt.axis('off')
 
     plt.subplot(2,3,4)
-    plt.title('I-T')
-    plt.imshow(template - image,
+    plt.title('E(I,T)')
+    if metric is None:
+      plt.imshow(template - image,
+               origin=IMAGE_ORIGIN,
+               cmap=IMAGE_COLORMAP
+              )
+    else:
+      plt.imshow(metric.error(image,template).reshape(image.shape),
                origin=IMAGE_ORIGIN,
                cmap=IMAGE_COLORMAP
               )
@@ -175,11 +181,17 @@ def gridPlot(image, template, warpedImage, grid, warp, title):
     plt.title('W(x;p)')
 
     plt.subplot(2,3,6)
-    plt.title('W(I;p) - T {0}'.format(title))
-    plt.imshow(template - warpedImage, 
-               origin=IMAGE_ORIGIN, 
+    plt.title('E(W(I;p),T) {0}'.format(title))
+    if metric is None:
+      plt.imshow(template - warpedImage,
+               origin=IMAGE_ORIGIN,
                cmap=IMAGE_COLORMAP
-               )
+              )
+    else:
+      plt.imshow(metric.error(warpedImage,template).reshape(image.shape),
+               origin=IMAGE_ORIGIN,
+               cmap=IMAGE_COLORMAP
+              )
     plt.axis('off')
 
     plt.draw()

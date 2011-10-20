@@ -169,7 +169,7 @@ class Register(object):
     optStep = collections.namedtuple('optStep', 'error p deltaP')
     
     MAX_ITER = 200
-    MAX_BAD = 20
+    MAX_BAD = 50
     
     def __init__(self, model, metric, sampler):
 
@@ -319,7 +319,8 @@ class Register(object):
                                warpedImage,
                                image.coords.tensor,
                                warp, 
-                               '{0}:{1}'.format(model.MODEL, itteration)
+                               '{0}:{1}'.format(model.MODEL, itteration),
+                               metric
                                )
                 else:
                     badSteps += 1

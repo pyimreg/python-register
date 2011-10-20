@@ -21,7 +21,7 @@ template = nd.rotate(image, 20, reshape=False)
 # Form the affine registration instance.
 affine = register.Register(
     model.Affine,
-    metric.Residual,
+    metric.Dssim,
     sampler.Bilinear
     )
 

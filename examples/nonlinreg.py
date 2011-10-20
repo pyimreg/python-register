@@ -53,7 +53,7 @@ affine = register.Register(
 # Form the spline registration instance.
 spline = register.Register(
     model.CubicSpline,
-    metric.Residual,
+    metric.Dssim,
     sampler.CubicConvolution
     )
 
