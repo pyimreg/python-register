@@ -100,8 +100,9 @@ class MyMplCanvas(FigureCanvas):
     def __init__(self, parent=None, step=None):
         self.fig = Figure()
         
-        self.ax1 = self.fig.add_subplot(1,2,1)
-        self.ax2 = self.fig.add_subplot(1,2,2)#, sharex=self.ax1, sharey=self.ax1)
+        self.ax1 = self.fig.add_subplot(1,3,1)
+        self.ax2 = self.fig.add_subplot(1,3,2)
+        self.ax3 = self.fig.add_subplot(1,3,3)#, sharex=self.ax1, sharey=self.ax1)
         
         if step is not None:
             self.formPlot(step)
@@ -130,22 +131,28 @@ class MyDynamicMplCanvas(MyMplCanvas):
         step: Register.optstep
             A step in the registration.
         """
-        
+        self.ax1.cla()
         self.img1 = self.ax1.imshow(
+            step.image, 
+            interpolation='nearest',
+            cmap='gray'
+            )
+        self.ax1.axis('image')
+        
+        self.ax2.cla()
+        self.img2 = self.ax2.imshow(
             step.warpedImage, 
             interpolation='nearest',
             cmap='gray'
             )
+        self.ax2.axis('image')
         
-        self.ax2.cla()
-        
-        self.ax2.quiver(
-            step.grid[1],
-            step.grid[0],
-            step.warp[1],
-            step.warp[0]
+        self.ax3.cla()
+        self.img3 = self.ax3.imshow(
+            step.template, 
+            interpolation='nearest',
+            cmap='gray'
             )
-        
         self.ax2.axis('image')
         
         self.draw()

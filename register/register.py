@@ -164,7 +164,9 @@ class optStep():
         error=None, 
         p=None,
         deltaP=None, 
-        decreasing=None
+        decreasing=None,
+        template=None,
+        image=None,
         ):
         
         self.warpedImage = warpedImage
@@ -174,6 +176,8 @@ class optStep():
         self.p = p
         self.deltaP = deltaP
         self.decreasing = decreasing
+        self.template = template
+        self.image = image
 
 
 class Register(object):
@@ -353,6 +357,8 @@ class Register(object):
                grid=image.coords.tensor.copy(),
                warp=warp.copy(),
                warpedImage=warpedImage.copy(),
+               template=template.data,
+               image=image.data,
                decreasing=True
                )
             
