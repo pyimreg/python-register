@@ -33,28 +33,25 @@ def warp(image):
 
 
 image = misc.lena()
-image = nd.zoom(image, 0.30)
 template = warp(image)
 
 # Coerce the image data into RegisterData.
-image = register.RegisterData(image).downsample()
-template = register.RegisterData(template).downsample()
-
-# Smooth the template and image.
-image.smooth(0.5)
-template.smooth(0.5)
+image = register.RegisterData(image).downsample(5.0)
+template = register.RegisterData(template).downsample(5.0)
 
 # Form the affine registration instance.
 affine = register.Register(
     model.Affine,
     metric.Residual,
-    sampler.CubicConvolution
+    sampler.Spline
     )
+
+
 # Form the spline registration instance.
 spline = register.Register(
     model.CubicSpline,
     metric.Residual,
-    sampler.CubicConvolution
+    sampler.Spline
     )
 
 # Compute an affine registration between the template and image.
@@ -65,11 +62,13 @@ step, search = affine.register(
 
 # Compute a nonlinear (spline) registration, initialized with the warp field
 # found using the affine registration.
-step, search = spline.register(
+step, _search = spline.register(
     image,
     template,
     displacement=step.displacement,
-    verbose=True,
+    verbose=True
     )
+
+search.extend(_search)
 
 plot.searchInspector(search)

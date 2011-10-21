@@ -41,11 +41,9 @@ spline = register.Register(
     sampler.Spline
     )
 
-fullSearch = []
-
 # Image pyramid registration can be executed like so:
+fullSearch = []
 displacement = None
-scale = None
 
 for factor in [ 20., 10.,  5.]:
     

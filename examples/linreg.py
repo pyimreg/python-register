@@ -22,17 +22,18 @@ template = nd.rotate(image, 20, reshape=False)
 affine = register.Register(
     model.Affine,
     metric.Residual,
-    sampler.Bilinear
+    sampler.CubicConvolution
     )
 
 # Coerce the image data into RegisterData.
-image = register.RegisterData(image).downsample(8)
-template = register.RegisterData(template).downsample(8)
+image = register.RegisterData(image).downsample(2)
+template = register.RegisterData(template).downsample(2)
 
 # Register.
 step, search = affine.register(
     image,
     template,
+    verbose=True,
     )
 
 # Call the debug tool "searchInspector"

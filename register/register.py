@@ -334,7 +334,7 @@ class Register(object):
                 ]) * scale[0]
             
             # Estimate p, using the displacement field.
-            p = model.estimate(scaledDisplacement)
+            p = model.estimate(-1.0*scaledDisplacement)
         
         p = model.identity if p is None else p
         deltaP = np.zeros_like(p)
@@ -355,7 +355,7 @@ class Register(object):
             # Sample the image using the inverse warp.
             warpedImage = _smooth(
                 sampler.f(image.data, warp).reshape(image.data.shape),
-                0.5
+                0.50,
                 )
             
             # Evaluate the error metric.

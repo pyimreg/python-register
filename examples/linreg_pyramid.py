@@ -24,7 +24,7 @@ template = register.RegisterData(
 affine = register.Register(
     model.Affine,
     metric.Residual,
-    sampler.Nearest
+    sampler.CubicConvolution
     )
 
 fullSearch = []
@@ -47,7 +47,7 @@ for factor in [30., 20. , 10., 5., 2., 1.]:
         p=pHat,
         verbose=True
         )
-
+    
     pHat = step.p
     
     fullSearch.extend(search)
