@@ -6,6 +6,8 @@ using namespace std;
 
 extern "C" {
 
+#include <Python.h>
+
 /*
 
 A mapping function which adjusts coordinates outside the domain in the following way:
@@ -269,6 +271,15 @@ int cubicConvolution(numpyArray<double> array0,
     }
 
     return 0;
+}
+
+static PyMethodDef sampler_methods[] = {
+    {NULL, NULL}
+};
+
+void initlibsampler()
+{
+    (void) Py_InitModule("libsampler", sampler_methods);
 }
 
 } // end extern "C"
