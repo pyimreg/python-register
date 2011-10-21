@@ -58,7 +58,7 @@ spline = register.Register(
     )
 
 # Compute an affine registration between the template and image.
-search = affine.register(
+step, search = affine.register(
     image,
     template,
     )
@@ -68,7 +68,7 @@ search = affine.register(
 step, search = spline.register(
     image,
     template,
-    warp=search[-1].warp,
+    displacement=step.displacement,
     verbose=True,
     )
 

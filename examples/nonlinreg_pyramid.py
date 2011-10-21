@@ -44,31 +44,22 @@ spline = register.Register(
 fullSearch = []
 
 # Image pyramid registration can be executed like so:
-warp = None
+displacement = None
 scale = None
 
-for factor in [ 10.,  5.]:
+for factor in [ 20., 10.,  5.]:
     
-    if warp is not None:
-        scale = downImage.coords.spacing / factor
-        # FIXME: Find a nicer way to do this.
-        warp = model.CubicSpline(downImage.coords).transform(step.p)
-        warp = np.array(
-            [nd.zoom(warp[0], scale), nd.zoom(warp[1], scale)]
-            )
-        
     downImage = image.downsample(factor) 
     downTemplate = template.downsample(factor) 
     
     step, search = spline.register(
         downImage,
         downTemplate,
-        warp=warp,
-        scale=scale,
+        displacement=displacement,
         verbose=True
         )
     
-    warp = step.warp
+    displacement = step.displacement
     
     fullSearch.extend(search)
     

@@ -100,18 +100,15 @@ def test_shift(image, template, p):
     image = register.RegisterData(image)
     template = register.RegisterData(template)
     
-    # Smooth
-    image.smooth(0.5)
-    template.smooth(0.5)
     
-    _p, _warp, _img, _error = shift.register(
+    step, _search = shift.register(
         image,
         template
         )
 
-    assert np.allclose(p, _p, atol=0.5), \
+    assert np.allclose(p, step.p, atol=0.5), \
         "Estimated p: {} not equal to p: {}".format(
-            _p,
+            step.p,
             p
             )
 
@@ -131,17 +128,13 @@ def test_affine(image, template, p):
     image = register.RegisterData(image)
     template = register.RegisterData(template)
     
-    # Smooth
-    image.smooth(0.5)
-    template.smooth(0.5)
-    
-    _p, _warp, _img, _error = affine.register(
+    step, _search = affine.register(
         image,
         template
         )
 
-    assert np.allclose(p, _p, atol=0.5), \
+    assert np.allclose(p, step.p, atol=0.5), \
         "Estimated p: {} not equal to p: {}".format(
-            _p,
+            step.p,
             p
             )

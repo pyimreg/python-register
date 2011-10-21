@@ -225,9 +225,17 @@ class Shift(Model):
         T = np.eye(3,3)
         T[0,2] = -parameters[0]
         T[1,2] = -parameters[1]
-
-        return np.dot(T, self.coordinates.homogenous)
-
+        
+        displacement = np.dot(T, self.coordinates.homogenous)
+        
+        shape = self.coordinates.tensor[0].shape
+        
+        return np.array( [ displacement[1]).reshape(shape),
+                           displacement[0]).reshape(shape)
+                         ]
+                       )
+        
+        
     def jacobian(self, p=None):
         """
         Evaluates the derivative of deformation model with respect to the
@@ -353,9 +361,25 @@ class Affine(Model):
                       [p[1],     p[3]+1.0, p[5]],
                       [0,         0,         1]
                       ])
-
+        
+        
+        
+        
         return np.dot(np.linalg.inv(T), self.coordinates.homogenous)
-
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
     def jacobian(self, p=None):
         """"
         Evaluates the derivative of deformation model with respect to the
@@ -742,7 +766,8 @@ class ThinPlateSpline(Model):
     @property
     def identity(self):
         raise NotImplementedError('')
-    
+
+
 class CubicSpline(Model):
 
     MODEL='CubicSpline (CS)'
@@ -820,9 +845,9 @@ class CubicSpline(Model):
         parameters: nd-array
            Model parameters.
         """
-        
+
         invB = np.linalg.pinv(self.basis)
-                          
+
         return np.hstack(
             (np.dot(invB, warp[1].flatten()), 
              np.dot(invB, warp[0].flatten()))

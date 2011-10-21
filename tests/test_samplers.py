@@ -11,7 +11,7 @@ from register import register
 
 def test_sampler():
     """
-    Asserts that NN < Cubic < Spline, over a range of image resolutions.
+    Asserts that NN < Bilinear < Cubic < Spline, over a range of image resolutions.
     
     If (one day) something really amazing happens and the scipy map_coordiantes
     method is significantly faster we could favour that as a default.

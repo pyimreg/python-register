@@ -167,6 +167,7 @@ class optStep():
         decreasing=None,
         template=None,
         image=None,
+        displacement=None
         ):
         
         self.warpedImage = warpedImage
@@ -178,6 +179,7 @@ class optStep():
         self.decreasing = decreasing
         self.template = template
         self.image = image
+        self.displacement = displacement
 
 
 class Register(object):
@@ -272,9 +274,8 @@ class Register(object):
                  template,
                  p=None,
                  alpha=None,
-                 warp=None,
+                 displacement=None,
                  plotCB=None,
-                 scale=None,
                  verbose=False):
         """
         Computes the registration between the image and template.
@@ -287,8 +288,8 @@ class Register(object):
             The target image.
         p: list (or nd-array), optional.
             First guess at fitting parameters.
-        warp: nd-array, optional.
-            A warp field estimate.
+        displacement: nd-array, optional.
+            A displacement field estimate.
         alpha: float
             The dampening factor.
         plotCB: function, optional
@@ -301,7 +302,7 @@ class Register(object):
         p: nd-array.
             Model parameters.
         warp: nd-array.
-            Warp field estimate.
+            (inverse) Warp field estimate.
         warpedImage: nd-array
             The re-sampled image.
         error: float
@@ -309,20 +310,31 @@ class Register(object):
         """
         
         #TODO: Determine the common coordinate system.
-        # if image.coords != template.coords:
-        #     raise ValueError('Coordinate systems differ.')
+        if image.coords.spacing != template.coords.spacing:
+             raise ValueError('Coordinate systems differ.')
             
         # Initialize the models, metric and sampler.
         model = self.model(image.coords)
         sampler = self.sampler(image.coords)
         metric = self.metric()
-
-        if warp is not None:
-            # Estimate p, using the warp field.
-            p = model.estimate(warp)
-            # Need to scale?
-            if scale:
-                p *= scale
+        
+        if displacement is not None:
+            
+            # Account for difference warp resolutions.
+            scale = (
+                (image.data.shape[0] * 1.) / displacement.shape[1],
+                (image.data.shape[1] * 1.) / displacement.shape[2],
+                )
+            
+            # Scale the displacement field and estimate the model parameters, 
+            # refer to test_CubicSpline_estimate
+            scaledDisplacement = np.array([ 
+                nd.zoom(displacement[0], scale), 
+                nd.zoom(displacement[1], scale)
+                ]) * scale[0]
+            
+            # Estimate p, using the displacement field.
+            p = model.estimate(scaledDisplacement)
         
         p = model.identity if p is None else p
         deltaP = np.zeros_like(p)
@@ -336,8 +348,8 @@ class Register(object):
         bestStep = None
 
         for itteration in range(0,self.MAX_ITER):
-
-            # Compute the warp field (warp field is the inverse warp)
+            
+            # Compute the inverse "warp" field. 
             warp = model.warp(p)
             
             # Sample the image using the inverse warp.
@@ -356,6 +368,7 @@ class Register(object):
                deltaP=deltaP.copy(),
                grid=image.coords.tensor.copy(),
                warp=warp.copy(),
+               displacement=model.transform(p),
                warpedImage=warpedImage.copy(),
                template=template.data,
                image=image.data,
