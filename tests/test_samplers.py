@@ -1,8 +1,13 @@
-import numpy as np
-import register.samplers.sampler as sampler
 import time
 
+import numpy as np
+import scipy as sp
+
+import register.models.model as model
+import register.samplers.sampler as sampler
+
 from register import register
+
 
 def test_sampler():
     """
@@ -13,7 +18,7 @@ def test_sampler():
     
     """
     
-    for n in range(128, 2024, 128):
+    for n in range(128, 1024, 128):
         coords = register.Coordinates(
             [0, n, 0, n]
             )
@@ -32,6 +37,18 @@ def test_sampler():
             ntimes[i] = (t2-t1)*1000.0
         
         print 'Nearest : {0}x{0} image - {1:0.3f} ms'.format(n, np.average(ntimes))
+        
+        # cubic convolution sampler - ctypes
+        bilinear = sampler.Bilinear(coords)
+        
+        btimes = np.zeros(10)
+        for i in range(0,10):
+            t1 = time.time()
+            bilinear.f(img, warp)
+            t2 = time.time()
+            btimes[i] = (t2-t1)*1000.0
+        
+        print 'Bilinear : {0}x{0} image - {1:0.3f} ms'.format(n, np.average(btimes))
         
         # cubic convolution sampler - ctypes
         cubic = sampler.CubicConvolution(coords)
@@ -57,8 +74,9 @@ def test_sampler():
         
         print 'Spline : {0}x{0} image - {1:0.3f} ms'.format(n, np.average(stimes))
         print '===================================='
-        
+
         assert np.average(ntimes) < np.average(ctimes)
+        assert np.average(ntimes) < np.average(btimes)
         assert np.average(ntimes) < np.average(stimes)
+        assert np.average(btimes) < np.average(ctimes)
         assert np.average(ctimes) < np.average(stimes)
-        

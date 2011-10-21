@@ -5,8 +5,14 @@ import scipy.ndimage as nd
 
 from numpy.ctypeslib import load_library
 from numpyctypes import c_ndarray
+import ctypes 
 
 libsampler = load_library('libsampler', __file__)
+
+# Configuration for the extrapolation mode and fill value.
+EXTRAPOLATION_MODE = 'c'
+EXTRAPOLATION_CVALUE = 0.0
+
 
 class Sampler(object):
     """
@@ -105,15 +111,72 @@ class Nearest(Sampler):
         if self.coordinates is None:
             raise ValueError('Appropriately defined coordinates not provided.')
 
-        result = np.zeros_like(array)
+        result = np.zeros_like(warp[0])
 
         arg0 = c_ndarray(warp, dtype=np.double, ndim=3)
         arg1 = c_ndarray(array, dtype=np.double, ndim=2)
         arg2 = c_ndarray(result, dtype=np.double, ndim=2)
 
-        libsampler.nearest(arg0, arg1, arg2)
+        libsampler.nearest(
+            arg0, 
+            arg1, 
+            arg2, 
+            ctypes.c_char(EXTRAPOLATION_MODE[0]),
+            ctypes.c_double(EXTRAPOLATION_CVALUE)
+            )
 
         return result.flatten()
+
+
+class Bilinear(Sampler):
+
+    METHOD='Bilinear (BL)'
+
+    DESCRIPTION="""
+        Given a coordinate in the array a linear interpolation is performed 
+        between 4 (2x2) nearest values. 
+        """
+
+    def __init__(self, coordinates):
+        Sampler.__init__(self, coordinates)
+
+    def f(self, array, warp):
+        """
+        A sampling function, responsible for returning a sampled set of values
+        from the given array.
+        
+        Parameters
+        ----------
+        array: nd-array
+            Input array for sampling.
+        warp: nd-array
+            Deformation coordinates.
+    
+        Returns
+        -------
+        sample: nd-array
+           Sampled array data.
+        """
+    
+        if self.coordinates is None:
+            raise ValueError('Appropriately defined coordinates not provided.')
+        
+        result = np.zeros_like(warp[0])
+
+        arg0 = c_ndarray(warp, dtype=np.double, ndim=3)
+        arg1 = c_ndarray(array, dtype=np.double, ndim=2)
+        arg2 = c_ndarray(result, dtype=np.double, ndim=2)
+        
+        libsampler.bilinear(
+            arg0, 
+            arg1, 
+            arg2,
+            ctypes.c_char(EXTRAPOLATION_MODE[0]),
+            ctypes.c_double(EXTRAPOLATION_CVALUE)
+            )
+        
+        return result.flatten()
+
 
 class CubicConvolution(Sampler):
 
