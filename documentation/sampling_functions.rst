@@ -2,8 +2,8 @@
 Image resampling methods
 ========================
 
-.. automodule:: samplers.sampler
+.. automodule:: register.samplers.sampler
     :members:
 
-.. automodule:: samplers.libsampler
+.. automodule:: register.samplers.libsampler
     :members:

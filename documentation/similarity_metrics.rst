@@ -2,5 +2,5 @@
 Similarity metrics
 ========================
 
-.. automodule:: metrics.metric
+.. automodule:: register.metrics.metric
     :members:
