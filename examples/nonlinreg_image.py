@@ -26,7 +26,7 @@ template = imread('data/smile.png')[:, :, 0]
 affine = register.Register(
     model.CubicSpline,
     metric.Residual,
-    sampler.CubicConvolution
+    sampler.Spline
     )
 
 # Coerce the image data into RegisterData.
@@ -38,11 +38,10 @@ image.smooth(1.5)
 template.smooth(1.5)
 
 # Register.
-p, warp, img, error = affine.register(
+step, search = affine.register(
     image,
     template,
-    plotCB=plot.gridPlot,
     verbose=True
     )
 
-plot.show()
+plot.searchInspector(search)

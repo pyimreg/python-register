@@ -11,6 +11,7 @@ from register.metrics import metric
 from register.samplers import sampler
 
 from register.visualize import plot
+
 from register import register
 
 # Form some test data (lena, lena rotated 20 degrees)
@@ -23,12 +24,14 @@ template = register.RegisterData(
 affine = register.Register(
     model.Affine,
     metric.Residual,
-    sampler.Bilinear
+    sampler.CubicConvolution
     )
+
+fullSearch = []
 
 # Image pyramid registration can be executed like so:
 pHat = None
-for factor in [20, 10, 5]:
+for factor in [30., 20. , 10., 5., 2., 1.]:
     
     if pHat is not None:
         scale = downImage.coords.spacing / factor
@@ -38,14 +41,15 @@ for factor in [20, 10, 5]:
     downImage = image.downsample(factor) 
     downTemplate = template.downsample(factor) 
     
-    p, _warp, _img, _error = affine.register(
+    step, search = affine.register(
         downImage,
         downTemplate,
         p=pHat,
-        plotCB=plot.gridPlot,
         verbose=True
         )
-
-    pHat = p
-
-plot.show()
+    
+    pHat = step.p
+    
+    fullSearch.extend(search)
+    
+plot.searchInspector(fullSearch)

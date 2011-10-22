@@ -20,9 +20,11 @@ class Model(object):
     MODEL=None
     DESCRIPTION=None
 
+
     def __init__(self, coordinates):
         self.coordinates = coordinates
-    
+
+
     def fit(self, p0, p1):
         """
         Estimates the best fit parameters that define a warp field, which 
@@ -43,7 +45,8 @@ class Model(object):
             Sum of RMS error between p1 and alinged p0.
         """
         raise NotImplementedError('')
-    
+
+
     @staticmethod
     def scale(p, factor):
         """
@@ -62,8 +65,8 @@ class Model(object):
             Model parameters.
         """
         raise NotImplementedError('')
-    
-    
+
+
     def estimate(self, warp):
         """
         Estimates the best fit parameters that define a warp field.
@@ -79,7 +82,8 @@ class Model(object):
            Model parameters.
         """
         raise NotImplementedError('')
-        
+
+
     def warp(self, parameters):
         """
         Computes the warp field given model parameters.
@@ -95,15 +99,11 @@ class Model(object):
            Deformation field.
         """
         
-        coords = self.transform(parameters)
+        displacement = self.transform(parameters)
+        
+        # Approximation of the inverse (samplers work on inverse warps).
+        return self.coordinates.tensor + displacement
 
-        warp = np.zeros_like(self.coordinates.tensor)
-
-        warp[0] = coords[1].reshape(warp[0].shape)
-        warp[1] = coords[0].reshape(warp[1].shape)
-
-        # Return the difference warp grid.
-        return warp
 
     def transform(self, parameters):
         """
@@ -120,14 +120,16 @@ class Model(object):
            Deformation coordinates.
         """
         raise NotImplementedError('')
-    
+
+
     def jacobian(self, p=None):
         """
         Evaluates the derivative of deformation model with respect to the
         coordinates.
         """
         raise NotImplementedError('')
-        
+
+
     def __str__(self):
         return 'Model: {0} \n {1}'.format(
             self.MODEL,
@@ -147,13 +149,16 @@ class Shift(Model):
         Unifying Framework. Int. J. Comput. Vision 56, 3 (February 2004).
         """
 
+
     def __init__(self, coordinates):
         Model.__init__(self, coordinates)
+
 
     @property
     def identity(self):
         return np.zeros(2)
-    
+
+
     @staticmethod
     def scale(p, factor):
         """
@@ -175,8 +180,8 @@ class Shift(Model):
         pHat = p.copy()
         pHat *= factor
         return pHat
-    
-    
+
+
     def fit(self, p0, p1, lmatrix=False):
         """
         Estimates the best fit parameters that define a warp field, which 
@@ -206,7 +211,8 @@ class Shift(Model):
            ).sum() 
         
         return -parameters, error
-    
+
+
     def transform(self, parameters):
         """
         A "shift" transformation of coordinates.
@@ -225,8 +231,17 @@ class Shift(Model):
         T = np.eye(3,3)
         T[0,2] = -parameters[0]
         T[1,2] = -parameters[1]
+        
+        displacement = np.dot(T, self.coordinates.homogenous) - \
+            self.coordinates.homogenous
+        
+        shape = self.coordinates.tensor[0].shape
+        
+        return np.array( [ displacement[1].reshape(shape),
+                           displacement[0].reshape(shape)
+                         ]
+                       )
 
-        return np.dot(T, self.coordinates.homogenous)
 
     def jacobian(self, p=None):
         """
@@ -255,13 +270,16 @@ class Affine(Model):
         Unifying Framework. Int. J. Comput. Vision 56, 3 (February 2004).
         """
 
+
     def __init__(self, coordinates):
         Model.__init__(self, coordinates)
+
 
     @property
     def identity(self):
         return np.zeros(6)
-    
+
+
     @staticmethod
     def scale(p, factor):
         """
@@ -283,7 +301,8 @@ class Affine(Model):
         pHat = p.copy()
         pHat[4:] *= factor
         return pHat
-    
+
+
     def fit(self, p0, p1, lmatrix=False):
         """
         Estimates the best fit parameters that define a warp field, which 
@@ -332,10 +351,11 @@ class Affine(Model):
            ).sum() 
         
         return parameters, error
-        
+
+
     def transform(self, p):
         """
-        An "affine" transformation of coordinates.
+        An "affine" transformation of coordinates. 
         
         Parameters
         ----------
@@ -353,8 +373,17 @@ class Affine(Model):
                       [p[1],     p[3]+1.0, p[5]],
                       [0,         0,         1]
                       ])
+        
+        displacement = np.dot(np.linalg.inv(T), self.coordinates.homogenous) - \
+            self.coordinates.homogenous
+        
+        shape = self.coordinates.tensor[0].shape
+        
+        return np.array( [ displacement[1].reshape(shape),
+                           displacement[0].reshape(shape)
+                         ]
+                       )
 
-        return np.dot(np.linalg.inv(T), self.coordinates.homogenous)
 
     def jacobian(self, p=None):
         """"
@@ -375,6 +404,7 @@ class Affine(Model):
 
         return (dx, dy)
 
+
 class Projective(Model):
 
     MODEL='Projective (P)'
@@ -387,13 +417,16 @@ class Projective(Model):
         Unifying Framework. Int. J. Comput. Vision 56, 3 (February 2004).
         """
 
+
     def __init__(self, coordinates):
         Model.__init__(self, coordinates)
+
 
     @property
     def identity(self):
         return np.zeros(9)
-    
+
+
     def fit(self, p0, p1, lmatrix=False):
         """
         Estimates the best fit parameters that define a warp field, which 
@@ -445,7 +478,8 @@ class Projective(Model):
            ).sum() 
         
         return parameters, error
-        
+
+
     def transform(self, p):
         """
         An "projective" transformation of coordinates.
@@ -466,8 +500,17 @@ class Projective(Model):
                       [p[1],     p[3]+1.0, p[5]],
                       [p[6],     p[7],     p[8]+1.0]
                       ])
+        
+        displacement = np.dot(np.linalg.inv(T), self.coordinates.homogenous) - \
+            self.coordinates.homogenous
+        
+        shape = self.coordinates.tensor[0].shape
+        
+        return np.array( [ displacement[1].reshape(shape),
+                           displacement[0].reshape(shape)
+                         ]
+                       )
 
-        return np.dot(np.linalg.inv(T), self.coordinates.homogenous)
 
     def jacobian(self, p):
         """"
@@ -496,6 +539,37 @@ class Projective(Model):
         dy[:,8] = 1.0 * (p[1]*x + p[3]*y + p[5] + y) / (p[6]*x + p[7]*y + p[8] + 1)**2
 
         return (dx, dy)
+
+
+    @staticmethod
+    def scale(p, factor):
+        """
+        Scales an projective transformation by a factor.
+        
+        Derivation: If    Hx =  x^ ,
+                    then SHx = Sx^ ,
+                    where  S = [[s, 0, 0], [0, s, 0], [0, 0, 1]] .
+                    Now   SH = S[[h00, h01, h02], [h10, h11, h12], [h20, h21, h22]]
+                             =  [[s.h00, s.h01, s.h02], [s.h10, s.h11, s.h12], [h20, h21, h22]] .
+        
+        
+        Parameters
+        ----------
+        p: nd-array
+            Model parameters.
+        factor: float
+            A scaling factor.
+            
+        Returns
+        -------
+        parameters: nd-array
+            Model parameters.
+        """
+
+        pHat = p.copy()
+        pHat[0:6] *= factor
+        return pHat
+
 
 class ThinPlateSpline(Model):
 
@@ -713,7 +787,8 @@ class ThinPlateSpline(Model):
     @property
     def identity(self):
         raise NotImplementedError('')
-    
+
+
 class CubicSpline(Model):
 
     MODEL='CubicSpline (CS)'
@@ -738,7 +813,7 @@ class CubicSpline(Model):
     def numberOfParameters(self):
         return self.basis.shape[1]
 
-    def __basis(self, order=4, divisions=4):
+    def __basis(self, order=4, divisions=5):
         """
         Computes the spline tensor product and stores the products, as basis
         vectors.
@@ -791,35 +866,14 @@ class CubicSpline(Model):
         parameters: nd-array
            Model parameters.
         """
-        
+
+        invB = np.linalg.pinv(self.basis)
+
         return np.hstack(
-            (
-             np.dot(np.linalg.pinv(self.basis),
-                    (self.coordinates.tensor[0] - warp[0]).flatten()),
-             np.dot(np.linalg.pinv(self.basis),
-                    (self.coordinates.tensor[1] - warp[1]).flatten()),
+            (np.dot(invB, warp[1].flatten()), 
+             np.dot(invB, warp[0].flatten()))
             )
-           ).T
 
-
-    def warp(self, parameters):
-        """
-        Computes the warp field given model parameters.
-        
-        Parameters
-        ----------
-        parameters: nd-array
-            Model parameters.
-        
-        Returns
-        -------
-        warp: nd-array
-           Deformation field.
-        """
-        
-        dwarp = self.transform(parameters)
-        
-        return self.coordinates.tensor - dwarp
 
     def transform(self, p):
         """
@@ -840,11 +894,14 @@ class CubicSpline(Model):
         py = np.array(p[self.numberOfParameters::])
 
         shape = self.coordinates.tensor[0].shape
-
-        return np.array( [ np.dot(self.basis, py).reshape(shape),
-                           np.dot(self.basis, px).reshape(shape)
-                         ]
-                       )
+        
+        # FIXME: Inverse of a warp field needs to be derived and put in here,
+        #        clearly a multiplication by -1 is not a good approach.
+        
+        return -1.0 * np.array( [ np.dot(self.basis, py).reshape(shape),
+                                 np.dot(self.basis, px).reshape(shape)
+                                ]
+                              )
 
     def jacobian(self, p=None):
         """

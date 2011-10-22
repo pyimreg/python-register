@@ -10,9 +10,9 @@ import scipy.misc as misc
 from register.models import model
 from register.metrics import metric
 from register.samplers import sampler
+from register import register
 
 from register.visualize import plot
-from register import register
 
 # Form some test data (lena, lena rotated 20 degrees)
 image = misc.lena()
@@ -22,19 +22,19 @@ template = nd.rotate(image, 20, reshape=False)
 affine = register.Register(
     model.Affine,
     metric.Residual,
-    sampler.Bilinear
+    sampler.CubicConvolution
     )
 
 # Coerce the image data into RegisterData.
-image = register.RegisterData(image).downsample(8)
-template = register.RegisterData(template).downsample(8)
+image = register.RegisterData(image).downsample(2)
+template = register.RegisterData(template).downsample(2)
 
 # Register.
-p, warp, img, error = affine.register(
+step, search = affine.register(
     image,
     template,
-    plotCB=plot.gridPlot,
-    verbose=True
+    verbose=True,
     )
 
-plot.show()
+# Call the debug tool "searchInspector"
+plot.searchInspector(search)

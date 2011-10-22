@@ -1,6 +1,6 @@
 """ 
-Estimates a non-linear warp field, the lenna image is randomly deformed using
-the spline deformation model.
+Estimates a projective deformation field, the lenna image is randomly deformed 
+using the projective deformation model.
 """
 
 import numpy as np
@@ -16,7 +16,7 @@ from register import register
 
 def warp(image):
     """
-    Randomly warps an input image using a cubic spline deformation.
+    Randomly warps an input image using a projective deformation.
     """
     coords = register.Coordinates(
         [0, image.shape[0], 0, image.shape[1]]
@@ -52,7 +52,7 @@ reg = register.Register(
     )
 
 # Compute an affine registration between the template and image.
-p, warp, img, error = reg.register(
+step, search = reg.register(
     image,
     template,
     alpha=0.00002,

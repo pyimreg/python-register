@@ -6,7 +6,6 @@ import register.register as register
 import scipy.misc as misc
 import scipy.ndimage as nd
 
-
 from matplotlib import pyplot
 
 def test_shift():
@@ -54,24 +53,72 @@ def test_affine():
     # Assert that the alignment error is small.
     assert error <= 1.0, "Unexpected large alignment error : {} grid units".format(error)
 
-def test_affine_warp():
-    # Form a dummy coordinate class.
-    image = misc.lena().astype(np.double)
-    image = nd.zoom(image, 0.1)
-    coords = register.Coordinates([0, image.shape[0]-1, 0, image.shape[1]-1])
-    # Create an affine model
-    test_model = model.Affine(coords)
-    # Initialize model
-    p = [0,0,0,0,0,0]
-    # Create warp field from model
-    warp = test_model.warp(p)
-    # Create a sampler
-    test_sampler = sampler.Nearest(coords)
-    # Warp image using warp field
-    warpedImage = test_sampler.f(image, warp).reshape(image.shape)
-    # Assert identity model did not warp image
-    assert (image - warpedImage <= 1).all(), "Identity model must not warp image."
 
+def test_CubicSpline_estimate():
+    """
+    Asserts that scaling a warp field is a reasonable thing to do.
+    """
+    
+    scale = 2.0
+    
+    # Form a high resolution image.
+    high = register.RegisterData(misc.lena().astype(np.double))
+    
+    # Form a low resolution image.
+    low = high.downsample(scale)
+    
+    # Make a deformed low resolution image.
+    p = model.CubicSpline(low.coords).identity
+    p += np.random.rand(p.shape[0]) * 100 - 50
+    
+    warp = model.CubicSpline(low.coords).transform(p)
+    
+    dlow = sampler.Nearest(low.coords).f(
+        low.data, 
+        low.coords.tensor - warp
+        ).reshape(low.data.shape)
+    
+    # Scale the low resolution warp field to the same size as the high resolution 
+    # image. 
+    
+    hwarp = np.array( [nd.zoom(warp[0],scale), nd.zoom(warp[1],scale)] ) * scale
+    
+    # Estimate the high resolution spline parameters that best fit the 
+    # enlarged warp field.
+    
+    invB = np.linalg.pinv(model.CubicSpline(high.coords).basis)
+    
+    pHat = np.hstack(
+        (np.dot(invB, hwarp[1].flatten()), 
+         np.dot(invB, hwarp[0].flatten()))
+        )
+    
+    warpHat = model.CubicSpline(high.coords).warp(pHat)
+    
+    # Make a deformed high resolution image.
+    dhigh = sampler.Nearest(high.coords).f(high.data, warpHat).reshape(high.data.shape)
+    
+    # down-sample the deformed high-resolution image and assert that the 
+    # pixel values are "close".
+    dhigh_low = nd.zoom(dhigh, 1.0/scale)
+    
+    # Assert that the down-sampler highresolution image is "roughly" similar to
+    # the low resolution image.
+    
+    assert (np.abs((dhigh_low[:] - dlow[:])).sum() / dlow.size < 10.0), \
+        "Normalized absolute error is greater than 10 pixels."
+    
+#    import matplotlib.pyplot as plt
+#    plt.subplot(1,3,1)
+#    plt.imshow(dlow)
+#    plt.title('low resolution deformation')
+#    plt.subplot(1,3,2)
+#    plt.imshow(dhigh_low)
+#    plt.title('high resolution deformation')
+#    plt.subplot(1,3,3)
+#    plt.imshow(dhigh_low-dlow)
+#    plt.title('high resolution deformation (down-sampled)')
+#    plt.show()
 
 
 def test_thinPlateSpline():

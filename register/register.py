@@ -1,6 +1,5 @@
 """ A top level registration module """
 
-import collections
 import numpy as np
 import scipy.ndimage as nd
 
@@ -135,6 +134,54 @@ class RegisterData(object):
         self.data = _smooth(self.data, variance)
 
 
+class optStep():
+    """
+    A container class for optimization steps.
+    
+    Attributes
+    ----------
+    warpedImage: nd-array
+        Deformed image.
+    warp: nd-array
+        Estimated deformation field.
+    grid: nd-array
+        Grid coordinates in tensor form.
+    error: float
+        Normalised fitting error.
+    p: nd-array
+        Model parameters.
+    deltaP: nd-array
+        Model parameter update vector.
+    decreasing: boolean.
+        State of the error function at this point.
+    """
+    
+    def __init__(
+        self, 
+        warpedImage=None,
+        warp=None,
+        grid=None, 
+        error=None, 
+        p=None,
+        deltaP=None, 
+        decreasing=None,
+        template=None,
+        image=None,
+        displacement=None
+        ):
+        
+        self.warpedImage = warpedImage
+        self.warp = warp
+        self.grid = grid
+        self.error = error
+        self.p = p
+        self.deltaP = deltaP
+        self.decreasing = decreasing
+        self.template = template
+        self.image = image
+        self.displacement = displacement
+
+
 class Register(object):
     """
     A registration class for estimating the deformation model parameters that
@@ -166,10 +213,10 @@ class Register(object):
         A `sampler` class definition.
     """
     
-    optStep = collections.namedtuple('optStep', 'error p deltaP')
+   
     
     MAX_ITER = 200
-    MAX_BAD = 20
+    MAX_BAD = 5
     
     def __init__(self, model, metric, sampler):
 
@@ -227,7 +274,7 @@ class Register(object):
                  template,
                  p=None,
                  alpha=None,
-                 warp=None,
+                 displacement=None,
                  plotCB=None,
                  verbose=False):
         """
@@ -241,8 +288,8 @@ class Register(object):
             The target image.
         p: list (or nd-array), optional.
             First guess at fitting parameters.
-        warp: nd-array, optional.
-            A warp field estimate.
+        displacement: nd-array, optional.
+            A displacement field estimate.
         alpha: float
             The dampening factor.
         plotCB: function, optional
@@ -255,7 +302,7 @@ class Register(object):
         p: nd-array.
             Model parameters.
         warp: nd-array.
-            Warp field estimate.
+            (inverse) Warp field estimate.
         warpedImage: nd-array
             The re-sampled image.
         error: float
@@ -263,101 +310,80 @@ class Register(object):
         """
         
         #TODO: Determine the common coordinate system.
-        # if image.coords != template.coords:
-        #     raise ValueError('Coordinate systems differ.')
+        if image.coords.spacing != template.coords.spacing:
+             raise ValueError('Coordinate systems differ.')
             
         # Initialize the models, metric and sampler.
         model = self.model(image.coords)
         sampler = self.sampler(image.coords)
         metric = self.metric()
-
-        if warp is not None:
-            # Estimate p, using the warp field.
-            p = model.estimate(warp)
-
+        
+        if displacement is not None:
+            
+            # Account for difference warp resolutions.
+            scale = (
+                (image.data.shape[0] * 1.) / displacement.shape[1],
+                (image.data.shape[1] * 1.) / displacement.shape[2],
+                )
+            
+            # Scale the displacement field and estimate the model parameters, 
+            # refer to test_CubicSpline_estimate
+            scaledDisplacement = np.array([ 
+                nd.zoom(displacement[0], scale), 
+                nd.zoom(displacement[1], scale)
+                ]) * scale[0]
+            
+            # Estimate p, using the displacement field.
+            p = model.estimate(-1.0*scaledDisplacement)
+        
         p = model.identity if p is None else p
         deltaP = np.zeros_like(p)
 
-        search = []
+        # Dampening factor.
         alpha = alpha if alpha is not None else 1e-4
-        decreasing = True
+        
+        # Variables used to implement a back-tracking algorithm.
+        search = []
         badSteps = 0
+        bestStep = None
 
         for itteration in range(0,self.MAX_ITER):
-
-            # Compute the warp field (warp field is the inverse warp)
+            
+            # Compute the inverse "warp" field. 
             warp = model.warp(p)
             
             # Sample the image using the inverse warp.
             warpedImage = _smooth(
                 sampler.f(image.data, warp).reshape(image.data.shape),
-                0.5
+                0.50,
                 )
             
             # Evaluate the error metric.
             e = metric.error(warpedImage, template.data)
-
-            searchStep = self.optStep(error=np.abs(e).sum(),
-                                      p=p,
-                                      deltaP=deltaP,
-                                      )
-
-            if (len(search) > 1):
-
-                decreasing = (searchStep.error < search[-1].error)
-
-                alpha = self.__dampening(
-                    alpha,
-                    decreasing
-                    )
-
-                if decreasing:
-
-                    if plotCB is not None:
-                        plotCB(image.data,
-                               template.data,
-                               warpedImage,
-                               image.coords.tensor,
-                               warp, 
-                               '{0}:{1}'.format(model.MODEL, itteration)
-                               )
-                else:
-                    badSteps += 1
-
-                    if badSteps > self.MAX_BAD:
-                        if verbose:
-                            print ('Optimization break, maximum number '
-                                   'of bad iterations exceeded.')
-                        break
-
-                    # Restore the parameters from the previous iteration.
-                    p = search[-1].p.copy()
-                    continue
-
-            # Computes the derivative of the error with respect to model
-            # parameters.
-
-            J = metric.jacobian(model, warpedImage, p)
-
-            deltaP = self.__deltaP(
-                J,
-                e,
-                alpha,
-                p=p
-                )
-
-            # Evaluate stopping condition:
-            if np.dot(deltaP.T, deltaP) < 1e-4:
-                break
-
-            p += deltaP
-
-            if verbose and decreasing:
+            
+            # Cache the optimization step.
+            searchStep = optStep(
+               error=np.abs(e).sum()/np.prod(image.data.shape),
+               p=p.copy(),
+               deltaP=deltaP.copy(),
+               grid=image.coords.tensor.copy(),
+               warp=warp.copy(),
+               displacement=model.transform(p),
+               warpedImage=warpedImage.copy(),
+               template=template.data,
+               image=image.data,
+               decreasing=True
+               )
+            
+            # Update the current best step.
+            bestStep = searchStep if bestStep is None else bestStep
+            
+            if verbose:
                 print ('{0}\n'
                        'iteration  : {1} \n'
                        'parameters : {2} \n'
                        'error      : {3} \n'
-                       '{0}\n'
+                       '{0}'
                       ).format(
                             '='*80,
                             itteration,
@@ -368,8 +394,61 @@ class Register(object):
             # Append the search step to the search.
             search.append(searchStep)
 
-        return p, warp, warpedImage, searchStep.error
+            if len(search) > 1:
+                
+                searchStep.decreasing = (searchStep.error < bestStep.error)
 
+                alpha = self.__dampening(
+                    alpha,
+                    searchStep.decreasing
+                    )
+
+                if searchStep.decreasing:
+                    
+                    bestStep = searchStep
+
+                    if plotCB is not None:
+                        plotCB(image.data,
+                               template.data,
+                               warpedImage,
+                               image.coords.tensor,
+                               warp, 
+                               '{0}:{1}'.format(model.MODEL, itteration)
+                               )
+                else:
+                    
+                    badSteps += 1
+                    
+                    if badSteps > self.MAX_BAD:
+                        if verbose:
+                            print ('Optimization break, maximum number '
+                                   'of bad iterations exceeded.')
+                        break
+
+                    # Restore the parameters from the previous best iteration.
+                    p = bestStep.p.copy()
+
+            # Computes the derivative of the error with respect to model
+            # parameters.
+
+            J = metric.jacobian(model, warpedImage, p)
+            
+            # Compute the parameter update vector.
+            deltaP = self.__deltaP(
+                J,
+                e,
+                alpha,
+                p
+                )
+
+            # Evaluate stopping condition:
+            if np.dot(deltaP.T, deltaP) < 1e-4:
+                break
+            
+            # Update the estimated parameters.
+            p += deltaP
+
+        return bestStep, search
 
 class KybicRegister(Register):
     """
