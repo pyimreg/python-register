@@ -591,3 +591,107 @@ class FeatureRegister():
         warpedImage = sampler.f(image.data, warp).reshape(image.data.shape)
         
         return p, warp, warpedImage, error
+
+#==============================================================================
+# Diffeomorphic demons
+#==============================================================================
+
+class DemonsRegister():
+    """
+    A registration class for estimating the deformation model parameters that
+    best solve:
+    
+    | :math:`f( W(I;x), T )`
+    |
+    | where:
+    |    :math:`f`     : is a similarity metric.
+    |    :math:`W(I:x)`: is a deformation model (entire grid deformation)
+    |    :math:`I`     : is an input image (to be deformed).
+    |    :math:`T`     : is a template (which is a deformed version of the input).
+    
+    Notes:
+    ------
+    
+    Solved using a modified diffusion based image matching algorithm.
+    
+    Attributes
+    ----------
+    sampler: class
+        A `sampler` class definition.
+    """
+
+
+    def __init__(self, sampler):
+        self.sampler = sampler
+
+    def register(self, image, template):
+        
+        import matplotlib.pyplot as plt
+        
+        # Initialize the image re-sampler.
+        sampler = self.sampler(image.coords)
+        
+        # Insert demons registration code here.
+        warp = image.coords.tensor
+        
+        # Moving image.
+        M = image.data
+        
+        # Static image.
+        S = template.data
+        
+        # Compute the gradient of the static image.
+        deltaS = np.gradient(S)
+        
+        # Compute the velocity field.
+        v = np.zeros_like(warp)
+        v[0] = ((M - S)*deltaS[0]) / (np.power(deltaS[0],2) + np.power((M-S),2))
+        v[1] = ((M - S)*deltaS[1]) / (np.power(deltaS[1],2) + np.power((M-S),2))
+        v[np.isnan(v)] = 0.0
+        
+        # Smooth the velocity field.
+        v[0] = _smooth(v[0], 0.05)
+        v[1] = _smooth(v[1], 0.05)
+        
+        # Update the warp field.
+        warp -= v
+        
+        # Sample the image using the inverse warp.
+        warpedImage = sampler.f(M, warp).reshape(M.shape)
+        
+        plt.subplot(2,3,1)
+        plt.imshow(M)
+        plt.title('moving image')
+        plt.axis('image')
+        plt.axis('off')
+        
+        plt.subplot(2,3,2)
+        plt.imshow(S)
+        plt.title('static (target) image')
+        plt.axis('image')
+        plt.axis('off')
+        
+        plt.subplot(2,3,3)
+        plt.imshow(warpedImage)
+        plt.title('deformed (moving) image')
+        plt.axis('image')
+        plt.axis('off')
+        
+        plt.subplot(2,3,5)
+        plt.imshow(M-S)
+        plt.title('static-target')
+        plt.axis('image')
+        plt.axis('off')
+        
+        plt.subplot(2,3,6)
+        plt.imshow(warpedImage-S)
+        plt.title('deformed - target')
+        plt.axis('image')
+        plt.axis('off')
+        
+        
+        plt.show()
+        
+        # Registration always fails.
+        return False
+        
