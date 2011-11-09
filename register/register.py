@@ -1,6 +1,7 @@
 """ A top level registration module """
 
 import numpy as np
+import scipy.optimize as optimize
 import scipy.ndimage as nd
 
 def _smooth(image, variance):
@@ -450,62 +451,154 @@ class Register(object):
 
         return bestStep, search
 
-class KybicRegister(Register):
+
+class CG(Register):
     """
-    Variant of LM algorithm as described by:
-      
-    Kybic, J. and Unser, M. (2003). Fast parametric elastic image
-        registration. IEEE Transactions on Image Processing, 12(11), 1427-1442.
+    A registration class for estimating the deformation model parameters that
+    best solve:
+    
+    | :math:`f( W(I;p), T )`
+    |
+    | where:
+    |    :math:`f`     : is a similarity metric.
+    |    :math:`W(x;p)`: is a deformation model (defined by the parameter set p).
+    |    :math:`I`     : is an input image (to be deformed).
+    |    :math:`T`     : is a template (which is a deformed version of the input).
+    
+    Notes:
+    ------
+    
+    Solved using a conjugate gradient algorithm.
+    
+    .. [0] Conjugate gradient method,
+           http://en.wikipedia.org/wiki/Conjugate_gradient_method
+    
+    Attributes
+    ----------
+    model: class
+        A `deformation` model class definition.
+    metric: class
+        A `similarity` metric class definition.
+    sampler: class
+        A `sampler` class definition.
     """
     
+   
+    
+    MAX_ITER = 200
+    MAX_BAD = 5
+    
     def __init__(self, model, metric, sampler):
-        Register.__init__(self, model, metric, sampler)
 
-    def __deltaP(self, J, e, alpha, p):
+        self.model = model
+        self.metric = metric
+        self.sampler = sampler
+    
+    def register(self,
+                 image,
+                 template,
+                 p=None,
+                 plotCB=None,
+                 verbose=False):
         """
-        Computes the parameter update.
+        Computes the registration between the image and template.
         
         Parameters
         ----------
-        J: nd-array
-            The (dE/dP) the relationship between image differences and model
-            parameters.
-        e: float
-            The evaluated similarity metric.    
-        alpha: float
-            A dampening factor.
-        p: nd-array or list of floats, optional
+        image: nd-array
+            The floating image.
+        template: nd-array
+            The target image.
+        p: list (or nd-array), optional.
+            First guess at fitting parameters.
+        plotCB: function, optional
+            A plotting function.
+        verbose: boolean
+            A debug flag for text status updates. 
         
         Returns
         -------
-        deltaP: nd-array
-           The parameter update vector.
+        p: nd-array.
+            Model parameters.
+        warp: nd-array.
+            (inverse) Warp field estimate.
+        warpedImage: nd-array
+            The re-sampled image.
+        error: float
+            Fitting error.
         """
-
-        H = np.dot(J.T, J)
-
-        H += np.diag(alpha*np.diagonal(H))
-
-        return np.dot( np.linalg.inv(H), np.dot(J.T, e)) - alpha*p
-
-    def __dampening(self, alpha, decreasing):
-        """
-        Computes the adjusted dampening factor.
         
-        Parameters
-        ----------
-        alpha: float
-            The current dampening factor.
-        decreasing: boolean
-            Conditional on the decreasing error function.
+        #TODO: Determine the common coordinate system.
+        if image.coords.spacing != template.coords.spacing:
+            raise ValueError('Coordinate systems differ.')
             
-        Returns
-        -------
-        alpha: float
-           The adjusted dampening factor.
-        """
-        return alpha
-
+        # Initialize the models, metric and sampler.
+        model = self.model(image.coords)
+        sampler = self.sampler(image.coords)
+        metric = self.metric()
+        
+      
+        
+        p = model.identity if p is None else p
+        
+        def f(p, image, template, model, sampler, metric):
+            """
+            """
+            # Compute the inverse "warp" field. 
+            warp = model.warp(p)
+            
+            # Sample the image using the inverse warp.
+            warpedImage = _smooth(
+                sampler.f(image.data, warp).reshape(image.data.shape),
+                0.50,
+                )
+            
+            # Evaluate the error metric.
+            e = metric.error(warpedImage, template.data)
+            
+            return e.sum()*e.sum()/np.prod(image.data.shape)**2
+        
+        
+        def fprime(p, image, template, model, sampler, metric):
+            # Compute the inverse "warp" field. 
+            warp = model.warp(p)
+            
+            # Sample the image using the inverse warp.
+            warpedImage = _smooth(
+                sampler.f(image.data, warp).reshape(image.data.shape),
+                0.50,
+                )
+            return np.sum(metric.jacobian(model, warpedImage, p))
+        
+        def callback(p):
+            
+            # Compute the inverse "warp" field. 
+            warp = model.warp(p)
+            
+            # Sample the image using the inverse warp.
+            warpedImage = _smooth(
+                sampler.f(image.data, warp).reshape(image.data.shape),
+                0.50,
+                )
+            
+            if plotCB is not None:
+                plotCB(image.data,
+                       template.data,
+                       warpedImage,
+                       image.coords.tensor,
+                       warp, 
+                       '{0}'.format(model.MODEL)
+                      )
+            
+        optimize.fmin_cg(
+            f, 
+            p, 
+            fprime=None,
+            callback=callback, 
+            args=(image, template, model, sampler, metric),
+            full_output=True
+            )
+        
 
 class FeatureRegister():
     """

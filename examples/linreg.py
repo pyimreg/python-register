@@ -19,7 +19,7 @@ image = misc.lena()
 template = nd.rotate(image, 20, reshape=False)
 
 # Form the affine registration instance.
-affine = register.Register(
+affine = register.CG(
     model.Affine,
     metric.Residual,
     sampler.CubicConvolution
@@ -34,7 +34,7 @@ step, search = affine.register(
     image,
     template,
     verbose=True,
+    plotCB=plot.gridPlot,
     )
 
-# Call the debug tool "searchInspector"
-plot.searchInspector(search)
+plot.show()

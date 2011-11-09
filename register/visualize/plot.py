@@ -7,8 +7,6 @@ import matplotlib.pyplot as plt
 # Plot configuration 
 #===============================================================================
 
-
-
 IMAGE_ORIGIN=None
 IMAGE_COLORMAP='gray'
 IMAGE_VMIN=None
