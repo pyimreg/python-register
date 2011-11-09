@@ -7,6 +7,13 @@ import matplotlib.pyplot as plt
 # Plot configuration 
 #===============================================================================
 
+
+
+IMAGE_ORIGIN=None
+IMAGE_COLORMAP='gray'
+IMAGE_VMIN=None
+IMAGE_VMAX=None
+
 params = {
     'axes.labelsize': 10,
     'axes.titlesize': 10,
