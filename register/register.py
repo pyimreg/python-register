@@ -555,10 +555,9 @@ class CG(Register):
             
             # Evaluate the error metric.
             e = metric.error(warpedImage, template.data)
-            
-            return e.sum()*e.sum()/np.prod(image.data.shape)**2
-        
-        
+            return e
+
+
         def fprime(p, image, template, model, sampler, metric):
             # Compute the inverse "warp" field. 
             warp = model.warp(p)
@@ -568,7 +567,8 @@ class CG(Register):
                 sampler.f(image.data, warp).reshape(image.data.shape),
                 0.50,
                 )
-            return np.sum(metric.jacobian(model, warpedImage, p))
+
+            return metric.jacobian(model, warpedImage, p)
         
         def callback(p):
             
@@ -590,7 +590,7 @@ class CG(Register):
                        '{0}'.format(model.MODEL)
                       )
             
-        optimize.fmin_cg(
+        optimize.fsolve(
             f, 
             p, 
             fprime=None,
