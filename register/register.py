@@ -452,7 +452,7 @@ class Register(object):
         return bestStep, search
 
 
-class CG(Register):
+class Wrapped(Register):
     """
     A registration class for estimating the deformation model parameters that
     best solve:
@@ -468,10 +468,9 @@ class CG(Register):
     Notes:
     ------
     
-    Solved using a conjugate gradient algorithm.
+    Solved using a xx algorithm.
     
-    .. [0] Conjugate gradient method,
-           http://en.wikipedia.org/wiki/Conjugate_gradient_method
+    .. [0] xx
     
     Attributes
     ----------
@@ -537,11 +536,9 @@ class CG(Register):
         sampler = self.sampler(image.coords)
         metric = self.metric()
         
-      
+        p0 = model.identity if p is None else p
         
-        p = model.identity if p is None else p
-        
-        def f(p, image, template, model, sampler, metric):
+        def f(p):
             """
             """
             # Compute the inverse "warp" field. 
@@ -554,11 +551,10 @@ class CG(Register):
                 )
             
             # Evaluate the error metric.
-            e = metric.error(warpedImage, template.data)
-            return e
+            return metric.error(warpedImage, template.data)
+           
 
-
-        def fprime(p, image, template, model, sampler, metric):
+        def fprime(p):
             # Compute the inverse "warp" field. 
             warp = model.warp(p)
             
@@ -589,13 +585,11 @@ class CG(Register):
                        warp, 
                        '{0}'.format(model.MODEL)
                       )
-            
+        
         optimize.fsolve(
             f, 
-            p, 
-            fprime=None,
-            callback=callback, 
-            args=(image, template, model, sampler, metric),
+            p0,
+            #fprime=fprime,
             full_output=True
             )
         

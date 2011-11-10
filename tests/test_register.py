@@ -33,19 +33,19 @@ def pytest_generate_tests(metafunc):
     image = misc.lena()
     image = nd.zoom(image, 0.50)
 
-    if metafunc.function is test_shift:
+    
+    for displacement in np.arange(-10.,10.):
 
-        for displacement in np.arange(-10.,10.):
+        p = np.array([displacement, displacement])
 
-            p = np.array([displacement, displacement])
+        template = warp(
+            image,
+            p,
+            model.Shift,
+            sampler.Spline
+            )
 
-            template = warp(
-                image,
-                p,
-                model.Shift,
-                sampler.Spline
-                )
-
+        if metafunc.function is test_shift:
             metafunc.addcall(
                 id='dx={}, dy={}'.format(
                     p[0],
@@ -58,20 +58,8 @@ def pytest_generate_tests(metafunc):
                     )
                 )
 
-    if metafunc.function is test_affine:
-
-        # test the displacement component
-        for displacement in np.arange(-10.,10.):
-
+        if metafunc.function is test_affine:
             p = np.array([0., 0., 0., 0., displacement, displacement])
-
-            template = warp(
-                image,
-                p,
-                model.Affine,
-                sampler.Spline
-                )
-
             metafunc.addcall(
                     id='dx={}, dy={}'.format(
                         p[4],
@@ -83,6 +71,49 @@ def pytest_generate_tests(metafunc):
                         p=p
                         )
                     )
+        
+        if metafunc.function is test_wrapped:
+            p = np.array([0., 0., 0., 0., displacement, displacement])
+            metafunc.addcall(
+                    id='dx={}, dy={}'.format(
+                        p[4],
+                        p[5]
+                        ),
+                    funcargs=dict(
+                        image=image,
+                        template=template,
+                        p=p
+                        )
+                    )
+
+
+def test_wrapped(image, template, p):
+    """
+    Tests image registration using a shift deformation model.
+    """
+
+    shift = register.Wrapped(
+        model.Shift,
+        metric.Residual,
+        sampler.Spline
+        )
+
+    # Coerce the image data into RegisterData.
+    image = register.RegisterData(image)
+    template = register.RegisterData(template)
+    
+    
+    step, _search = shift.register(
+        image,
+        template
+        )
+
+    assert np.allclose(p, step.p, atol=0.5), \
+        "Estimated p: {} not equal to p: {}".format(
+            step.p,
+            p
+            )
+
 
 
 def test_shift(image, template, p):
