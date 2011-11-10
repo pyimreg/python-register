@@ -363,7 +363,7 @@ class Register(object):
             
             # Cache the optimization step.
             searchStep = optStep(
-               error=e.sum()*e.sum()/np.prod(image.data.shape)**2,
+               error=np.abs(e).sum()/np.prod(image.data.shape),
                p=p.copy(),
                deltaP=deltaP.copy(),
                grid=image.coords.tensor.copy(),
