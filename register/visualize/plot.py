@@ -3,6 +3,11 @@
 import sys
 import matplotlib.pyplot as plt
 
+IMAGE_ORIGIN=None
+IMAGE_COLORMAP='gray'
+IMAGE_VMIN=None
+IMAGE_VMAX=None
+
 #===============================================================================
 # Plot configuration 
 #===============================================================================
