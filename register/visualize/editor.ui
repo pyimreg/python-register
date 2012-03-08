@@ -108,5 +108,38 @@
   </action>
  </widget>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>actionOpen_left</sender>
+   <signal>triggered()</signal>
+   <receiver>graphicsView</receiver>
+   <slot>update()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>71</x>
+     <y>98</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>206</x>
+     <y>330</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionOpen_right</sender>
+   <signal>triggered()</signal>
+   <receiver>graphicsView_2</receiver>
+   <slot>update()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>604</x>
+     <y>330</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
 </ui>
