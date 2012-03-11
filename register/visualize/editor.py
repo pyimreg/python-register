@@ -6,7 +6,7 @@
 #      by: PyQt4 UI code generator 4.8.5
 #
 # WARNING! All changes made in this file will be lost!
-
+import sys
 from PyQt4 import QtCore, QtGui
 
 try:
@@ -21,7 +21,7 @@ class Editor(QtGui.QMainWindow):
         super(Editor, self).__init__()
         self.initUI()
         
-    def initUI(self):        
+    def initUI(self):
         self.setObjectName(_fromUtf8("MainWindow"))
         self.resize(823, 663)
         self.setWindowTitle(QtGui.QApplication.translate("MainWindow", "Python-Register Editor", None, QtGui.QApplication.UnicodeUTF8))
@@ -89,7 +89,6 @@ class Editor(QtGui.QMainWindow):
         self.actionOpen_left.triggered.connect(self.openLeft)
         self.actionExit.triggered.connect(self.exxit)
 
-
     def openLeft(self):
         filename = QtGui.QFileDialog.getOpenFileName(self, 'Open image file', '~')
         pixmap = QtGui.QPixmap(filename)
@@ -99,4 +98,16 @@ class Editor(QtGui.QMainWindow):
         
     def exxit(self):
         self.close()
-        
+
+
+# Invoke the GUI
+def main():
+
+    app = QtGui.QApplication(sys.argv)
+    editor = Editor()
+    editor.show()
+    sys.exit(app.exec_())
+
+
+if __name__ == '__main__':
+    main()
