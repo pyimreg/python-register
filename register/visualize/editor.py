@@ -9,7 +9,7 @@ app = QApplication(sys.argv)
 
 # Create the QML user interface.
 view = QDeclarativeView()
-view.setSource(QUrl('main.qml'))
+view.setSource(QUrl('editor.qml'))
 view.setResizeMode(QDeclarativeView.SizeRootObjectToView)
 
 # Get the root object of the user interface.  
