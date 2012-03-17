@@ -1,8 +1,8 @@
 - Nathan Faggian
-  BDFL: Project coordination, methods development.
+  Australian Bureau of Meteorology
 
 - Stefan Van Der Walt
-  Project coordination, methods development.
+  UC Berkley
 
 - Riaan Van Den Dool
-  Feature detection methods.
+  
