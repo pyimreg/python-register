@@ -1,4 +1,5 @@
 import sys
+import os
 
 from PyQt4.QtCore import QDateTime, QObject, QUrl, pyqtSignal
 from PyQt4.QtGui import QApplication
@@ -9,7 +10,7 @@ app = QApplication(sys.argv)
 
 # Create the QML user interface.
 view = QDeclarativeView()
-view.setSource(QUrl('editor.qml'))
+view.setSource(QUrl(os.path.join(os.path.dirname(__file__), 'editor.qml')))
 view.setResizeMode(QDeclarativeView.SizeRootObjectToView)
 
 # Get the root object of the user interface.  
