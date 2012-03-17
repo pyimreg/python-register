@@ -3,7 +3,7 @@
 About
 =====
 
-imreg, short for image registration, is a python package for image registration built ontop of scipy and numpy.
+*imreg*, short for image registration, is a python package for image registration built ontop of scipy and numpy.
 
 It is currently maintained by Nathan Faggian, Riaan Van Den Dool and Stefan Van Der Walt.
 
