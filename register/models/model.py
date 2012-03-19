@@ -10,15 +10,15 @@ class Model(object):
     
     Attributes
     ----------
-    METRIC : string
-        The type of similarity metric being used.
+    MODEL : string
+        The type of deformation model being used.
     DESCRIPTION : string
         A meaningful description of the model used, with references where 
         appropriate.
     """
 
-    MODEL=None
-    DESCRIPTION=None
+    MODEL=''
+    DESCRIPTION=''
 
 
     def __init__(self, coordinates):
