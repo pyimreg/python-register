@@ -1,7 +1,7 @@
 Copyright 2011, 
 Nathan Faggian, Australian Bureau of Meteorology. (nfaggian@bom.gov.au)
 Stefan Van Der Walt.
-Riaan Van Den Dool.
+Riaan Van Den Dool. (riaanvddool@gmail.com)
 
 
 Licensed under the Apache License, Version 2.0 (the "License");
