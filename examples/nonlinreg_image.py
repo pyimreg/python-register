@@ -11,12 +11,12 @@ The deformation is not manufactured by the spline model, and is a good
 
 from matplotlib.pyplot import imread
 
-from register.models import model
-from register.metrics import metric
-from register.samplers import sampler
+from imreg.models import model
+from imreg.metrics import metric
+from imreg.samplers import sampler
 
-from register.visualize import plot
-from register import register
+from imreg.visualize import plot
+from imreg import register
 
 # Form some test data (lena, lena rotated 20 degrees)
 image = imread('data/frown.png')[:, :, 0]

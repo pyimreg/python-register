@@ -1,6 +1,6 @@
 import scipy.misc as misc
 
-from register import register
+from imreg import register
 
 def test_downsample():
     """

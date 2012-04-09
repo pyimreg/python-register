@@ -6,7 +6,7 @@ Detects haar salient features in an image -
 import scipy.ndimage as nd
 from matplotlib.pyplot import imread, plot, imshow, show
  
-from register.features.detector import detect, HaarDetector
+from imreg.features.detector import detect, HaarDetector
 
 # Load the image.
 image = imread('data/cameraman.png')

@@ -1,8 +1,8 @@
 import numpy as np
 
-from register.models import model
-from register.samplers import sampler
-from register import register
+from imreg.models import model
+from imreg.samplers import sampler
+from imreg import register
 
 def test_register():
     """ 
