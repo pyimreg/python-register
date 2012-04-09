@@ -4,7 +4,7 @@ import numpy as np
 import scipy.ndimage as nd
 import math
 
-from register.features.haar2d import haar2d
+from imreg.features.haar2d import haar2d
 
 __debug=False
 

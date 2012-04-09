@@ -13,11 +13,11 @@ import yaml
 
 import matplotlib.pyplot as plt
 
-from register.models import model
-from register.samplers import sampler
-from register.visualize import plot
+from imreg.models import model
+from imreg.samplers import sampler
+from imreg.visualize import plot
 
-from register import register
+from imreg import register
 
 # Load the image and feature data. 
 image = register.RegisterData(
