@@ -1,5 +1,5 @@
-""" 
-Estimates a linear warp field, using an image pyramid to speed up the 
+"""
+Estimates a linear warp field, using an image pyramid to speed up the
 computation.
 """
 
@@ -9,8 +9,6 @@ import scipy.misc as misc
 from imreg.models import model
 from imreg.metrics import metric
 from imreg.samplers import sampler
-
-from imreg.visualize import plot
 
 from imreg import register
 
@@ -32,24 +30,22 @@ fullSearch = []
 # Image pyramid registration can be executed like so:
 pHat = None
 for factor in [30., 20. , 10., 5., 2., 1.]:
-    
+
     if pHat is not None:
         scale = downImage.coords.spacing / factor
         # FIXME: Find a nicer way to do this.
         pHat = model.Affine.scale(pHat, scale)
-        
-    downImage = image.downsample(factor) 
-    downTemplate = template.downsample(factor) 
-    
+
+    downImage = image.downsample(factor)
+    downTemplate = template.downsample(factor)
+
     step, search = affine.register(
         downImage,
         downTemplate,
         p=pHat,
         verbose=True
         )
-    
+
     pHat = step.p
-    
+
     fullSearch.extend(search)
-    
-plot.searchInspector(fullSearch)

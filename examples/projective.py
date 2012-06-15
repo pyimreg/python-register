@@ -1,5 +1,5 @@
-""" 
-Estimates a projective deformation field, the lenna image is randomly deformed 
+"""
+Estimates a projective deformation field, the lenna image is randomly deformed
 using the projective deformation model.
 """
 
@@ -7,12 +7,9 @@ import numpy as np
 import scipy.ndimage as nd
 import scipy.misc as misc
 
-from imreg.models import model
-from imreg.metrics import metric
+from imreg import model, metric, register
 from imreg.samplers import sampler
 
-from imreg.visualize import plot
-from imreg import register
 
 def warp(image):
     """
@@ -21,14 +18,14 @@ def warp(image):
     coords = register.Coordinates(
         [0, image.shape[0], 0, image.shape[1]]
         )
-        
+
     mymodel = model.Projective(coords)
     mysampler = sampler.CubicConvolution(coords)
 
     p = mymodel.identity
     #TODO: Understand the effect of parameter magnitude:
     p += np.random.rand(p.shape[0]) * 0.1 - 0.05
-    
+
     return mysampler.f(image, mymodel.warp(p)).reshape(image.shape)
 
 
@@ -57,8 +54,4 @@ step, search = reg.register(
     template,
     alpha=0.00002,
     verbose=True,
-    plotCB=plot.gridPlot
     )
-
-
-plot.show()
