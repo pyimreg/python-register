@@ -763,12 +763,7 @@ class ThinPlateSpline(Model):
 
 
     def jacobian(self, p=None):
-        raise NotImplementedError("""
-            It does not make sense to use a non-linear optimization to
-            fit a thin-plate-spline model. Try the "CubicSpline" deformation
-            model instead.
-            """
-            )
+        raise NotImplementedError('')
 
     @property
     def identity(self):

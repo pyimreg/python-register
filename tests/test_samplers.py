@@ -1,11 +1,8 @@
 import time
 
 import numpy as np
-import scipy as sp
 
-import imreg.models.model as model
-import imreg.samplers.sampler as sampler
-
+from imreg.samplers import sampler
 from imreg import register
 
 

@@ -3,11 +3,9 @@ import numpy as np
 import scipy.ndimage as nd
 import scipy.misc as misc
 
-import imreg.models.model as model
-import imreg.metrics.metric as metric
-import imreg.samplers.sampler as sampler
+from imreg import model, metric, register
+from imreg.samplers import sampler
 
-from imreg import register
 
 def warp(image, p, model, sampler):
     """

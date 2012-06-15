@@ -5,12 +5,7 @@ def configuration(parent_package='', top_path=None):
     from numpy.distutils.misc_util import Configuration
 
     config = Configuration('imreg', parent_package, top_path)
-
-    config.add_subpackage('models')
-    config.add_subpackage('metrics')
     config.add_subpackage('samplers')
-    config.add_subpackage('visualize')
-    config.add_subpackage('features')
 
     return config
 
