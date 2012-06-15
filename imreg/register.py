@@ -3,6 +3,7 @@
 import numpy as np
 import scipy.ndimage as nd
 
+
 def _smooth(image, variance):
     """
     Gaussian smoothing using the fast-fourier-transform (FFT)
@@ -24,14 +25,7 @@ def _smooth(image, variance):
     regisger.Register.smooth
     """
 
-    return np.real(
-        np.fft.ifft2(
-            nd.fourier_gaussian(
-                np.fft.fft2(image),
-                variance
-                               )
-                    )
-                  )
+    return np.real(np.fft.ifft2(nd.fourier_gaussian(np.fft.fft2(image), variance)))
 
 
 class Coordinates(object):
@@ -449,62 +443,6 @@ class Register(object):
             p += deltaP
 
         return bestStep, search
-
-class KybicRegister(Register):
-    """
-    Variant of LM algorithm as described by:
-
-    Kybic, J. and Unser, M. (2003). Fast parametric elastic image
-        registration. IEEE Transactions on Image Processing, 12(11), 1427-1442.
-    """
-
-    def __init__(self, model, metric, sampler):
-        Register.__init__(self, model, metric, sampler)
-
-    def __deltaP(self, J, e, alpha, p):
-        """
-        Computes the parameter update.
-
-        Parameters
-        ----------
-        J: nd-array
-            The (dE/dP) the relationship between image differences and model
-            parameters.
-        e: float
-            The evaluated similarity metric.
-        alpha: float
-            A dampening factor.
-        p: nd-array or list of floats, optional
-
-        Returns
-        -------
-        deltaP: nd-array
-           The parameter update vector.
-        """
-
-        H = np.dot(J.T, J)
-
-        H += np.diag(alpha*np.diagonal(H))
-
-        return np.dot( np.linalg.inv(H), np.dot(J.T, e)) - alpha*p
-
-    def __dampening(self, alpha, decreasing):
-        """
-        Computes the adjusted dampening factor.
-
-        Parameters
-        ----------
-        alpha: float
-            The current dampening factor.
-        decreasing: boolean
-            Conditional on the decreasing error function.
-
-        Returns
-        -------
-        alpha: float
-           The adjusted dampening factor.
-        """
-        return alpha
 
 
 class FeatureRegister():
