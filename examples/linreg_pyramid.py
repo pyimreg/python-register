@@ -6,11 +6,9 @@ computation.
 import scipy.ndimage as nd
 import scipy.misc as misc
 
-from imreg.models import model
-from imreg.metrics import metric
+from imreg import model, metric, register
 from imreg.samplers import sampler
 
-from imreg import register
 
 # Form some test data (lena, lena rotated 20 degrees)
 image = register.RegisterData(misc.lena())
