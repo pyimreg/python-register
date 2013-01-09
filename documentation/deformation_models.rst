@@ -2,5 +2,5 @@
 Deformation models
 =============================
 
-.. automodule:: register
+.. automodule:: register.models.model
     :members:

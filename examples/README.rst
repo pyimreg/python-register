@@ -19,17 +19,3 @@ Demonstrates uses of the sci-kit:
      F : floating image ( non-deformed image)
      p : warp parameters
   
-  + nonlinreg
-  
-  Uses an cubic spline deformation model to deform the image and then (attempts to) minimize:
-  
-  || T - W(F;p) || + a*||p||
-  
-  where:
-     
-     T : target image (lena deformed)
-     F : floating image ( non-deformed image)
-     p : warp parameters
-     a : regularization term - determines smoothness of the warping.
-  
-

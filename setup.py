@@ -1,18 +1,17 @@
 #! /usr/bin/env python
 
-descr   = """Place long description here.
-
+DISTNAME = 'imreg'
+DESCRIPTION = 'Image registration toolkit'
+LONG_DESCRIPTION = """
+"imreg" is an image registration package for python that makes it easy to
+automatically align image data.
 """
-
-DISTNAME            = 'python-register'
-DESCRIPTION         = 'Image registration toolbox for SciPy'
-LONG_DESCRIPTION    = descr
-MAINTAINER          = 'Nathan Faggian'
-MAINTAINER_EMAIL    = 'nathan.faggian@gmail.com'
-URL                 = ''
-LICENSE             = 'Apache License (2.0)'
-DOWNLOAD_URL        = ''
-VERSION             = '0.1'
+MAINTAINER = 'Nathan Faggian, Riaan Van Den Dool, Stefan Van Der Walt'
+MAINTAINER_EMAIL = 'nathan.faggian@gmail.com'
+URL = 'pyimreg.github.com'
+LICENSE = 'Apache License (2.0)'
+DOWNLOAD_URL = ''
+VERSION = '0.1'
 
 import os
 import setuptools
@@ -34,8 +33,7 @@ def configuration(parent_package='', top_path=None):
             delegate_options_to_subpackages=True,
             quiet=True)
 
-    config.add_subpackage('register')
-#    config.add_subpackage(DISTNAME)
+    config.add_subpackage('imreg')
 
     return config
 
@@ -63,7 +61,6 @@ if __name__ == "__main__":
         install_requires=[],
         packages=setuptools.find_packages(),
         include_package_data=True,
-        zip_safe=False, # the package can run out of an .egg file
-
+        zip_safe=False,
         cmdclass={'build_py': build_py},
         )

@@ -1,0 +1,19 @@
+import sys
+
+from bento.commands import hooks
+
+from numpy.distutils.misc_util \
+    import \
+        get_numpy_include_dirs
+
+
+@hooks.post_configure
+def post_configure(context):
+    conf = context.waf_context
+    conf.env.INCLUDES = get_numpy_include_dirs()
+
+    if sys.platform == "win32":
+        conf.options.check_cxx_compiler = "msvc"
+    else:
+        conf.options.check_cxx_compiler = "g++"
+    conf.load("compiler_cxx")

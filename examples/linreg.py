@@ -1,4 +1,4 @@
-""" 
+"""
 Estimates a linear warp field, the target is a transformed version of lenna:
 
     http://en.wikipedia.org/wiki/Lenna
@@ -7,12 +7,8 @@ Estimates a linear warp field, the target is a transformed version of lenna:
 import scipy.ndimage as nd
 import scipy.misc as misc
 
-from register.models import model
-from register.metrics import metric
-from register.samplers import sampler
-from register import register
-
-from register.visualize import plot
+from imreg import register, model, metric
+from imreg.samplers import sampler
 
 # Form some test data (lena, lena rotated 20 degrees)
 image = misc.lena()
@@ -35,6 +31,3 @@ step, search = affine.register(
     template,
     verbose=True,
     )
-
-# Call the debug tool "searchInspector"
-plot.searchInspector(search)

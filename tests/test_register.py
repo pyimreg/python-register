@@ -3,11 +3,9 @@ import numpy as np
 import scipy.ndimage as nd
 import scipy.misc as misc
 
-import register.models.model as model
-import register.metrics.metric as metric
-import register.samplers.sampler as sampler
+from imreg import model, metric, register
+from imreg.samplers import sampler
 
-from register import register
 
 def warp(image, p, model, sampler):
     """
@@ -16,7 +14,7 @@ def warp(image, p, model, sampler):
     coords = register.Coordinates(
         [0, image.shape[0], 0, image.shape[1]]
         )
-    
+
     model = model(coords)
     sampler = sampler(coords)
 
@@ -99,8 +97,8 @@ def test_shift(image, template, p):
     # Coerce the image data into RegisterData.
     image = register.RegisterData(image)
     template = register.RegisterData(template)
-    
-    
+
+
     step, _search = shift.register(
         image,
         template
@@ -127,7 +125,7 @@ def test_affine(image, template, p):
     # Coerce the image data into RegisterData.
     image = register.RegisterData(image)
     template = register.RegisterData(template)
-    
+
     step, _search = affine.register(
         image,
         template
